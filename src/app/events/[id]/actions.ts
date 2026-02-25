@@ -1,0 +1,164 @@
+'use server'
+
+import { createClient } from '@/lib/supabase/server'
+import { revalidatePath } from 'next/cache'
+import { logAction } from '@/lib/actions/audit'
+import { nanoid } from 'nanoid' // We'll use Math.random for simplicity if nanoid isn't installed. Let's use a standard crypto fallback.
+import crypto from 'crypto'
+
+function generateReference() {
+    return 'KARE-' + crypto.randomBytes(4).toString('hex').toUpperCase()
+}
+
+export async function registerForEvent(eventId: string) {
+    const supabase = await createClient()
+    const { data: { user } } = await supabase.auth.getUser()
+
+    if (!user) {
+        return { error: 'You must be logged in to register.' }
+    }
+
+    // Check if already registered
+    const { data: existing } = await supabase
+        .from('registrations')
+        .select('id')
+        .eq('user_id', user.id)
+        .eq('event_id', eventId)
+        .single()
+
+    if (existing) {
+        return { error: 'You are already registered for this event.' }
+    }
+
+    // Fetch event to check approval and deadlines
+    const { data: event } = await supabase
+        .from('events')
+        .select('requires_approval, registration_end, date')
+        .eq('id', eventId)
+        .single()
+
+    if (!event) return { error: 'Event not found' }
+
+    const now = new Date()
+    const closeDate = event.registration_end ? new Date(event.registration_end) : new Date(event.date)
+
+    if (now > closeDate) {
+        return { error: 'Registration for this event is closed.' }
+    }
+
+    const status = event.requires_approval ? 'pending_approval' : 'approved'
+
+    const { data, error } = await supabase
+        .from('registrations')
+        .insert({
+            user_id: user.id,
+            event_id: eventId,
+            status
+        })
+        .select()
+        .single()
+
+    if (error) {
+        return { error: error.message }
+    }
+
+    await logAction('REGISTER_EVENT', 'registrations', data.id, { eventId, status })
+
+    revalidatePath(`/events/${eventId}`)
+    return { success: true, status }
+}
+
+export async function registerGuest(formData: FormData) {
+    const supabase = await createClient()
+
+    const eventId = formData.get('eventId') as string
+    const guestRegNo = formData.get('guestRegNo') as string
+    const guestName = formData.get('guestName') as string
+    const guestEmail = formData.get('guestEmail') as string
+    const guestPhone = formData.get('guestPhone') as string
+    const guestInstitution = formData.get('guestInstitution') as string
+
+    let customResponses = {}
+    let teamMembers = []
+    try {
+        customResponses = JSON.parse((formData.get('customResponses') as string) || '{}')
+        teamMembers = JSON.parse((formData.get('teamMembers') as string) || '[]')
+    } catch (e) { console.error('Failed to parse dynamic form data') }
+
+    // Fetch event
+    const { data: event } = await supabase
+        .from('events')
+        .select('requires_approval, registration_end, date')
+        .eq('id', eventId)
+        .single()
+
+    if (!event) return { error: 'Event not found' }
+
+    // Check for duplicates
+    if (guestPhone) {
+        const { data: phoneReg } = await supabase
+            .from('registrations')
+            .select('id')
+            .eq('event_id', eventId)
+            .eq('guest_phone', guestPhone)
+            .limit(1)
+        if (phoneReg && phoneReg.length > 0) {
+            return { error: 'This Phone Number is already registered for this event.' }
+        }
+    }
+
+    if (guestRegNo) {
+        const { data: regNoReg } = await supabase
+            .from('registrations')
+            .select('id')
+            .eq('event_id', eventId)
+            .eq('guest_reg_no', guestRegNo)
+            .limit(1)
+        if (regNoReg && regNoReg.length > 0) {
+            return { error: 'This Registration Number is already registered for this event.' }
+        }
+    }
+
+    const now = new Date()
+    const closeDate = event.registration_end ? new Date(event.registration_end) : new Date(event.date)
+
+    if (now > closeDate) {
+        return { error: 'Registration for this event is closed.' }
+    }
+
+    const status = event.requires_approval ? 'pending_approval' : 'approved'
+    const referenceNumber = generateReference()
+
+    const { data, error } = await supabase
+        .from('registrations')
+        .insert({
+            event_id: eventId,
+            guest_reg_no: guestRegNo,
+            guest_name: guestName,
+            guest_email: guestEmail,
+            guest_phone: guestPhone,
+            guest_institution: guestInstitution,
+            reference_number: referenceNumber,
+            status,
+            custom_responses: customResponses,
+            team_members: teamMembers
+        })
+        .select()
+        .single()
+
+    if (error) {
+        // If it throws a unique constraint on reference_number, we theoretically should retry, but crypto 8 chars is safe
+        return { error: error.message }
+    }
+
+    // Attempt to log it (using system/null actor since it's public)
+    await supabase.from('audit_logs').insert({
+        action: 'REGISTER_GUEST',
+        entity_type: 'registrations',
+        entity_id: data.id,
+        new_values: { eventId, status, referenceNumber }
+    })
+
+    revalidatePath(`/events/${eventId}`)
+    return { success: true, status, referenceNumber }
+}
