@@ -6,9 +6,15 @@ import { Button } from '@/components/ui/button'
 import { CalendarIcon, MapPinIcon, DownloadIcon, UploadIcon, TicketIcon, UserIcon, ArrowLeftIcon } from 'lucide-react'
 import Link from 'next/link'
 import PaymentUploadForm from './payment-form'
+import { AlertCircleIcon, TicketCheckIcon } from 'lucide-react'
 
-export default async function StatusDashboardPage(props: { params: Promise<{ ref: string }> }) {
+export default async function StatusDashboardPage(props: {
+    params: Promise<{ ref: string }>,
+    searchParams: Promise<{ new?: string }>
+}) {
     const params = await props.params
+    const searchParams = await props.searchParams
+    const isNew = searchParams.new === '1'
     const supabase = await createClient()
     const rawRef = params.ref.toUpperCase()
 
@@ -32,6 +38,7 @@ export default async function StatusDashboardPage(props: { params: Promise<{ ref
                 registration_end,
                 payment_deadline,
                 fees,
+                is_fee_per_person,
                 payment_qr_url
             ),
             payments (
@@ -137,6 +144,15 @@ export default async function StatusDashboardPage(props: { params: Promise<{ ref
                         </Badge>
                     </div>
                 </CardHeader>
+                {isNew && (
+                    <div className="bg-emerald-50 dark:bg-emerald-950/30 border-b border-emerald-100 dark:border-emerald-900/50 p-6 flex flex-col items-center text-center">
+                        <TicketCheckIcon className="w-12 h-12 text-emerald-600 dark:text-emerald-400 mb-3" />
+                        <h3 className="text-xl font-bold text-emerald-900 dark:text-emerald-100 mb-1">Registration Successful!</h3>
+                        <p className="text-emerald-800 dark:text-emerald-200">
+                            Your reference number is <strong>{rawRef}</strong>. Please save this number.
+                        </p>
+                    </div>
+                )}
                 <CardContent className="pt-8">
                     <div className="grid grid-cols-1 md:grid-cols-2 gap-12">
                         {/* Left Column: Details & Attendance */}
@@ -237,13 +253,30 @@ export default async function StatusDashboardPage(props: { params: Promise<{ ref
                                         </div>
 
                                         {isUnpaid && !missedPaymentDeadline && reg.status !== 'expired' && reg.status !== 'rejected' && (
-                                            <div className="bg-slate-50 dark:bg-slate-900 border rounded-lg p-4 mt-2">
+                                            <div className="bg-slate-50 dark:bg-slate-900/50 border rounded-lg p-5 mt-4 shadow-sm">
+                                                <div className="mb-4 text-center">
+                                                    <p className="text-sm font-semibold text-slate-500 uppercase tracking-wider mb-1">Amount to Pay</p>
+                                                    <p className="text-3xl font-black text-slate-900 dark:text-white">
+                                                        ₹{(reg.event.fees * (reg.event.is_fee_per_person ? (1 + (reg.team_members?.length || 0)) : 1)).toFixed(2)}
+                                                    </p>
+                                                    {reg.event.is_fee_per_person && reg.team_members?.length > 0 && (
+                                                        <p className="text-xs text-muted-foreground mt-1">
+                                                            (₹{reg.event.fees.toFixed(2)} × {1 + reg.team_members.length} members)
+                                                        </p>
+                                                    )}
+                                                </div>
                                                 <PaymentUploadForm
                                                     registrationId={reg.id}
                                                     amount={reg.event.fees}
                                                     reference={reg.reference_number}
                                                     paymentQrUrl={reg.event.payment_qr_url}
                                                 />
+                                                <div className="mt-4 flex items-start gap-2 text-xs text-muted-foreground bg-blue-50 dark:bg-blue-900/20 p-3 rounded text-left border border-blue-100 dark:border-blue-900/50">
+                                                    <AlertCircleIcon className="w-4 h-4 text-blue-600 dark:text-blue-400 shrink-0 mt-0.5" />
+                                                    <p>
+                                                        <strong>Note:</strong> If you close this page, you can always return to complete your payment using the <strong>Status Checker</strong> with your Reference Number (<strong>{rawRef}</strong>).
+                                                    </p>
+                                                </div>
                                             </div>
                                         )}
 

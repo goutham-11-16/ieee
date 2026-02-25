@@ -45,6 +45,10 @@ export default async function CreateEventPage() {
                             <div className="space-y-2">
                                 <Label htmlFor="fees">Registration Fee (₹)</Label>
                                 <Input id="fees" name="fees" type="number" min="0" step="0.01" defaultValue="0.00" />
+                                <Label className="flex items-center gap-2 text-xs font-normal cursor-pointer mt-1 text-muted-foreground">
+                                    <input type="checkbox" name="isFeePerPerson" className="rounded border-gray-300" />
+                                    Multiply fee per team member (if Team Event)
+                                </Label>
                             </div>
                         </div>
 

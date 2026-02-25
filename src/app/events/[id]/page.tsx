@@ -1,7 +1,7 @@
 import { createClient } from '@/lib/supabase/server'
 import { Button } from '@/components/ui/button'
 import { notFound } from 'next/navigation'
-import GuestRegistrationForm from './guest-registration-form'
+import Link from 'next/link'
 import { CalendarIcon, MapPinIcon, ClockIcon, TimerIcon, CreditCardIcon } from 'lucide-react'
 
 export default async function EventDetailsPage(props: { params: Promise<{ id: string }> }) {
@@ -62,17 +62,15 @@ export default async function EventDetailsPage(props: { params: Promise<{ id: st
                             <h1 className="text-4xl md:text-5xl font-extrabold tracking-tight text-slate-900 dark:text-white">{event.title}</h1>
                         </div>
                         <div className="shrink-0 w-full md:w-auto">
-                            <GuestRegistrationForm
-                                eventId={event.id}
-                                eventDate={event.date}
-                                registrationEnd={event.registration_end}
-                                disabledFields={event.disabled_default_fields}
-                                formSchema={event.form_schema}
-                                isTeamEvent={event.is_team_event}
-                                minTeamSize={event.min_team_size}
-                                maxTeamSize={event.max_team_size}
-                                teamMemberSettings={event.team_member_settings}
-                            />
+                            {!isClosingSoon && regEnd < now ? (
+                                <Button disabled variant="destructive" className="w-full md:w-auto">
+                                    Registration Closed
+                                </Button>
+                            ) : (
+                                <Button asChild size="lg" className="w-full md:w-auto">
+                                    <Link href={`/events/${event.id}/register`}>Register Now</Link>
+                                </Button>
+                            )}
                         </div>
                     </div>
 

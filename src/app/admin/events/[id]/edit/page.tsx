@@ -78,6 +78,10 @@ export default async function EditEventPage(props: { params: Promise<{ id: strin
                             <div className="space-y-2">
                                 <Label htmlFor="fees">Registration Fee (₹)</Label>
                                 <Input id="fees" name="fees" type="number" min="0" step="0.01" defaultValue={event.fees} />
+                                <Label className="flex items-center gap-2 text-xs font-normal cursor-pointer mt-1 text-muted-foreground">
+                                    <input type="checkbox" name="isFeePerPerson" defaultChecked={event.is_fee_per_person} className="rounded border-gray-300" />
+                                    Multiply fee per team member (if Team Event)
+                                </Label>
                             </div>
                         </div>
 

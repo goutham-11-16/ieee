@@ -34,6 +34,7 @@ export async function updateEvent(formData: FormData) {
     const paymentDeadline = formData.get('paymentDeadline') ? formData.get('paymentDeadline') as string : null
     const fees = formData.get('fees') ? parseFloat(formData.get('fees') as string) : 0.00
 
+    const isFeePerPerson = formData.get('isFeePerPerson') === 'on'
     const isTeamEvent = formData.get('isTeamEvent') === 'on'
     const minTeamSize = formData.get('minTeamSize') ? parseInt(formData.get('minTeamSize') as string) : 1
     const maxTeamSize = formData.get('maxTeamSize') ? parseInt(formData.get('maxTeamSize') as string) : 1
@@ -84,6 +85,7 @@ export async function updateEvent(formData: FormData) {
         registration_end: registrationEnd,
         payment_deadline: paymentDeadline,
         fees,
+        is_fee_per_person: isFeePerPerson,
         coordinators,
         is_team_event: isTeamEvent,
         min_team_size: minTeamSize,
