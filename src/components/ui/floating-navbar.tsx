@@ -25,7 +25,7 @@ export const FloatingNav = ({
     }[];
     className?: string;
 }) => {
-    const { scrollYProgress } = useScroll();
+    const { scrollYProgress, scrollY } = useScroll();
 
     const [visible, setVisible] = useState(false);
 
@@ -34,7 +34,8 @@ export const FloatingNav = ({
         if (typeof current === "number") {
             let direction = current! - scrollYProgress.getPrevious()!;
 
-            if (scrollYProgress.get() < 0.05) {
+            // If we are near the top of the page, hide the floating navbar
+            if (scrollY.get() < 150) {
                 setVisible(false);
             } else {
                 if (direction < 0) {

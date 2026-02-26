@@ -1,7 +1,7 @@
 'use client'
 
 import { useState, useEffect, useRef } from 'react'
-import { Html5QrcodeScanner } from 'html5-qrcode'
+import { Html5Qrcode } from 'html5-qrcode'
 import { verifyTicket, ScanResult } from './actions'
 import {
     Select,
@@ -14,7 +14,7 @@ import { Button } from '@/components/ui/button'
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
 import { createClient } from '@/lib/supabase/client'
 import { toast } from 'sonner'
-import { Loader2, CheckCircleIcon, XCircleIcon, RefreshCwIcon } from 'lucide-react'
+import { CheckCircleIcon, XCircleIcon, RefreshCwIcon, CameraIcon, StopCircleIcon } from 'lucide-react'
 
 export default function ScannerPage() {
     const [events, setEvents] = useState<any[]>([])
@@ -22,7 +22,10 @@ export default function ScannerPage() {
     const [selectedSessionName, setSelectedSessionName] = useState<string>('Default Focus Session')
     const [scanResult, setScanResult] = useState<ScanResult | null>(null)
     const [isScanning, setIsScanning] = useState(false)
-    const scannerRef = useRef<Html5QrcodeScanner | null>(null)
+    const [cameraProcessing, setCameraProcessing] = useState(false)
+
+    // Reference to hold the actual scanner instance
+    const html5QrCodeRef = useRef<Html5Qrcode | null>(null)
 
     const selectedEvent = events.find(e => e.id === selectedEventId)
 
@@ -38,76 +41,110 @@ export default function ScannerPage() {
             if (data) setEvents(data)
         }
         fetchEvents()
+
+        return () => {
+            // Clean up the scanner safely when unmounting
+            if (html5QrCodeRef.current && html5QrCodeRef.current.isScanning) {
+                html5QrCodeRef.current.stop().catch(console.error)
+            }
+        }
     }, [])
 
+    // Stop scanning if the user changes the event
     useEffect(() => {
-        if (selectedEventId && !isScanning && !scanResult) {
-            startScanner()
+        if (isScanning) {
+            stopCamera()
         }
-        return () => {
-            if (scannerRef.current) {
-                scannerRef.current.clear().catch(err => console.error("Failed to clear scanner", err))
-            }
-        }
-    }, [selectedEventId, isScanning, scanResult])
+    }, [selectedEventId, selectedSessionName])
 
-    const startScanner = () => {
-        // Find the element
-        const element = document.getElementById('reader')
-        if (!element) return
-
-        if (scannerRef.current) {
-            scannerRef.current.clear().catch(() => { })
+    const startCamera = async () => {
+        if (!selectedEventId) {
+            toast.error("Please select an event first.")
+            return
         }
 
-        const scanner = new Html5QrcodeScanner(
-            "reader",
-            { fps: 10, qrbox: { width: 250, height: 250 } },
-            false
-        )
-
-        scanner.render(onScanSuccess, onScanFailure)
-        scannerRef.current = scanner
+        setCameraProcessing(true)
+        // Set scanning to true immediately so React mounts the DOM element
         setIsScanning(true)
-    }
 
-    const onScanSuccess = async (decodedText: string) => {
-        if (!selectedEventId) return
+        // Wait a tiny bit (100ms) for React to finish painting the DOM
+        setTimeout(async () => {
+            try {
+                // Request permissions implicitly by asking for devices
+                const cameras = await Html5Qrcode.getCameras()
 
-        // Pause scanning to process
-        if (scannerRef.current) {
-            scannerRef.current.pause()
-        }
+                if (cameras && cameras.length > 0) {
+                    // Initialize the direct API. "reader" must exist in the DOM now.
+                    const html5QrCode = new Html5Qrcode("reader")
+                    html5QrCodeRef.current = html5QrCode
 
-        try {
-            const result = await verifyTicket(decodedText, selectedEventId, selectedSessionName)
-            setScanResult(result)
+                    await html5QrCode.start(
+                        { facingMode: "environment" },
+                        { fps: 10, qrbox: { width: 250, height: 250 } },
+                        async (decodedText) => {
+                            // 1. Pause immediately to prevent spamming
+                            html5QrCode.pause()
 
-            if (result.success) {
-                // Audio feedback could go here
+                            try {
+                                const result = await verifyTicket(decodedText, selectedEventId, selectedSessionName)
+                                setScanResult(result)
+                            } catch (e) {
+                                setScanResult({ success: false, message: 'Processing Error', errorType: 'INVALID' })
+                            }
+                        },
+                        (errorMessage) => {
+                            // Ignore routine frame read errors
+                        }
+                    )
+                } else {
+                    toast.error("No cameras detected on this device.")
+                    setIsScanning(false)
+                }
+            } catch (err) {
+                console.error("Camera error: ", err)
+                toast.error("Camera permission denied. Please allow camera access in your browser site settings.")
+                setIsScanning(false)
+            } finally {
+                setCameraProcessing(false)
             }
-        } catch (e) {
-            setScanResult({ success: false, message: 'Processing Error', errorType: 'INVALID' })
-        }
+        }, 100)
     }
 
-    const onScanFailure = (error: any) => {
-        // Common, ignore
+    const stopCamera = async () => {
+        setCameraProcessing(true)
+        try {
+            if (html5QrCodeRef.current && html5QrCodeRef.current.isScanning) {
+                await html5QrCodeRef.current.stop()
+                html5QrCodeRef.current.clear()
+            }
+            setIsScanning(false)
+        } catch (err) {
+            console.error("Failed to stop scanner", err)
+        } finally {
+            setCameraProcessing(false)
+        }
     }
 
     const resetScan = () => {
         setScanResult(null)
-        if (scannerRef.current) {
-            scannerRef.current.resume()
+        // Resume scanning
+        if (html5QrCodeRef.current) {
+            // html5-qrcode's pause/resume API isn't always reliable across versions, 
+            // but resume() works safely if paused.
+            try {
+                html5QrCodeRef.current.resume()
+            } catch (e) {
+                console.error("Could not resume", e)
+            }
         }
     }
 
     return (
-        <div className="container mx-auto py-6 px-4 max-w-md">
+        <div className="container mx-auto py-6 px-4 max-w-md flex flex-col items-center">
             <h1 className="text-2xl font-bold mb-6 text-center">Ticket Scanner</h1>
 
-            <div className="mb-6">
-                <Select value={selectedEventId} onValueChange={(val) => { setSelectedEventId(val); setScanResult(null); }}>
+            <div className="w-full mb-6 space-y-4">
+                <Select value={selectedEventId} onValueChange={setSelectedEventId}>
                     <SelectTrigger>
                         <SelectValue placeholder="Select Event to Scan" />
                     </SelectTrigger>
@@ -119,11 +156,9 @@ export default function ScannerPage() {
                         ))}
                     </SelectContent>
                 </Select>
-            </div>
 
-            {selectedEvent?.attendance_sessions && selectedEvent.attendance_sessions.length > 0 && (
-                <div className="mb-6">
-                    <Select value={selectedSessionName} onValueChange={(val) => { setSelectedSessionName(val); setScanResult(null); }}>
+                {selectedEvent?.attendance_sessions && selectedEvent.attendance_sessions.length > 0 && (
+                    <Select value={selectedSessionName} onValueChange={setSelectedSessionName}>
                         <SelectTrigger>
                             <SelectValue placeholder="Select Session (e.g., Morning)" />
                         </SelectTrigger>
@@ -136,50 +171,75 @@ export default function ScannerPage() {
                             ))}
                         </SelectContent>
                     </Select>
-                </div>
-            )}
+                )}
+            </div>
 
             {!selectedEventId && (
-                <div className="text-center text-muted-foreground py-10">
-                    Please select an event to start scanning.
+                <div className="text-center text-muted-foreground w-full py-10 bg-slate-50 dark:bg-slate-900 rounded-lg border border-dashed">
+                    Select an event above to enable the scanner.
                 </div>
             )}
 
-            {selectedEventId && !scanResult && (
-                <div className="space-y-4">
-                    <div id="reader" className="w-full"></div>
-                    <p className="text-xs text-center text-muted-foreground">Point functionality using camera</p>
+            {selectedEventId && !isScanning && !scanResult && (
+                <div className="w-full flex flex-col items-center py-10 bg-slate-50 dark:bg-slate-900 rounded-lg border border-dashed space-y-4 shadow-inner">
+                    <p className="text-muted-foreground text-center px-4">Ready to scan tickets. Click below to request camera permissions and start scanning.</p>
+                    <Button onClick={startCamera} size="lg" disabled={cameraProcessing} className="w-full max-w-xs gap-2 text-lg">
+                        <CameraIcon className="w-5 h-5" /> {cameraProcessing ? 'Opening...' : 'Open Camera'}
+                    </Button>
+                </div>
+            )}
+
+            {isScanning && (
+                <div className="w-full space-y-4 flex flex-col items-center">
+                    <div className="flex justify-between items-center w-full px-2">
+                        <span className="text-sm font-medium text-blue-600 animate-pulse flex items-center gap-2">
+                            <span className="w-2 h-2 rounded-full bg-blue-600"></span> Camera Active
+                        </span>
+                        <Button variant="outline" size="sm" onClick={stopCamera} disabled={cameraProcessing} className="text-red-500 hover:text-red-600 hover:bg-red-50">
+                            <StopCircleIcon className="w-4 h-4 mr-1" /> Stop
+                        </Button>
+                    </div>
+
+                    <div id="reader" className="w-full max-w-sm rounded overflow-hidden shadow-lg border-2 border-primary bg-black"></div>
+                    <p className="text-xs text-center text-muted-foreground">Align the QR code within the frame</p>
                 </div>
             )}
 
             {scanResult && (
-                <Card className={`border-2 ${scanResult.success ? 'border-green-500 bg-green-50 dark:bg-green-900/20' : 'border-red-500 bg-red-50 dark:bg-red-900/20'}`}>
-                    <CardHeader className="text-center">
-                        <div className="mx-auto mb-2">
-                            {scanResult.success ?
-                                <CheckCircleIcon className="w-16 h-16 text-green-600 dark:text-green-400" /> :
-                                <XCircleIcon className="w-16 h-16 text-red-600 dark:text-red-400" />
-                            }
-                        </div>
-                        <CardTitle className={`text-2xl ${scanResult.success ? 'text-green-700 dark:text-green-300' : 'text-red-700 dark:text-red-300'}`}>
-                            {scanResult.success ? 'Valid Ticket' : scanResult.errorType === 'DUPLICATE' ? 'Already Used' : 'Invalid Ticket'}
-                        </CardTitle>
-                    </CardHeader>
-                    <CardContent className="text-center space-y-4">
-                        <div className="text-lg font-medium">
-                            {scanResult.message}
-                        </div>
-                        {scanResult.attendeeName && (
-                            <div className="text-xl font-bold p-2 bg-white dark:bg-black/20 rounded">
-                                {scanResult.attendeeName}
+                <div className="w-full pt-4">
+                    <Card className={`border-2 ${scanResult.success ? 'border-green-500 bg-green-50 dark:bg-green-900/20' : 'border-red-500 bg-red-50 dark:bg-red-900/20'}`}>
+                        <CardHeader className="text-center pb-2">
+                            <div className="mx-auto mb-2">
+                                {scanResult.success ?
+                                    <CheckCircleIcon className="w-16 h-16 text-green-600 dark:text-green-400" /> :
+                                    <XCircleIcon className="w-16 h-16 text-red-600 dark:text-red-400" />
+                                }
                             </div>
-                        )}
+                            <CardTitle className={`text-2xl ${scanResult.success ? 'text-green-700 dark:text-green-300' : 'text-red-700 dark:text-red-300'}`}>
+                                {scanResult.success ? 'Valid Ticket' : scanResult.errorType === 'DUPLICATE' ? 'Already Used' : 'Invalid Ticket'}
+                            </CardTitle>
+                        </CardHeader>
+                        <CardContent className="text-center space-y-4">
+                            <div className="text-lg font-medium">
+                                {scanResult.message}
+                            </div>
+                            {scanResult.attendeeName && (
+                                <div className="text-xl font-bold p-3 bg-white dark:bg-black/40 rounded shadow-sm border border-black/5 dark:border-white/10">
+                                    {scanResult.attendeeName}
+                                </div>
+                            )}
 
-                        <Button size="lg" onClick={resetScan} className="w-full mt-4">
-                            <RefreshCwIcon className="mr-2 w-4 h-4" /> Scan Next
-                        </Button>
-                    </CardContent>
-                </Card>
+                            <div className="flex flex-col gap-2 pt-4">
+                                <Button size="lg" onClick={resetScan} className="w-full">
+                                    <RefreshCwIcon className="mr-2 w-4 h-4" /> Scan Next
+                                </Button>
+                                <Button variant="outline" onClick={() => { setScanResult(null); stopCamera(); }} className="w-full text-muted-foreground">
+                                    Close Scanner
+                                </Button>
+                            </div>
+                        </CardContent>
+                    </Card>
+                </div>
             )}
         </div>
     )

@@ -75,7 +75,7 @@ export default async function Home() {
             <BentoGridItem
               title="Seamless Booking"
               description="Browse and register for upcoming events in seconds. Get instant confirmations and digital tickets."
-              header={<div className="flex flex-1 w-full h-full min-h-[6rem] rounded-xl bg-gradient-to-br from-blue-500/20 to-blue-500/5 items-center justify-center."><Calendar className="h-12 w-12 text-blue-500" /></div>}
+              header={<div className="flex flex-1 w-full h-full min-h-[6rem] rounded-xl bg-gradient-to-br from-blue-500/20 to-blue-500/5 items-center justify-center"><Calendar className="h-12 w-12 text-blue-500" /></div>}
               className="md:col-span-1"
             />
             <BentoGridItem
