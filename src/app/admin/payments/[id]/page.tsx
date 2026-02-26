@@ -22,6 +22,8 @@ export default async function PaymentReviewPage(props: { params: Promise<{ id: s
             registration:registrations (
                 id,
                 status,
+                guest_name,
+                guest_email,
                 user:profiles!registrations_user_id_fkey(full_name, email),
                 event:events(id, title, fees, date)
             )
@@ -122,7 +124,7 @@ export default async function PaymentReviewPage(props: { params: Promise<{ id: s
                         <CardContent className="space-y-4">
                             <div className="grid grid-cols-2 gap-2 text-sm">
                                 <span className="text-muted-foreground">Amount:</span>
-                                <span className="font-semibold text-lg">${payment.amount}</span>
+                                <span className="font-semibold text-lg">₹{payment.amount}</span>
 
                                 <span className="text-muted-foreground">Ref ID:</span>
                                 <span className="font-mono bg-slate-100 dark:bg-slate-800 px-1 rounded">{payment.transaction_reference}</span>
@@ -149,7 +151,7 @@ export default async function PaymentReviewPage(props: { params: Promise<{ id: s
                                 <span>{(Array.isArray(payment.registration.event) ? payment.registration.event[0]?.title : payment.registration.event?.title) || "Unknown Event"}</span>
 
                                 <span className="text-muted-foreground">Event Fee:</span>
-                                <span>${(Array.isArray(payment.registration.event) ? payment.registration.event[0]?.fees : payment.registration.event?.fees) || 0}</span>
+                                <span>₹{(Array.isArray(payment.registration.event) ? payment.registration.event[0]?.fees : payment.registration.event?.fees) || 0}</span>
                             </div>
                         </CardContent>
                     </Card>

@@ -3,10 +3,10 @@ import { notFound } from 'next/navigation'
 import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from '@/components/ui/card'
 import { Badge } from '@/components/ui/badge'
 import { Button } from '@/components/ui/button'
-import { CalendarIcon, MapPinIcon, DownloadIcon, UploadIcon, TicketIcon, UserIcon, ArrowLeftIcon } from 'lucide-react'
+import { CalendarIcon, MapPinIcon, DownloadIcon, UploadIcon, TicketIcon, UserIcon, ArrowLeftIcon, AlertCircleIcon, TicketCheckIcon, CheckCircleIcon, XCircleIcon, ClockIcon } from 'lucide-react'
 import Link from 'next/link'
 import PaymentUploadForm from './payment-form'
-import { AlertCircleIcon, TicketCheckIcon } from 'lucide-react'
+import { SuccessConfetti } from '@/components/ui/success-confetti'
 
 export default async function StatusDashboardPage(props: {
     params: Promise<{ ref: string }>,
@@ -104,6 +104,8 @@ export default async function StatusDashboardPage(props: {
                 </Link>
             </Button>
 
+            {isNew && <SuccessConfetti />}
+
             <div className="flex flex-col md:flex-row justify-between items-start gap-4 mb-8">
                 <div>
                     <h1 className="text-3xl font-bold">Registration Portal</h1>
@@ -186,14 +188,14 @@ export default async function StatusDashboardPage(props: {
                                 <section>
                                     <h4 className="text-lg font-semibold border-b pb-2 mb-4">Team Roster</h4>
                                     <div className="space-y-3">
-                                        <div className="bg-blue-50 dark:bg-blue-950/30 border border-blue-100 dark:border-blue-900 p-3 rounded-lg flex items-center gap-3">
+                                        <div className="bg-blue-50 dark:bg-blue-950/30 border border-blue-100 dark:border-blue-900 p-3 rounded-lg flex items-center gap-3 hover:shadow-md transition-all duration-200">
                                             <div className="h-8 w-8 rounded-full bg-blue-200 dark:bg-blue-800 flex items-center justify-center font-bold text-blue-700 dark:text-blue-300">L</div>
                                             <div>
                                                 <p className="font-medium text-sm">{participantName} <Badge variant="outline" className="ml-2 text-[10px] h-4">Leader</Badge></p>
                                             </div>
                                         </div>
                                         {reg.team_members.map((member: any, idx: number) => (
-                                            <div key={idx} className="bg-slate-50 dark:bg-slate-900 border p-3 rounded-lg flex items-center gap-3">
+                                            <div key={idx} className="bg-slate-50 dark:bg-slate-900 border p-3 rounded-lg flex items-center gap-3 hover:shadow-md transition-all duration-200">
                                                 <div className="h-8 w-8 rounded-full bg-slate-200 dark:bg-slate-800 flex items-center justify-center font-bold text-slate-600 dark:text-slate-400">{idx + 2}</div>
                                                 <div>
                                                     <p className="font-medium text-sm">{member.guestName}</p>
@@ -296,16 +298,10 @@ export default async function StatusDashboardPage(props: {
                     </div>
                 </CardContent>
                 <CardFooter className="bg-slate-100 dark:bg-slate-900/80 flex justify-end gap-4 flex-wrap p-6 border-t">
-                    {payment?.receipt_url && (
-                        <Button variant="outline" size="lg" asChild>
-                            <a href={supabase.storage.from('receipts').getPublicUrl(payment.receipt_url).data.publicUrl} target="_blank">
-                                <DownloadIcon className="mr-2 h-4 w-4" /> View Receipt
-                            </a>
-                        </Button>
-                    )}
+
 
                     {certificates && certificates.map((cert) => (
-                        <Button key={cert.unique_code} variant="destructive" size="lg" className="bg-purple-600 hover:bg-purple-700" asChild>
+                        <Button key={cert.unique_code} variant="destructive" size="lg" className="w-full sm:w-auto bg-purple-600 hover:bg-purple-700 shadow-sm" asChild>
                             <a href={supabase.storage.from('certificates').getPublicUrl(cert.file_url).data.publicUrl} target="_blank">
                                 <DownloadIcon className="mr-2 h-4 w-4" /> Download Certificate ({cert.participant_name || 'Participant'})
                             </a>
@@ -313,7 +309,7 @@ export default async function StatusDashboardPage(props: {
                     ))}
 
                     {(reg.status === 'approved' && (!isPaymentRequired || isVerified)) && (
-                        <Button size="lg" className="bg-emerald-600 hover:bg-emerald-700" asChild>
+                        <Button size="lg" className="w-full sm:w-auto bg-emerald-600 hover:bg-emerald-700 shadow-md transform transition-transform hover:-translate-y-1" asChild>
                             <Link href={`/tickets/${reg.id}`}>
                                 <TicketIcon className="mr-2 h-5 w-5" /> View Digital Ticket
                             </Link>

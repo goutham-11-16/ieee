@@ -12,11 +12,11 @@ import { FloatingNav } from "@/components/ui/floating-navbar"
 import { InfiniteMovingCards } from "@/components/ui/infinite-moving-cards"
 
 const navItems = [
-  { name: "Home", link: "/" },
-  { name: "Events", link: "/events" },
-  { name: "About", link: "/about" },
-  { name: "Team", link: "/team" },
-  { name: "Contact", link: "/contact" }
+  { name: "Home", link: "/", icon: <ArrowRight className="h-4 w-4" /> },
+  { name: "Events", link: "/events", icon: <Calendar className="h-4 w-4" /> },
+  { name: "About", link: "/about", icon: <Users className="h-4 w-4" /> },
+  { name: "Team", link: "/team", icon: <Users className="h-4 w-4" /> },
+  { name: "Contact", link: "/contact", icon: <ArrowRight className="h-4 w-4" /> }
 ]
 
 const testimonials = [

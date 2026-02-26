@@ -50,7 +50,7 @@ export function AnimatedHero() {
                         transition={{ duration: 0.8, delay: 0.4 }}
                         className="flex justify-center"
                     >
-                        <Button size="lg" asChild className="bg-gradient-to-r from-blue-600 to-emerald-600 hover:from-blue-700 hover:to-emerald-700 text-lg px-8 py-6 rounded-full shadow-lg hover:shadow-xl transition-all duration-300 transform hover:-translate-y-1">
+                        <Button size="lg" asChild className="w-full sm:w-auto bg-gradient-to-r from-blue-600 to-emerald-600 hover:from-blue-700 hover:to-emerald-700 text-lg px-8 py-6 rounded-full shadow-lg hover:shadow-xl transition-all duration-300 transform hover:-translate-y-1">
                             <Link href="/events">
                                 Explore Events <ArrowRight className="ml-2 h-5 w-5" />
                             </Link>

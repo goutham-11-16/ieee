@@ -76,7 +76,7 @@ export async function FeaturedEvents() {
                 </div>
 
                 <div className="mt-8 text-center md:hidden">
-                    <Button variant="outline" asChild>
+                    <Button variant="outline" asChild className="w-full sm:w-auto">
                         <Link href="/events">View All Events</Link>
                     </Button>
                 </div>
