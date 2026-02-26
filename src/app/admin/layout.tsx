@@ -53,6 +53,17 @@ export default async function AdminLayout({
                         <Link href="/admin/reports">Reports</Link>
                     </Button>
 
+                    {['super_admin', 'admin', 'content_admin', 'event_admin'].includes(profile.role) && (
+                        <>
+                            <Button variant="ghost" asChild className="justify-start text-white hover:text-white hover:bg-slate-800">
+                                <Link href="/admin/certificates">Certificates</Link>
+                            </Button>
+                            <Button variant="ghost" asChild className="justify-start text-amber-500 hover:text-amber-400 hover:bg-slate-800">
+                                <Link href="/admin/certificates/exceptions">Exceptions</Link>
+                            </Button>
+                        </>
+                    )}
+
                     {['super_admin', 'admin', 'event_admin'].includes(profile.role) && (
                         <Button variant="ghost" asChild className="justify-start text-white hover:text-white hover:bg-slate-800">
                             <Link href="/admin/scan">QR Scanner</Link>

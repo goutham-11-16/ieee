@@ -5,10 +5,18 @@ import { Button } from '@/components/ui/button'
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/components/ui/card'
 import { Badge } from '@/components/ui/badge'
 import { ArrowLeftIcon, CalendarIcon, UserIcon, UsersIcon } from 'lucide-react'
+import { AdminOverrideButtons } from './admin-override-buttons'
 
 export default async function AdminRegistrationDetails(props: { params: Promise<{ id: string }> }) {
     const params = await props.params
     const supabase = await createClient()
+
+    const { data: { user } } = await supabase.auth.getUser()
+    let isSuperAdminOrAdmin = false
+    if (user) {
+        const { data: profile } = await supabase.from('profiles').select('role').eq('id', user.id).single()
+        isSuperAdminOrAdmin = ['super_admin', 'admin'].includes(profile?.role || '')
+    }
 
     const { data: registration } = await supabase
         .from('registrations')
@@ -42,6 +50,15 @@ export default async function AdminRegistrationDetails(props: { params: Promise<
                     <ArrowLeftIcon className="mr-2 h-4 w-4" /> Back to Registrations
                 </Link>
             </Button>
+
+            {isSuperAdminOrAdmin && (
+                <AdminOverrideButtons
+                    registrationId={reg.id}
+                    eventId={reg.event?.id}
+                    isPaid={payment?.status === 'verified'}
+                    isAttended={!!attended}
+                />
+            )}
 
             <div className="flex justify-between items-start mb-8">
                 <div>

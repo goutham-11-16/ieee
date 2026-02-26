@@ -84,6 +84,9 @@ export async function lockTemplate(templateId: string) {
 
 export async function generateCertificates(eventId: string) {
     const supabase = await createClient()
+    const { data: { user } } = await supabase.auth.getUser()
+
+    if (!user) return { error: 'Unauthorized' }
 
     // 1. Get Template
     const { data: template } = await supabase
@@ -93,122 +96,212 @@ export async function generateCertificates(eventId: string) {
         .eq('is_locked', true)
         .single()
 
-    if (!template) return { error: 'Template not found or not locked.' }
+    if (!template) return { error: 'Template not found or not locked. Please lock the template first.' }
 
-    // 2. Get Attendees who have Verified payments
-    const { data: attendance } = await supabase
-        .from('attendance')
+    // 2. Fetch all Registrations and their Attendance & Payments
+    const { data: registrations } = await supabase
+        .from('registrations')
         .select(`
-            registration_id,
-            registration:registrations (
-                id,
-                guest_name,
-                team_members,
-                user:profiles!user_id(full_name),
-                event:events(title, date),
-                payments(status)
-            )
+            id,
+            guest_name,
+            guest_reg_no,
+            team_members,
+            user:profiles!user_id(full_name),
+            event:events(title, date),
+            payments(status),
+            attendance(id)
         `)
         .eq('event_id', eventId)
 
-    if (!attendance || attendance.length === 0) return { error: 'No attendees found.' }
+    if (!registrations || registrations.length === 0) return { error: 'No registrations found.' }
 
-    // 3. Generate (In loop - strictly bad for Perf, but ok for MVP)
-    let count = 0
+    // 3. Create Job Record
+    const { data: job, error: jobError } = await supabase
+        .from('certificate_jobs')
+        .insert({
+            event_id: eventId,
+            started_by: user.id,
+            status: 'processing'
+        })
+        .select()
+        .single()
 
-    // Load Template Buffer
+    if (jobError || !job) return { error: 'Failed to initialize batch job.' }
+
+    // 4. Segregate Data
+    const eligible: any[] = []
+    const exceptions: any[] = []
+
+    for (const reg of registrations) {
+        const hasVerifiedPayment = reg.payments?.some((p: any) => p.status === 'verified')
+        const hasAttended = reg.attendance && reg.attendance.length > 0
+
+        let leaderName = reg.guest_name || 'Guest Participant';
+        if (!reg.guest_name && reg.user) {
+            const userObj = Array.isArray(reg.user) ? reg.user[0] : reg.user;
+            leaderName = userObj?.full_name || 'Guest Participant';
+        }
+        let teamList: string[] = [leaderName]
+        if (reg.team_members && Array.isArray(reg.team_members)) {
+            const memberNames = reg.team_members.map((m: any) => m.guestName).filter(Boolean)
+            teamList = teamList.concat(memberNames)
+        }
+
+        if (hasVerifiedPayment && hasAttended) {
+            // All Good
+            for (const pName of teamList) {
+                eligible.push({ reg, pName })
+            }
+        } else if (hasVerifiedPayment && !hasAttended) {
+            exceptions.push({ reg, participant_name: leaderName, reason: 'Paid but Absent' })
+        } else if (!hasVerifiedPayment && hasAttended) {
+            exceptions.push({ reg, participant_name: leaderName, reason: 'Attended but Unpaid (or Pending)' })
+        } else {
+            // Neither paid nor attended - we can silently ignore them as they just didn't show up
+        }
+    }
+
+    // Load Template Buffer exactly once
     const { data: fileData, error: dlError } = await supabase.storage
         .from('certificate_templates')
         .download(template.background_url)
 
-    if (dlError || !fileData) return { error: 'Failed to download template file' }
+    if (dlError || !fileData) {
+        await supabase.from('certificate_jobs').update({ status: 'failed' }).eq('id', job.id)
+        return { error: 'Failed to download template file' }
+    }
 
     const templateArrayBuffer = await fileData.arrayBuffer()
     const layout = template.layout_config as any
+    const elementsArray = Array.isArray(layout) ? layout : (layout?.elements || [])
 
-    for (const record of attendance) {
-        const hasVerifiedPayment = (record.registration as any)?.payments?.some((p: any) => p.status === 'verified')
-        if (!hasVerifiedPayment) {
-            console.log(`Skipping certificate for ${record.registration_id}: No verified payment.`)
-            continue
-        }
+    let generatedCount = 0
 
-        const registration = record.registration as any
-        const leaderName = registration.guest_name || registration.user?.full_name || 'Guest Participant'
+    // 5. Generate Eligible
+    for (const item of eligible) {
+        const { reg, pName } = item
 
-        let teamList: string[] = [leaderName]
-        if (registration.team_members && Array.isArray(registration.team_members)) {
-            const memberNames = registration.team_members.map((m: any) => m.guestName).filter(Boolean)
-            teamList = teamList.concat(memberNames)
-        }
+        // Check existing
+        const { data: existing } = await supabase
+            .from('certificates')
+            .select('id')
+            .eq('registration_id', reg.id)
+            .eq('participant_name', pName)
+            .single()
 
-        for (const pName of teamList) {
-            // Check existing for this specific participant
-            const { data: existing } = await supabase
-                .from('certificates')
-                .select('id')
-                .eq('registration_id', record.registration_id)
-                .eq('participant_name', pName)
-                .single()
+        if (existing) continue
 
-            if (existing) continue
+        try {
+            const pdfDoc = await PDFDocument.load(templateArrayBuffer)
+            const pages = pdfDoc.getPages()
+            const firstPage = pages[0]
 
-            try {
-                const pdfDoc = await PDFDocument.load(templateArrayBuffer)
-                const pages = pdfDoc.getPages()
-                const firstPage = pages[0]
-                const font = await pdfDoc.embedFont(StandardFonts.HelveticaBold)
-
-                const mapField = (field: string, pName: string) => {
-                    if (field === 'participant_name') return pName
-                    if (field === 'event_name') return registration.event?.title || 'Unknown'
-                    if (field === 'date') return registration.event?.date ? new Date(registration.event.date).toLocaleDateString() : 'N/A'
-                    return ''
-                }
-
-                // Unique Code
-                const uniqueCode = crypto.randomUUID().slice(0, 8).toUpperCase()
-
-                // Draw Elements
-                layout.elements.forEach((el: any) => {
-                    let text = mapField(el.field, pName)
-                    if (el.field === 'unique_code') text = uniqueCode
-
-                    if (text) {
-                        firstPage.drawText(text, {
-                            x: el.x,
-                            y: el.y,
-                            size: el.size || 12,
-                            font: font,
-                            color: rgb(0, 0, 0)
-                        })
-                    }
-                })
-
-                const pdfBytes = await pdfDoc.save()
-
-                // Upload
-                const fileName = `generated/${uniqueCode}.pdf`
-                await supabase.storage
-                    .from('certificates')
-                    .upload(fileName, Buffer.from(pdfBytes), { contentType: 'application/pdf' })
-
-                // Insert DB
-                await supabase.from('certificates').insert({
-                    registration_id: record.registration_id,
-                    template_id: template.id,
-                    unique_code: uniqueCode,
-                    file_url: fileName,
-                    participant_name: pName
-                })
-
-                count++
-            } catch (e) {
-                console.error('Gen error', e)
+            const loadedFonts: Record<string, any> = {
+                'Helvetica': await pdfDoc.embedFont(StandardFonts.Helvetica),
+                'HelveticaBold': await pdfDoc.embedFont(StandardFonts.HelveticaBold),
+                'HelveticaOblique': await pdfDoc.embedFont(StandardFonts.HelveticaOblique),
+                'HelveticaBoldOblique': await pdfDoc.embedFont(StandardFonts.HelveticaBoldOblique),
+                'TimesRoman': await pdfDoc.embedFont(StandardFonts.TimesRoman),
+                'TimesBold': await pdfDoc.embedFont(StandardFonts.TimesRomanBold),
+                'TimesItalic': await pdfDoc.embedFont(StandardFonts.TimesRomanItalic),
+                'TimesBoldItalic': await pdfDoc.embedFont(StandardFonts.TimesRomanBoldItalic),
+                'Courier': await pdfDoc.embedFont(StandardFonts.Courier),
+                'CourierBold': await pdfDoc.embedFont(StandardFonts.CourierBold),
+                'CourierOblique': await pdfDoc.embedFont(StandardFonts.CourierOblique),
+                'CourierBoldOblique': await pdfDoc.embedFont(StandardFonts.CourierBoldOblique),
             }
+
+            const mapField = (tag: string, pName: string) => {
+                if (tag === '{name}') return pName
+                if (tag === '{regno}') return reg.guest_reg_no || 'N/A'
+                if (tag === '{eventName}') return reg.event?.title || 'Unknown'
+                if (tag === '{date}') return reg.event?.date ? new Date(reg.event.date).toLocaleDateString() : 'N/A'
+                return ''
+            }
+
+            const uniqueCode = crypto.randomUUID().slice(0, 8).toUpperCase()
+
+            const hexToRgb = (hex: string) => {
+                hex = hex.replace(/^#/, '')
+                if (hex.length === 3) hex = hex.split('').map(c => c + c).join('')
+                const num = parseInt(hex, 16)
+                return { r: (num >> 16) / 255, g: ((num >> 8) & 255) / 255, b: (num & 255) / 255 }
+            }
+
+            elementsArray.forEach((el: any) => {
+                let text = mapField(el.tag || el.field, pName)
+                if (el.tag === '{uniqueCode}' || el.field === 'unique_code') text = uniqueCode
+
+                if (text) {
+                    const { r, g, b } = hexToRgb(el.color || '#000000')
+                    firstPage.drawText(text, {
+                        x: el.x,
+                        y: el.y,
+                        size: el.size || 24,
+                        font: loadedFonts[el.font] || loadedFonts['Helvetica'],
+                        color: rgb(r, g, b)
+                    })
+                }
+            })
+
+            const pdfBytes = await pdfDoc.save()
+            const fileName = `generated/${uniqueCode}.pdf`
+
+            await supabase.storage
+                .from('certificates')
+                .upload(fileName, Buffer.from(pdfBytes), { contentType: 'application/pdf' })
+
+            await supabase.from('certificates').insert({
+                registration_id: reg.id,
+                template_id: template.id,
+                unique_code: uniqueCode,
+                file_url: fileName,
+                participant_name: pName
+            })
+
+            generatedCount++
+        } catch (e) {
+            console.error(`Gen error for ${pName}`, e)
         }
     }
 
+    // 6. Log Exceptions
+    for (const exc of exceptions) {
+        // Only insert if an exception for this reg doesn't already exist to avoid spamming
+        const { data: existingExc } = await supabase
+            .from('certificate_exceptions')
+            .select('id')
+            .eq('registration_id', exc.reg.id)
+            .eq('job_id', job.id)
+            .single()
+
+        if (!existingExc) {
+            await supabase.from('certificate_exceptions').insert({
+                job_id: job.id,
+                event_id: eventId,
+                registration_id: exc.reg.id,
+                participant_name: exc.participant_name,
+                reason: exc.reason
+            })
+        }
+    }
+
+    // 7. Complete Job
+    await supabase.from('certificate_jobs').update({
+        status: 'completed',
+        completed_at: new Date().toISOString(),
+        total_eligible: eligible.length,
+        total_exceptions: exceptions.length,
+        total_generated: generatedCount
+    }).eq('id', job.id)
+
     revalidatePath('/')
-    return { success: true, count }
+    revalidatePath(`/admin/events/${eventId}/certificates`)
+
+    return {
+        success: true,
+        count: generatedCount,
+        exceptions: exceptions.length,
+        message: `Generated ${generatedCount} certificates. Found ${exceptions.length} exceptions requiring Super Admin review.`
+    }
 }
