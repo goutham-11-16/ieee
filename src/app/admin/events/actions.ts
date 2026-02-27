@@ -86,7 +86,7 @@ export async function createEvent(formData: FormData) {
             return { error: 'Failed to upload QR code to Google Drive.' };
         }
 
-        paymentQrUrl = uploadResult.url;
+        paymentQrUrl = uploadResult.fileId ? `https://drive.google.com/uc?export=view&id=${uploadResult.fileId}` : uploadResult.url;
     } catch (error) {
         console.error("Failed to upload QR Code:", error);
         return { error: 'Server error while uploading QR code.' };
@@ -122,7 +122,7 @@ export async function createEvent(formData: FormData) {
                 const uploadResult = JSON.parse(rawText);
 
                 if (uploadResult.success) {
-                    bannerUrl = uploadResult.url;
+                    bannerUrl = uploadResult.fileId ? `https://drive.google.com/uc?export=view&id=${uploadResult.fileId}` : uploadResult.url;
                 } else {
                     console.error("Google Script Banner Upload Error:", uploadResult.error);
                 }

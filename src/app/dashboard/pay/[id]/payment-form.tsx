@@ -71,7 +71,7 @@ export default function PaymentUploadForm({ registrationId, amount, paymentQrUrl
                 return;
             }
 
-            const driveUrl = uploadResult.url;
+            const driveUrl = uploadResult.fileId ? `https://drive.google.com/uc?export=view&id=${uploadResult.fileId}` : uploadResult.url;
 
             // 3. Save Payment Record in Supabase
             // We pass the driveUrl to the server action instead of the file

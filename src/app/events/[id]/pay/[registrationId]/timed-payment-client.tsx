@@ -131,7 +131,7 @@ export default function TimedPaymentClient({ registrationId, amount, paymentQrUr
                 return;
             }
 
-            const driveUrl = uploadResult.url;
+            const driveUrl = uploadResult.fileId ? `https://drive.google.com/uc?export=view&id=${uploadResult.fileId}` : uploadResult.url;
             console.log("Extracted Drive URL:", driveUrl);
 
             // 3. Save Payment Record in Supabase
