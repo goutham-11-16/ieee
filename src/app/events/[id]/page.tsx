@@ -22,6 +22,29 @@ export default async function EventDetailsPage(props: { params: Promise<{ id: st
     const regEnd = event.registration_end ? new Date(event.registration_end) : new Date(event.date)
     const isClosingSoon = regEnd > now && (regEnd.getTime() - now.getTime()) < 24 * 60 * 60 * 1000 // 24 hours
 
+    let takenSeats = 0
+    if (event.max_capacity) {
+        const { data: activeRegs } = await supabase
+            .from('registrations')
+            .select('team_members, status, expires_at')
+            .eq('event_id', params.id)
+            .neq('status', 'cancelled')
+
+        if (activeRegs) {
+            const nowTime = now.getTime()
+            takenSeats = activeRegs.reduce((acc, reg) => {
+                if (reg.status === 'pending_payment' && reg.expires_at) {
+                    const expTime = new Date(reg.expires_at).getTime()
+                    if (nowTime > expTime) return acc // Expired seat
+                }
+                const teamCount = Array.isArray(reg.team_members) ? reg.team_members.length : 0
+                return acc + 1 + teamCount
+            }, 0)
+        }
+    }
+    const isSoldOut = event.max_capacity ? takenSeats >= event.max_capacity : false;
+    const remainingSeats = event.max_capacity ? Math.max(0, event.max_capacity - takenSeats) : null;
+
     return (
         <div className="container mx-auto py-12 px-4 max-w-4xl">
             <div className="bg-white dark:bg-slate-950 rounded-xl shadow-2xl border border-slate-100 dark:border-slate-800 overflow-hidden relative">
@@ -61,15 +84,30 @@ export default async function EventDetailsPage(props: { params: Promise<{ id: st
                             </div>
                             <h1 className="text-4xl md:text-5xl font-extrabold tracking-tight text-slate-900 dark:text-white">{event.title}</h1>
                         </div>
-                        <div className="shrink-0 w-full md:w-auto">
-                            {!isClosingSoon && regEnd < now ? (
-                                <Button disabled variant="destructive" className="w-full md:w-auto">
+                        <div className="shrink-0 w-full md:w-auto flex flex-col items-center md:items-end gap-2">
+                            {isSoldOut ? (
+                                <Button disabled variant="destructive" className="w-full md:w-auto px-8">
+                                    Sold Out
+                                </Button>
+                            ) : !isClosingSoon && regEnd < now ? (
+                                <Button disabled variant="destructive" className="w-full md:w-auto px-8">
                                     Registration Closed
                                 </Button>
                             ) : (
-                                <Button asChild size="lg" className="w-full md:w-auto">
+                                <Button asChild size="lg" className="w-full md:w-auto px-8">
                                     <Link href={`/events/${event.id}/register`}>Register Now</Link>
                                 </Button>
+                            )}
+
+                            {event.max_capacity && !isSoldOut && regEnd >= now && (
+                                <p className="text-sm font-semibold text-orange-600 dark:text-orange-400">
+                                    {remainingSeats === 1 ? 'Only 1 seat remaining!' : `Only ${remainingSeats} seats remaining!`}
+                                </p>
+                            )}
+                            {isSoldOut && (
+                                <p className="text-sm font-semibold text-slate-500">
+                                    Capacity of {event.max_capacity} reached
+                                </p>
                             )}
                         </div>
                     </div>
