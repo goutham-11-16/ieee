@@ -88,11 +88,37 @@ export async function registerGuest(formData: FormData) {
     // Fetch event
     const { data: event } = await supabase
         .from('events')
-        .select('requires_approval, registration_end, date')
+        .select('requires_approval, registration_end, date, max_capacity, fees')
         .eq('id', eventId)
         .single()
 
     if (!event) return { error: 'Event not found' }
+
+    // Capacity Check
+    if (event.max_capacity) {
+        const { data: activeRegs } = await supabase
+            .from('registrations')
+            .select('team_members, status, expires_at')
+            .eq('event_id', eventId)
+            .neq('status', 'cancelled')
+
+        if (activeRegs) {
+            const nowTime = new Date().getTime()
+            const takenSeats = activeRegs.reduce((acc, reg) => {
+                if (reg.status === 'pending_payment' && reg.expires_at) {
+                    const expTime = new Date(reg.expires_at).getTime()
+                    if (nowTime > expTime) return acc // Expired seat
+                }
+                const teamCount = Array.isArray(reg.team_members) ? reg.team_members.length : 0
+                return acc + 1 + teamCount
+            }, 0)
+
+            const requestedSeats = 1 + teamMembers.length
+            if (takenSeats + requestedSeats > event.max_capacity) {
+                return { error: `Not enough seats available. Only ${event.max_capacity - takenSeats} seats left.` }
+            }
+        }
+    }
 
     // Check for duplicates
     if (guestPhone) {
@@ -126,7 +152,15 @@ export async function registerGuest(formData: FormData) {
         return { error: 'Registration for this event is closed.' }
     }
 
-    const status = event.requires_approval ? 'pending_approval' : 'approved'
+    let status = event.requires_approval ? 'pending_approval' : 'approved'
+    let expiresAt = null
+
+    // If event is paid, force pending_payment and 5-min timer
+    if (event.fees > 0) {
+        status = 'pending_payment'
+        expiresAt = new Date(Date.now() + 5 * 60000).toISOString() // 5 minutes
+    }
+
     const referenceNumber = generateReference()
 
     const { data, error } = await supabase
@@ -140,6 +174,7 @@ export async function registerGuest(formData: FormData) {
             guest_institution: guestInstitution,
             reference_number: referenceNumber,
             status,
+            expires_at: expiresAt,
             custom_responses: customResponses,
             team_members: teamMembers
         })
@@ -147,7 +182,6 @@ export async function registerGuest(formData: FormData) {
         .single()
 
     if (error) {
-        // If it throws a unique constraint on reference_number, we theoretically should retry, but crypto 8 chars is safe
         return { error: error.message }
     }
 
@@ -160,5 +194,12 @@ export async function registerGuest(formData: FormData) {
     })
 
     revalidatePath(`/events/${eventId}`)
-    return { success: true, status, referenceNumber }
+
+    return {
+        success: true,
+        status,
+        referenceNumber,
+        registrationId: data.id,
+        isPaidEvent: event.fees > 0
+    }
 }

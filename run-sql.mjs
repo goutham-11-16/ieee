@@ -3,19 +3,17 @@ import { createClient } from '@supabase/supabase-js'
 import fs from 'fs'
 import { readFileSync } from 'fs'
 import path from 'path'
-import { Client } from 'pg' // use raw pg client
+import { Client } from 'pg'
 
 async function run() {
-    const connectionString = "postgresql://postgres.nndvljffqixyokqfbbof:[SUPABASE_SERVICE_ROLE_KEY]@aws-0-ap-south-1.pooler.supabase.com:6543/postgres"
+    // Read from env var
+    const key = process.env.SUPABASE_SERVICE_ROLE_KEY
+    if (!key) throw new Error("Need SUPABASE_SERVICE_ROLE_KEY env var")
 
-    // We have the key in .env.local, let's load it
-    const envFile = readFileSync('.env.local', 'utf-8')
-    let keyMatch = envFile.match(/SUPABASE_SERVICE_ROLE_KEY=(.*)/)
-    const key = keyMatch[1].trim()
-    const connStr = connectionString.replace('[SUPABASE_SERVICE_ROLE_KEY]', key)
+    const connectionString = `postgresql://postgres.nndvljffqixyokqfbbof:${key}@aws-0-ap-south-1.pooler.supabase.com:6543/postgres`
 
     const client = new Client({
-        connectionString: connStr
+        connectionString: connectionString
     })
 
     try {

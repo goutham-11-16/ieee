@@ -75,40 +75,34 @@ export default async function PaymentReviewPage(props: { params: Promise<{ id: s
                         <CardTitle>Payment Proof</CardTitle>
                     </CardHeader>
                     <CardContent className="flex flex-col items-center gap-4">
-                        <div className="relative w-full aspect-[3/4] bg-slate-100 dark:bg-slate-900 rounded-lg overflow-hidden border">
-                            {/* Check if it's a PDF. Google Drive links might not clearly say .pdf at the end of the URL, but let's check anyway. */}
-                            {publicUrl.includes('.pdf') ? (
-                                <div className="flex flex-col items-center justify-center h-full text-muted-foreground p-4 text-center">
-                                    <span className="mb-2">PDF Document or External Drive File</span>
-                                    <Button variant="outline" asChild>
-                                        <a href={publicUrl} target="_blank" rel="noopener noreferrer">View File in New Tab</a>
-                                    </Button>
-                                </div>
-                            ) : publicUrl ? (
-                                isGoogleDrive ? (
-                                    <iframe
-                                        src={previewUrl}
-                                        className="w-full h-full border-0"
-                                        allow="autoplay"
-                                    />
-                                ) : (
-                                    // Use standard img tag for external unpredictable domains to avoid Next/Image config errors
-                                    <img
-                                        src={previewUrl}
-                                        alt="Payment Proof"
-                                        className="object-contain w-full h-full"
-                                    />
-                                )
+                        <div className="relative w-full aspect-[3/4] bg-slate-100 dark:bg-slate-900 rounded-lg overflow-hidden border flex flex-col items-center justify-center p-4 text-center">
+                            {publicUrl ? (
+                                <>
+                                    <span className="mb-4 text-muted-foreground">
+                                        Payment Proof Document
+                                    </span>
+                                    {isGoogleDrive ? (
+                                        <Button asChild>
+                                            <a href={previewUrl} target="_blank" rel="noopener noreferrer">
+                                                Open in Google Drive
+                                            </a>
+                                        </Button>
+                                    ) : (
+                                        <img
+                                            src={previewUrl}
+                                            alt="Payment Proof"
+                                            className="object-contain w-full h-full absolute inset-0"
+                                        />
+                                    )}
+                                </>
                             ) : (
-                                <div className="flex flex-col items-center justify-center h-full text-muted-foreground p-4 text-center">
-                                    <span className="mb-2">No Proof Available</span>
-                                </div>
+                                <span className="mb-2 text-muted-foreground">No Proof Available</span>
                             )}
                         </div>
                         {publicUrl && (
-                            <Button variant="outline" size="sm" className="w-full" asChild>
+                            <Button variant="outline" size="sm" className="w-full mt-2" asChild>
                                 <a href={publicUrl} target="_blank" rel="noopener noreferrer">
-                                    <DownloadIcon className="mr-2 h-4 w-4" /> Open Original
+                                    <DownloadIcon className="mr-2 h-4 w-4" /> Download / Open Original
                                 </a>
                             </Button>
                         )}
@@ -156,7 +150,7 @@ export default async function PaymentReviewPage(props: { params: Promise<{ id: s
                         </CardContent>
                     </Card>
 
-                    {payment.status === 'pending_verification' && (
+                    {payment.status === 'pending' && (
                         <Card>
                             <CardHeader>
                                 <CardTitle>Actions</CardTitle>

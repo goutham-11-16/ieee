@@ -46,7 +46,7 @@ export default async function AdminPaymentsPage(props: { searchParams: Promise<{
             created_at,
             registration:registrations(guest_name, user:profiles!registrations_user_id_fkey(full_name, email), event:events(title))
         `)
-        .eq('status', 'pending_verification')
+        .eq('status', 'pending')
         .order('created_at', { ascending: false })
 
     const eventData = registration?.event ? (Array.isArray(registration.event) ? registration.event[0] : registration.event) : null

@@ -114,8 +114,13 @@ export default function GuestRegistrationForm({
             if (result.error) {
                 toast.error(result.error)
             } else {
-                toast.success('Registration saved! Redirecting to payment...')
-                router.push(`/status/${result.referenceNumber}?new=1`)
+                if (result.isPaidEvent) {
+                    toast.success('Seat reserved! Complete payment within 5 mins.')
+                    router.push(`/events/${eventId}/pay/${result.registrationId}`)
+                } else {
+                    toast.success('Registration saved! Redirecting to receipt...')
+                    router.push(`/status/${result.referenceNumber}?new=1`)
+                }
             }
         } catch (e) {
             toast.error('Failed to submit registration')

@@ -33,6 +33,39 @@ export default async function RegisterPage(props: { params: Promise<{ id: string
         )
     }
 
+    let takenSeats = 0
+    if (event.max_capacity) {
+        const { data: activeRegs } = await supabase
+            .from('registrations')
+            .select('team_members, status, expires_at')
+            .eq('event_id', params.id)
+            .neq('status', 'cancelled')
+
+        if (activeRegs) {
+            const nowTime = new Date().getTime()
+            takenSeats = activeRegs.reduce((acc, reg) => {
+                if (reg.status === 'pending_payment' && reg.expires_at) {
+                    const expTime = new Date(reg.expires_at).getTime()
+                    if (nowTime > expTime) return acc // Expired seat
+                }
+                const teamCount = Array.isArray(reg.team_members) ? reg.team_members.length : 0
+                return acc + 1 + teamCount
+            }, 0)
+        }
+
+        if (takenSeats >= event.max_capacity) {
+            return (
+                <div className="container mx-auto py-24 px-4 text-center">
+                    <h1 className="text-3xl font-bold text-orange-600 mb-4">Event Sold Out</h1>
+                    <p className="text-muted-foreground mb-8">All seats for {event.title} have been reserved. Waitlists are not currently available.</p>
+                    <Link href={`/events/${event.id}`} className="text-blue-600 hover:underline inline-flex items-center">
+                        <ArrowLeftIcon className="w-4 h-4 mr-2" /> Back to Event
+                    </Link>
+                </div>
+            )
+        }
+    }
+
     return (
         <div className="container mx-auto py-12 px-4 max-w-3xl">
             <div className="mb-8">
