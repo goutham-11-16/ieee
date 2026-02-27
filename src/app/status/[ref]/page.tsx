@@ -39,7 +39,9 @@ export default async function StatusDashboardPage(props: {
                 payment_deadline,
                 fees,
                 is_fee_per_person,
-                payment_qr_url
+                payment_qr_url,
+                whatsapp_link,
+                instagram_link
             ),
             payments (
                 status,
@@ -309,11 +311,27 @@ export default async function StatusDashboardPage(props: {
                     ))}
 
                     {(reg.status === 'approved' && (!isPaymentRequired || isVerified)) && (
-                        <Button size="lg" className="w-full sm:w-auto bg-emerald-600 hover:bg-emerald-700 shadow-md transform transition-transform hover:-translate-y-1" asChild>
-                            <Link href={`/tickets/${reg.id}`}>
-                                <TicketIcon className="mr-2 h-5 w-5" /> View Digital Ticket
-                            </Link>
-                        </Button>
+                        <>
+                            {reg.event.whatsapp_link && (
+                                <Button size="lg" className="w-full sm:w-auto bg-green-500 hover:bg-green-600 text-white shadow-md transform transition-transform hover:-translate-y-1" asChild>
+                                    <a href={reg.event.whatsapp_link} target="_blank" rel="noopener noreferrer">
+                                        Join WhatsApp Group
+                                    </a>
+                                </Button>
+                            )}
+                            {reg.event.instagram_link && (
+                                <Button size="lg" className="w-full sm:w-auto bg-pink-600 hover:bg-pink-700 text-white shadow-md transform transition-transform hover:-translate-y-1" asChild>
+                                    <a href={reg.event.instagram_link} target="_blank" rel="noopener noreferrer">
+                                        Follow on Instagram
+                                    </a>
+                                </Button>
+                            )}
+                            <Button size="lg" className="w-full sm:w-auto bg-emerald-600 hover:bg-emerald-700 shadow-md transform transition-transform hover:-translate-y-1" asChild>
+                                <Link href={`/tickets/${reg.id}`}>
+                                    <TicketIcon className="mr-2 h-5 w-5" /> View Digital Ticket
+                                </Link>
+                            </Button>
+                        </>
                     )}
                 </CardFooter>
             </Card>

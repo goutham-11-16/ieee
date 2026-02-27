@@ -36,6 +36,10 @@ export async function createEvent(formData: FormData) {
     const paymentDeadline = formData.get('paymentDeadline') as string || null
     const fees = formData.get('fees') ? parseFloat(formData.get('fees') as string) : 0.00
 
+    // Social Links
+    const whatsappLink = formData.get('whatsappLink') as string || null
+    const instagramLink = formData.get('instagramLink') as string || null
+
     // Dynamic Form and Team Logic
     const isFeePerPerson = formData.get('isFeePerPerson') === 'on'
     const isTeamEvent = formData.get('isTeamEvent') === 'on'
@@ -86,6 +90,46 @@ export async function createEvent(formData: FormData) {
     } catch (error) {
         console.error("Failed to upload QR Code:", error);
         return { error: 'Server error while uploading QR code.' };
+    }
+
+    // New Banner Upload Logic
+    const banner = formData.get('banner') as File | null
+    let bannerUrl = null
+
+    if (banner && banner.size > 0) {
+        try {
+            const arrayBuffer = await banner.arrayBuffer();
+            const buffer = Buffer.from(arrayBuffer);
+            const base64Data = buffer.toString('base64');
+
+            const scriptUrl = process.env.NEXT_PUBLIC_GOOGLE_SCRIPT_URL;
+            if (scriptUrl) {
+                const uploadPayload = {
+                    base64Data: base64Data,
+                    filename: banner.name,
+                    mimeType: banner.type,
+                    eventTitle: title,
+                    targetFolder: 'Banner' // Put it in the "Banner" subfolder
+                };
+
+                const uploadResponse = await fetch(scriptUrl, {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'text/plain' },
+                    body: JSON.stringify(uploadPayload)
+                });
+
+                const rawText = await uploadResponse.text();
+                const uploadResult = JSON.parse(rawText);
+
+                if (uploadResult.success) {
+                    bannerUrl = uploadResult.url;
+                } else {
+                    console.error("Google Script Banner Upload Error:", uploadResult.error);
+                }
+            }
+        } catch (error) {
+            console.error("Failed to upload Banner:", error);
+        }
     }
 
     let disabledDefaultFields = []
@@ -143,7 +187,10 @@ export async function createEvent(formData: FormData) {
         form_schema: formSchema,
         team_member_settings: teamMemberSettings,
         attendance_sessions: attendanceSessions,
-        payment_qr_url: paymentQrUrl
+        payment_qr_url: paymentQrUrl,
+        banner_url: bannerUrl,
+        whatsapp_link: whatsappLink,
+        instagram_link: instagramLink
     }
 
     if (status === 'pending_approval' || (status === 'draft' && profile?.role === 'event_admin')) {

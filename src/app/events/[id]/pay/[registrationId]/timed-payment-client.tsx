@@ -8,6 +8,7 @@ import { uploadTimedPaymentProof, expireRegistration } from './actions'
 import { toast } from 'sonner'
 import { useRouter } from 'next/navigation'
 import { Loader2, AlertCircleIcon, ClockIcon } from 'lucide-react'
+import { compressImage } from '@/lib/image-compression'
 
 interface TimedPaymentClientProps {
     registrationId: string;
@@ -56,8 +57,19 @@ export default function TimedPaymentClient({ registrationId, amount, paymentQrUr
 
         setLoading(true)
         try {
-            const file = formData.get('proof') as File;
+            let file = formData.get('proof') as File;
             const transactionRef = formData.get('transactionRef') as string;
+
+            if (!file || file.size === 0) {
+                toast.error('Please select a file to upload.');
+                setLoading(false);
+                return;
+            }
+
+            // Compress image if applicable
+            if (file.type.startsWith('image/')) {
+                file = await compressImage(file, { maxSizeMB: 0.1, maxWidthOrHeight: 800 });
+            }
 
             if (!file || file.size === 0) {
                 toast.error('Please select a file to upload.');

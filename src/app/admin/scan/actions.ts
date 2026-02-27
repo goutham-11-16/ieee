@@ -8,6 +8,8 @@ export type ScanResult = {
     message: string;
     attendeeName?: string;
     errorType?: 'INVALID' | 'DUPLICATE' | 'WRONG_EVENT' | 'NOT_APPROVED';
+    missedSessions?: string[];
+    registrationId?: string;
 }
 
 export async function verifyTicket(qrDataString: string, targetEventId: string, sessionName: string = 'Default Scan'): Promise<ScanResult> {
@@ -87,25 +89,54 @@ export async function verifyTicket(qrDataString: string, targetEventId: string, 
     }
     const reg = registration as unknown as RegistrationDetail;
 
-    // 5. Check Duplicate Scan
-    const { data: existingScan } = await supabase
+    // 5. Fetch all scans for this registration
+    const { data: existingScans } = await supabase
         .from('attendance')
-        .select('scanned_at')
+        .select('scanned_at, session_name')
         .eq('registration_id', registration.id)
-        .eq('session_name', sessionName)
-        .single()
 
-    if (existingScan) {
+    const scannedSessionNames = existingScans?.map(s => s.session_name) || []
+
+    // 6. Check Duplicate Scan for CURRENT session
+    const currentScan = existingScans?.find(s => s.session_name === sessionName)
+    if (currentScan) {
         return {
             success: false,
-            message: `Already scanned at ${new Date(existingScan.scanned_at).toLocaleTimeString()}`,
+            message: `Already scanned at ${new Date(currentScan.scanned_at).toLocaleTimeString()}`,
             attendeeName: reg.user.full_name,
             errorType: 'DUPLICATE'
         }
     }
 
-    // 6. Record Attendance
-    const { error } = await supabase
+    // 7. Check for MISSED previous sessions
+    let missedSessions: string[] = []
+
+    // We need the event's defined attendance sessions to know the expected timeline
+    const { data: fullEventData } = await supabase
+        .from('events')
+        .select('attendance_sessions')
+        .eq('id', targetEventId)
+        .single()
+
+    const allSessions = fullEventData?.attendance_sessions || []
+
+    if (allSessions.length > 0) {
+        // Find index of current session
+        const currentIndex = allSessions.findIndex((s: any) => s.name === sessionName)
+
+        if (currentIndex > 0) {
+            // Check all sessions before this one
+            for (let i = 0; i < currentIndex; i++) {
+                const priorSessionName = allSessions[i].name
+                if (!scannedSessionNames.includes(priorSessionName)) {
+                    missedSessions.push(priorSessionName)
+                }
+            }
+        }
+    }
+
+    // 8. Record Attendance for CURRENT session
+    const { error: insertError } = await supabase
         .from('attendance')
         .insert({
             registration_id: registration.id,
@@ -115,13 +146,43 @@ export async function verifyTicket(qrDataString: string, targetEventId: string, 
             session_name: sessionName
         })
 
-    if (error) {
+    if (insertError) {
         return { success: false, message: 'Database Error', errorType: 'INVALID' }
     }
 
     return {
         success: true,
         message: 'Verified!',
-        attendeeName: reg.user.full_name
+        attendeeName: reg.user.full_name,
+        missedSessions: missedSessions.length > 0 ? missedSessions : undefined,
+        registrationId: registration.id // Added so UI can trigger retroactive marking
     }
+}
+
+// New action to mark multiple missed sessions at once
+export async function markSessionsPresent(registrationId: string, eventId: string, sessionsToMark: string[]) {
+    const supabase = await createClient()
+    const { data: { user } } = await supabase.auth.getUser()
+
+    if (!user) return { success: false, error: 'Unauthorized' }
+
+    const inserts = sessionsToMark.map(sessionName => ({
+        registration_id: registrationId,
+        event_id: eventId,
+        scanned_by: user.id,
+        scanned_at: new Date().toISOString(),
+        session_name: sessionName,
+        is_retroactive: true // Optional: if you add this column later to track manual overrides
+    }))
+
+    const { error } = await supabase
+        .from('attendance')
+        .insert(inserts)
+
+    if (error) {
+        console.error("Error retroactively marking attendance:", error)
+        return { success: false, error: 'Database Error while marking past sessions' }
+    }
+
+    return { success: true }
 }

@@ -2,7 +2,7 @@
 
 import { useState, useEffect, useRef } from 'react'
 import { Html5Qrcode } from 'html5-qrcode'
-import { verifyTicket, ScanResult } from './actions'
+import { verifyTicket, ScanResult, markSessionsPresent } from './actions'
 import {
     Select,
     SelectContent,
@@ -226,6 +226,41 @@ export default function ScannerPage() {
                             {scanResult.attendeeName && (
                                 <div className="text-xl font-bold p-3 bg-white dark:bg-black/40 rounded shadow-sm border border-black/5 dark:border-white/10">
                                     {scanResult.attendeeName}
+                                </div>
+                            )}
+
+                            {scanResult.success && scanResult.missedSessions && scanResult.missedSessions.length > 0 && (
+                                <div className="mt-4 p-4 border border-yellow-300 bg-yellow-50 dark:bg-yellow-900/20 dark:border-yellow-700 rounded-md text-left">
+                                    <p className="font-semibold text-yellow-800 dark:text-yellow-300 text-sm mb-2">
+                                        This user missed previous sessions:
+                                    </p>
+                                    <ul className="list-disc pl-5 text-sm text-yellow-800 dark:text-yellow-300 mb-3">
+                                        {scanResult.missedSessions.map(sess => (
+                                            <li key={sess}>{sess}</li>
+                                        ))}
+                                    </ul>
+                                    <Button
+                                        size="sm"
+                                        variant="outline"
+                                        className="w-full border-yellow-400 text-yellow-700 bg-white hover:bg-yellow-100 dark:bg-black dark:text-yellow-300 dark:border-yellow-600 dark:hover:bg-yellow-900/50"
+                                        onClick={async () => {
+                                            if (!scanResult.registrationId || !selectedEventId) return;
+                                            try {
+                                                const res = await markSessionsPresent(scanResult.registrationId, selectedEventId, scanResult.missedSessions!);
+                                                if (res.success) {
+                                                    toast.success("Past sessions marked as present!");
+                                                    // Remove the prompt
+                                                    setScanResult({ ...scanResult, missedSessions: [] });
+                                                } else {
+                                                    toast.error(res.error || "Failed to mark past sessions");
+                                                }
+                                            } catch (e) {
+                                                toast.error("An error occurred");
+                                            }
+                                        }}
+                                    >
+                                        Mark Past Sessions as Present
+                                    </Button>
                                 </div>
                             )}
 

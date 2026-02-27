@@ -10,14 +10,27 @@ export async function exportParticipantsCSV(eventId: string) {
     const { data: { user } } = await supabase.auth.getUser()
     if (!user) return { error: 'Unauthorized' }
 
-    // Fetch Data
+    // Fetch Event Data to get Sessions
+    const { data: eventData } = await supabase
+        .from('events')
+        .select('title, attendance_sessions')
+        .eq('id', eventId)
+        .single()
+
+    if (!eventData) return { error: 'Event not found' }
+
+    const sessions = eventData.attendance_sessions || []
+
+    // Fetch Data with Relations
     const { data: registrations } = await supabase
         .from('registrations')
         .select(`
+            id,
             status,
             user:profiles!user_id(full_name, email),
-            event:events(title),
-            created_at
+            created_at,
+            payments(amount, transaction_ref, proof_url, status),
+            attendance(session_name, scanned_at)
         `)
         .eq('event_id', eventId)
 
@@ -32,24 +45,39 @@ export async function exportParticipantsCSV(eventId: string) {
         new_values: { type: 'participants_csv' }
     })
 
-    // Generate CSV
-    const headers = ['Name', 'Email', 'Status', 'Registered At']
-    interface RegistrationWithDetails {
-        status: string;
-        created_at: string;
-        user: { full_name: string; email: string };
-        event: { title: string; date: string };
-    }
+    // Dynamic Headers
+    const headers = ['Name', 'Email', 'Status', 'Registered At', 'Payment Amount', 'Payment UTR', 'Payment Proof', 'Payment Status']
+    sessions.forEach((s: any) => {
+        headers.push(`${s.name} Scanned At`)
+    })
 
-    // Cast to expected type since Supabase query types are loose here
-    const typedRegistrations = registrations as unknown as RegistrationWithDetails[]
+    const rows = registrations.map(reg => {
+        const u = reg.user as any
+        const pList = reg.payments as any[]
+        const aList = reg.attendance as any[]
 
-    const rows = typedRegistrations.map(reg => [
-        reg.user?.full_name || 'N/A',
-        reg.user?.email || 'N/A',
-        reg.status,
-        new Date(reg.created_at).toLocaleString()
-    ])
+        // Grab latest payment if exists
+        const latestPayment = pList && pList.length > 0 ? pList[0] : null
+
+        const baseRow = [
+            u?.full_name ? `"${u.full_name.replace(/"/g, '""')}"` : 'N/A',
+            u?.email || 'N/A',
+            reg.status,
+            new Date(reg.created_at).toLocaleString(),
+            latestPayment?.amount || '0',
+            latestPayment?.transaction_ref ? `"${latestPayment.transaction_ref}"` : 'N/A',
+            latestPayment?.proof_url || 'N/A',
+            latestPayment?.status || 'N/A'
+        ]
+
+        // Dynamic Attendance Columns
+        const attendanceRow = sessions.map((sess: any) => {
+            const scan = aList?.find((a: any) => a.session_name === sess.name)
+            return scan ? new Date(scan.scanned_at).toLocaleString() : 'Absent'
+        })
+
+        return [...baseRow, ...attendanceRow]
+    })
 
     const csvContent = [headers.join(','), ...rows.map(r => r.join(','))].join('\n')
     return { success: true, data: csvContent, filename: `participants-${eventId}.csv` }
@@ -60,13 +88,25 @@ export async function exportParticipantsPDF(eventId: string) {
     const { data: { user } } = await supabase.auth.getUser()
     if (!user) return { error: 'Unauthorized' }
 
+    // Fetch Event Data to get Sessions
+    const { data: eventData } = await supabase
+        .from('events')
+        .select('title, attendance_sessions, date')
+        .eq('id', eventId)
+        .single()
+
+    if (!eventData) return { error: 'Event not found' }
+
+    const sessions = eventData.attendance_sessions || []
+
     const { data: registrations } = await supabase
         .from('registrations')
         .select(`
             status,
             user:profiles!user_id(full_name, email),
-            event:events(title, date),
-            created_at
+            created_at,
+            payments(amount, transaction_ref, proof_url, status),
+            attendance(session_name, scanned_at)
         `)
         .eq('event_id', eventId)
 
@@ -80,32 +120,51 @@ export async function exportParticipantsPDF(eventId: string) {
         new_values: { type: 'participants_pdf' }
     })
 
-    interface RegistrationWithDetails {
-        status: string;
-        user: { full_name: string; email: string };
-        event: { title: string; date: string };
-    }
-    const typedRegistrations = registrations as unknown as RegistrationWithDetails[]
+    const columns = [
+        { header: 'Name', width: 120, field: 'name' },
+        { header: 'Email', width: 150, field: 'email' },
+        { header: 'Status', width: 70, field: 'status' },
+        { header: 'Payment', width: 70, field: 'paymentAmount' },
+        { header: 'UTR', width: 100, field: 'utr' }
+    ]
 
-    const event = typedRegistrations[0].event
+    // Create a dynamic column for each attendance session
+    sessions.forEach((s: any, idx: number) => {
+        columns.push({ header: `Att ${idx + 1}`, width: 60, field: `att_${idx}` })
+    })
+
+    const rowData = registrations.map(r => {
+        const u = r.user as any
+        const pList = r.payments as any[]
+        const aList = r.attendance as any[]
+        const latestPayment = pList && pList.length > 0 ? pList[0] : null
+
+        const row: any = {
+            name: u?.full_name || 'N/A',
+            email: u?.email || 'N/A',
+            status: r.status,
+            paymentAmount: latestPayment?.amount ? `Rs ${latestPayment.amount}` : '-',
+            utr: latestPayment?.transaction_ref || '-'
+        }
+
+        sessions.forEach((sess: any, idx: number) => {
+            const scan = aList?.find((a: any) => a.session_name === sess.name)
+            row[`att_${idx}`] = scan ? 'Present' : '-'
+        })
+
+        return row
+    })
+
     const pdfBuffer = await createReportPDF(
         'Participants List',
         [
-            `Event: ${event?.title || 'Unknown Event'}`,
-            `Date: ${event?.date ? new Date(event.date).toLocaleDateString() : 'N/A'}`,
+            `Event: ${eventData.title}`,
+            `Date: ${eventData.date ? new Date(eventData.date).toLocaleDateString() : 'N/A'}`,
             `Generated By: ${user.email}`,
             `Total: ${registrations.length}`
         ],
-        [
-            { header: 'Name', width: 150, field: 'name' },
-            { header: 'Email', width: 200, field: 'email' },
-            { header: 'Status', width: 100, field: 'status' }
-        ],
-        typedRegistrations.map(r => ({
-            name: r.user?.full_name || 'N/A',
-            email: r.user?.email || 'N/A',
-            status: r.status
-        }))
+        columns,
+        rowData
     )
 
     // Return Base64 for client download
