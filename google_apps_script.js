@@ -18,6 +18,7 @@ function doPost(e) {
         var filename = data.filename || 'payment_screenshot.png';
         var mimeType = data.mimeType || 'image/png';
         var eventTitle = data.eventTitle || 'Unknown Event';
+        var targetFolderName = data.targetFolder || 'Payments'; // Default to "Payments" if not provided
 
         if (!base64Data) {
             throw new Error("Missing Base64 Data in payload.");
@@ -39,17 +40,17 @@ function doPost(e) {
             eventFolder = rootFolder.createFolder(eventTitle);
         }
 
-        // 3. Find or create the "Payments" folder inside the Event folder
-        var paymentFolders = eventFolder.getFoldersByName("Payments");
-        var paymentFolder;
-        if (paymentFolders.hasNext()) {
-            paymentFolder = paymentFolders.next();
+        // 3. Find or create the specific subfolder ("Payments", "QR Code", etc) inside the Event folder
+        var subFolders = eventFolder.getFoldersByName(targetFolderName);
+        var subFolder;
+        if (subFolders.hasNext()) {
+            subFolder = subFolders.next();
         } else {
-            paymentFolder = eventFolder.createFolder("Payments");
+            subFolder = eventFolder.createFolder(targetFolderName);
         }
 
-        // 4. Create the file inside the Payments folder
-        var file = paymentFolder.createFile(blob);
+        // 4. Create the file inside the newly nested subfolder
+        var file = subFolder.createFile(blob);
 
         // 5. Make the file publicly viewable so the Admin Dashboard can see the image
         file.setSharing(DriveApp.Access.ANYONE_WITH_LINK, DriveApp.Permission.VIEW);

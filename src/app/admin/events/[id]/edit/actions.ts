@@ -42,19 +42,49 @@ export async function updateEvent(formData: FormData) {
     const paymentQr = formData.get('paymentQr') as File | null
     let paymentQrUrl = formData.get('existingPaymentQr') as string | null
 
+    // If there is no existing QR URL and they didn't upload a new one, this is invalid
+    if (!paymentQrUrl && (!paymentQr || paymentQr.size === 0)) {
+        return { error: 'A Payment QR Code is required. Please upload one.' }
+    }
+
     if (paymentQr && paymentQr.size > 0) {
-        const fileExt = paymentQr.name.split('.').pop()
-        const fileName = `${Date.now()}_${Math.random().toString(36).substring(7)}.${fileExt}`
+        try {
+            const arrayBuffer = await paymentQr.arrayBuffer();
+            const buffer = Buffer.from(arrayBuffer);
+            const base64Data = buffer.toString('base64');
 
-        const { error: uploadError } = await supabase.storage
-            .from('event_assets')
-            .upload(`payment-qrs/${fileName}`, paymentQr)
+            const scriptUrl = process.env.NEXT_PUBLIC_GOOGLE_SCRIPT_URL;
+            if (!scriptUrl) {
+                console.error("Missing NEXT_PUBLIC_GOOGLE_SCRIPT_URL environment variable.");
+                return { error: 'Server configuration error: Google Script URL is missing.' };
+            }
 
-        if (!uploadError) {
-            const { data: { publicUrl } } = supabase.storage
-                .from('event_assets')
-                .getPublicUrl(`payment-qrs/${fileName}`)
-            paymentQrUrl = publicUrl
+            const uploadPayload = {
+                base64Data: base64Data,
+                filename: paymentQr.name,
+                mimeType: paymentQr.type,
+                eventTitle: title, // Tell script which event this is for 
+                targetFolder: 'QR Code' // Put it in the "QR Code" subfolder
+            };
+
+            const uploadResponse = await fetch(scriptUrl, {
+                method: 'POST',
+                headers: { 'Content-Type': 'text/plain' },
+                body: JSON.stringify(uploadPayload)
+            });
+
+            const rawText = await uploadResponse.text();
+            const uploadResult = JSON.parse(rawText);
+
+            if (!uploadResult.success) {
+                console.error("Google Script Upload Error:", uploadResult.error);
+                return { error: 'Failed to upload QR code to Google Drive.' };
+            }
+
+            paymentQrUrl = uploadResult.url;
+        } catch (error) {
+            console.error("Failed to upload QR Code:", error);
+            return { error: 'Server error while uploading QR code.' };
         }
     }
 

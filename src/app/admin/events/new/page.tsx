@@ -83,8 +83,8 @@ export default async function CreateEventPage() {
                                 <p className="text-xs text-muted-foreground">After this date, unpaid registrations will be expired.</p>
                             </div>
                             <div className="space-y-2">
-                                <Label htmlFor="paymentQr">Payment QR Code (Optional)</Label>
-                                <Input id="paymentQr" name="paymentQr" type="file" accept="image/*" />
+                                <Label htmlFor="paymentQr">Payment QR Code</Label>
+                                <Input id="paymentQr" name="paymentQr" type="file" accept="image/*" required />
                                 <p className="text-xs text-muted-foreground">Upload the QR code that applicants should scan to pay the fee.</p>
                             </div>
                         </div>

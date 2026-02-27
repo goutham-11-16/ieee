@@ -118,8 +118,8 @@ export default async function EditEventPage(props: { params: Promise<{ id: strin
                             </div>
                             <div className="space-y-2">
                                 <Label htmlFor="paymentQr">Payment QR Code {event.payment_qr_url && '(Uploaded)'}</Label>
-                                <Input id="paymentQr" name="paymentQr" type="file" accept="image/*" />
-                                <p className="text-xs text-muted-foreground">Upload a new QR code to replace the existing one.</p>
+                                <Input id="paymentQr" name="paymentQr" type="file" accept="image/*" required={!event.payment_qr_url} />
+                                <p className="text-xs text-muted-foreground">{event.payment_qr_url ? 'Upload a new QR code to replace the existing one.' : 'Upload the QR code that applicants should scan to pay the fee.'}</p>
                             </div>
                         </div>
 
