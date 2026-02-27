@@ -13,6 +13,7 @@ import { createEvent } from '../actions'
 
 export function CreateEventForm({ canPublishDirectly }: { canPublishDirectly: boolean }) {
     const [isSubmitting, setIsSubmitting] = useState(false)
+    const [submitAction, setSubmitAction] = useState<'draft' | 'submit'>('submit')
 
     const handleSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
         e.preventDefault()
@@ -20,10 +21,9 @@ export function CreateEventForm({ canPublishDirectly }: { canPublishDirectly: bo
 
         try {
             const formData = new FormData(e.currentTarget)
-            const submitter = (e.nativeEvent as SubmitEvent).submitter as HTMLButtonElement
-            if (submitter && submitter.name) {
-                formData.append(submitter.name, submitter.value)
-            }
+
+            // Explicitly append the tracked action to ensure the server knows whether to publish or draft
+            formData.append('action', submitAction)
 
             // Compress Banner
             const bannerFile = formData.get('banner') as File
@@ -176,10 +176,10 @@ export function CreateEventForm({ canPublishDirectly }: { canPublishDirectly: bo
                 </Button>
 
                 <div className="flex gap-2">
-                    <Button type="submit" name="action" value="draft" variant="outline" disabled={isSubmitting}>
+                    <Button type="submit" onClick={() => setSubmitAction('draft')} variant="outline" disabled={isSubmitting}>
                         {isSubmitting ? 'Saving...' : 'Save as Draft'}
                     </Button>
-                    <Button type="submit" name="action" value="submit" disabled={isSubmitting}>
+                    <Button type="submit" onClick={() => setSubmitAction('submit')} disabled={isSubmitting}>
                         {isSubmitting ? 'Submitting...' : (canPublishDirectly ? 'Publish Event' : 'Submit for Approval')}
                     </Button>
                 </div>

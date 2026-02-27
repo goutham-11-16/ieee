@@ -28,7 +28,7 @@ export default async function EventDetailsPage(props: { params: Promise<{ id: st
             .from('registrations')
             .select('team_members, status, expires_at')
             .eq('event_id', params.id)
-            .neq('status', 'cancelled')
+            .in('status', ['approved', 'pending_approval', 'pending_payment'])
 
         if (activeRegs) {
             const nowTime = now.getTime()

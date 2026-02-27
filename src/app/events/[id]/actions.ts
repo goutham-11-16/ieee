@@ -100,7 +100,7 @@ export async function registerGuest(formData: FormData) {
             .from('registrations')
             .select('team_members, status, expires_at')
             .eq('event_id', eventId)
-            .neq('status', 'cancelled')
+            .in('status', ['approved', 'pending_approval', 'pending_payment'])
 
         if (activeRegs) {
             const nowTime = new Date().getTime()
