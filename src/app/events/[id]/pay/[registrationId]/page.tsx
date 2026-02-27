@@ -109,6 +109,7 @@ export default async function TimedPaymentPage(props: { params: Promise<{ id: st
                         amount={finalAmount}
                         paymentQrUrl={event.payment_qr_url}
                         expiresAt={registration.expires_at}
+                        eventTitle={event.title}
                     />
                 </div>
             </div>

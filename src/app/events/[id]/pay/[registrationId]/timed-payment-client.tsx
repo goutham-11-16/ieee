@@ -16,9 +16,10 @@ interface TimedPaymentClientProps {
     expiresAt: string; // ISO string
     referenceNumber: string;
     eventId: string;
+    eventTitle: string;
 }
 
-export default function TimedPaymentClient({ registrationId, amount, paymentQrUrl, expiresAt, referenceNumber, eventId }: TimedPaymentClientProps) {
+export default function TimedPaymentClient({ registrationId, amount, paymentQrUrl, expiresAt, referenceNumber, eventId, eventTitle }: TimedPaymentClientProps) {
     const [loading, setLoading] = useState(false)
     const [timeLeft, setTimeLeft] = useState<{ minutes: number, seconds: number }>({ minutes: 5, seconds: 0 })
     const [expired, setExpired] = useState(false)
@@ -85,16 +86,32 @@ export default function TimedPaymentClient({ registrationId, amount, paymentQrUr
             const uploadPayload = {
                 base64Data: base64Data,
                 filename: file.name,
-                mimeType: file.type
+                mimeType: file.type,
+                eventTitle: eventTitle // Inform the script of the event name
             };
 
+            console.log("Sending payload to Google Apps Script...");
             const uploadResponse = await fetch(scriptUrl, {
                 method: 'POST',
                 headers: { 'Content-Type': 'text/plain' },
                 body: JSON.stringify(uploadPayload)
             });
 
-            const uploadResult = await uploadResponse.json();
+            console.log("Received raw response status:", uploadResponse.status);
+            const rawText = await uploadResponse.text();
+            console.log("Raw Response Text from Google Apps Script:", rawText);
+
+            let uploadResult;
+            try {
+                uploadResult = JSON.parse(rawText);
+            } catch (e) {
+                console.error("Failed to parse Google Apps Script response as JSON.", e);
+                toast.error("Upload failed: Invalid response from server.");
+                setLoading(false);
+                return;
+            }
+
+            console.log("Parsed Upload Result:", uploadResult);
 
             if (!uploadResult.success) {
                 toast.error('Failed to upload file to Drive: ' + uploadResult.error);
@@ -103,6 +120,7 @@ export default function TimedPaymentClient({ registrationId, amount, paymentQrUr
             }
 
             const driveUrl = uploadResult.url;
+            console.log("Extracted Drive URL:", driveUrl);
 
             // 3. Save Payment Record in Supabase
             const serverFormData = new FormData();
