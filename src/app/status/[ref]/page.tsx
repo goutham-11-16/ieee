@@ -80,7 +80,8 @@ export default async function StatusDashboardPage(props: {
         : undefined;
     const eventDate = new Date(reg.event.date)
     const isPaymentRequired = reg.event.fees > 0
-    const isUnpaid = isPaymentRequired && (!payment || payment.status === 'unpaid')
+    const paymentRejected = payment && payment.status === 'rejected'
+    const isUnpaid = isPaymentRequired && (!payment || payment.status === 'unpaid' || paymentRejected)
     const isPending = payment?.status === 'pending_verification'
     const isVerified = payment?.status === 'verified'
 
@@ -251,13 +252,22 @@ export default async function StatusDashboardPage(props: {
                                     <div className="space-y-4">
                                         <div className="flex items-center justify-between">
                                             <span className="text-sm font-medium text-muted-foreground">Current Status:</span>
-                                            <Badge className="text-sm" variant={isVerified ? 'default' : isPending ? 'secondary' : missedPaymentDeadline ? 'destructive' : 'warning'}>
+                                            <Badge className="text-sm" variant={isVerified ? 'default' : isPending ? 'secondary' : missedPaymentDeadline ? 'destructive' : paymentRejected ? 'destructive' : 'warning'}>
                                                 {missedPaymentDeadline ? 'Expired' : payment?.status || 'Unpaid'}
                                             </Badge>
                                         </div>
 
                                         {isUnpaid && !missedPaymentDeadline && reg.status !== 'expired' && reg.status !== 'rejected' && (
                                             <div className="bg-slate-50 dark:bg-slate-900/50 border rounded-lg p-5 mt-4 shadow-sm">
+                                                {paymentRejected && (
+                                                    <div className="mb-4 bg-red-50 dark:bg-red-950/30 border border-red-200 dark:border-red-900 p-3 rounded flex items-start gap-2 text-red-800 dark:text-red-300">
+                                                        <AlertCircleIcon className="w-5 h-5 shrink-0 mt-0.5" />
+                                                        <div className="text-sm">
+                                                            <strong className="block mb-1">Payment Rejected</strong>
+                                                            Your previous payment proof was rejected by the admin. Please verify the amount and upload a correct, clear screenshot of the transaction.
+                                                        </div>
+                                                    </div>
+                                                )}
                                                 <div className="mb-4 text-center">
                                                     <p className="text-sm font-semibold text-slate-500 uppercase tracking-wider mb-1">Amount to Pay</p>
                                                     <p className="text-3xl font-black text-slate-900 dark:text-white">

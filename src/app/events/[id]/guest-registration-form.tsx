@@ -66,6 +66,8 @@ export default function GuestRegistrationForm({
     const now = new Date()
     const isRegistrationClosed = registrationEnd ? new Date(registrationEnd) < now : new Date(eventDate) < now
 
+    const [leaderInstitutionType, setLeaderInstitutionType] = useState<string>('')
+
     const handleLeaderCustomChange = (id: string, value: string) => {
         setLeaderCustomResponses(prev => ({ ...prev, [id]: value }))
     }
@@ -74,7 +76,7 @@ export default function GuestRegistrationForm({
         if (teamMembers.length + 1 >= maxTeamSize) return
         setTeamMembers([
             ...teamMembers,
-            { id: Date.now().toString(), guestName: '', guestEmail: '', guestPhone: '', guestInstitution: '', customResponses: {} }
+            { id: Date.now().toString(), guestName: '', guestEmail: '', guestPhone: '', guestInstitution: '', institutionType: '', customResponses: {} }
         ])
     }
 
@@ -106,9 +108,20 @@ export default function GuestRegistrationForm({
 
         setLoading(true)
         try {
+            // Fix up leader institution if they chose KARE
+            if (leaderInstitutionType === 'KARE') {
+                formData.set('guestInstitution', 'Kalasalingam Academy of Research and Education (KARE)')
+            }
+
+            // Fix up team members if they chose KARE
+            const formattedTeamMembers = teamMembers.map(m => ({
+                ...m,
+                guestInstitution: m.institutionType === 'KARE' ? 'Kalasalingam Academy of Research and Education (KARE)' : m.guestInstitution
+            }))
+
             // Package the dynamic data as JSON strings to send nicely to the server action
             formData.append('customResponses', JSON.stringify(leaderCustomResponses))
-            formData.append('teamMembers', JSON.stringify(teamMembers))
+            formData.append('teamMembers', JSON.stringify(formattedTeamMembers))
 
             const result = await registerGuest(formData)
             if (result.error) {
@@ -212,9 +225,28 @@ export default function GuestRegistrationForm({
                     )}
 
                     {!disabledFields.includes('institution') && (
-                        <div className="space-y-2">
-                            <Label htmlFor="guestInstitution">Institution / Company</Label>
-                            <Input id="guestInstitution" name="guestInstitution" placeholder="Kalasalingam Academy" />
+                        <div className="space-y-4 border-l-2 border-slate-200 pl-3 ml-1">
+                            <div className="space-y-2">
+                                <Label htmlFor="leaderInstitutionType">Institution / Company</Label>
+                                <select
+                                    id="leaderInstitutionType"
+                                    name="leaderInstitutionType"
+                                    required
+                                    value={leaderInstitutionType}
+                                    onChange={(e) => setLeaderInstitutionType(e.target.value)}
+                                    className="flex h-10 w-full items-center justify-between rounded-md border border-input bg-background px-3 py-2 text-sm ring-offset-background placeholder:text-muted-foreground focus:outline-none focus:ring-2 focus:ring-ring focus:ring-offset-2 disabled:cursor-not-allowed disabled:opacity-50"
+                                >
+                                    <option value="" disabled>Select your institution</option>
+                                    <option value="KARE">Kalasalingam Academy of Research and Education (KARE)</option>
+                                    <option value="Other">Other</option>
+                                </select>
+                            </div>
+                            {leaderInstitutionType === 'Other' && (
+                                <div className="space-y-2 animate-in fade-in slide-in-from-top-2">
+                                    <Label htmlFor="guestInstitution">Specify Institution Name <span className="text-red-500">*</span></Label>
+                                    <Input id="guestInstitution" name="guestInstitution" required placeholder="Your University or Company" />
+                                </div>
+                            )}
                         </div>
                     )}
 
@@ -309,14 +341,31 @@ export default function GuestRegistrationForm({
                                         </div>
                                     )}
                                     {teamMemberSettings?.requireInstitution && (
-                                        <div className="space-y-2">
-                                            <Label>Institution / Company <span className="text-red-500">*</span></Label>
-                                            <Input
-                                                required
-                                                value={member.guestInstitution}
-                                                onChange={e => updateTeamMember(member.id, 'guestInstitution', e.target.value)}
-                                                placeholder="University or Company"
-                                            />
+                                        <div className="space-y-4 border-l-2 border-slate-200 pl-3 ml-1">
+                                            <div className="space-y-2">
+                                                <Label>Institution / Company <span className="text-red-500">*</span></Label>
+                                                <select
+                                                    required
+                                                    value={member.institutionType || ''}
+                                                    onChange={e => updateTeamMember(member.id, 'institutionType', e.target.value)}
+                                                    className="flex h-10 w-full items-center justify-between rounded-md border border-input bg-background px-3 py-2 text-sm ring-offset-background placeholder:text-muted-foreground focus:outline-none focus:ring-2 focus:ring-ring focus:ring-offset-2 disabled:cursor-not-allowed disabled:opacity-50"
+                                                >
+                                                    <option value="" disabled>Select institution</option>
+                                                    <option value="KARE">Kalasalingam Academy of Research and Education (KARE)</option>
+                                                    <option value="Other">Other</option>
+                                                </select>
+                                            </div>
+                                            {member.institutionType === 'Other' && (
+                                                <div className="space-y-2 animate-in fade-in slide-in-from-top-2">
+                                                    <Label>Specify Institution Name <span className="text-red-500">*</span></Label>
+                                                    <Input
+                                                        required
+                                                        value={member.guestInstitution || ''}
+                                                        onChange={e => updateTeamMember(member.id, 'guestInstitution', e.target.value)}
+                                                        placeholder="University or Company"
+                                                    />
+                                                </div>
+                                            )}
                                         </div>
                                     )}
                                     {teamMemberSettings?.askCustomFields && formSchema.length > 0 && (
