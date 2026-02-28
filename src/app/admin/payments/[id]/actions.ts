@@ -150,6 +150,15 @@ export async function rejectPayment(paymentId: string, reason: string) {
 
     if (!user) return { error: 'Unauthorized' }
 
+    // Fetch the payment to get the registration ID
+    const { data: payment } = await supabase
+        .from('payments')
+        .select('registration_id')
+        .eq('id', paymentId)
+        .single()
+
+    if (!payment) return { error: 'Payment not found' }
+
     const { error } = await supabase
         .from('payments')
         .update({
@@ -161,6 +170,17 @@ export async function rejectPayment(paymentId: string, reason: string) {
         .eq('id', paymentId)
 
     if (error) return { error: error.message }
+
+    // Grant a 24-hour extension for the user to re-upload payment proof
+    const { error: regError } = await supabase
+        .from('registrations')
+        .update({
+            status: 'pending_payment',
+            expires_at: new Date(Date.now() + 24 * 60 * 60 * 1000).toISOString()
+        })
+        .eq('id', payment.registration_id)
+
+    if (regError) return { error: regError.message }
 
     await logAction('REJECT_PAYMENT', 'payments', paymentId, { reason })
 

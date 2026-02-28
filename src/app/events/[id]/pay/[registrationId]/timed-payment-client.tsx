@@ -22,6 +22,7 @@ interface TimedPaymentClientProps {
 
 export default function TimedPaymentClient({ registrationId, amount, paymentQrUrl, expiresAt, referenceNumber, eventId, eventTitle }: TimedPaymentClientProps) {
     const [loading, setLoading] = useState(false)
+    const [loadingText, setLoadingText] = useState('')
     const [timeLeft, setTimeLeft] = useState<{ minutes: number, seconds: number }>({ minutes: 5, seconds: 0 })
     const [expired, setExpired] = useState(false)
     const router = useRouter()
@@ -53,9 +54,10 @@ export default function TimedPaymentClient({ registrationId, amount, paymentQrUr
     }, [expiresAt, registrationId, eventId, router])
 
     async function onSubmit(formData: FormData) {
-        if (expired) return
+        if (expired || loading) return
 
         setLoading(true)
+        setLoadingText('Preparing upload...')
         try {
             let file = formData.get('proof') as File;
             const transactionRef = formData.get('transactionRef') as string;
@@ -68,6 +70,7 @@ export default function TimedPaymentClient({ registrationId, amount, paymentQrUr
 
             // Compress image if applicable
             if (file.type.startsWith('image/')) {
+                setLoadingText('Compressing image...')
                 file = await compressImage(file, { maxSizeMB: 0.1, maxWidthOrHeight: 800 });
             }
 
@@ -78,6 +81,7 @@ export default function TimedPaymentClient({ registrationId, amount, paymentQrUr
             }
 
             // 1. Convert File to Base64
+            setLoadingText('Converting to Base64...')
             const base64Data = await new Promise<string>((resolve, reject) => {
                 const reader = new FileReader();
                 reader.readAsDataURL(file);
@@ -90,6 +94,7 @@ export default function TimedPaymentClient({ registrationId, amount, paymentQrUr
             });
 
             // 2. Upload to Google Drive via Apps Script
+            setLoadingText('Uploading to Google Drive...')
             const scriptUrl = process.env.NEXT_PUBLIC_GOOGLE_SCRIPT_URL;
             if (!scriptUrl) {
                 throw new Error("Missing NEXT_PUBLIC_GOOGLE_SCRIPT_URL environment variable.");
@@ -102,28 +107,21 @@ export default function TimedPaymentClient({ registrationId, amount, paymentQrUr
                 eventTitle: eventTitle // Inform the script of the event name
             };
 
-            console.log("Sending payload to Google Apps Script...");
             const uploadResponse = await fetch(scriptUrl, {
                 method: 'POST',
                 headers: { 'Content-Type': 'text/plain' },
                 body: JSON.stringify(uploadPayload)
             });
 
-            console.log("Received raw response status:", uploadResponse.status);
             const rawText = await uploadResponse.text();
-            console.log("Raw Response Text from Google Apps Script:", rawText);
-
             let uploadResult;
             try {
                 uploadResult = JSON.parse(rawText);
             } catch (e) {
-                console.error("Failed to parse Google Apps Script response as JSON.", e);
                 toast.error("Upload failed: Invalid response from server.");
                 setLoading(false);
                 return;
             }
-
-            console.log("Parsed Upload Result:", uploadResult);
 
             if (!uploadResult.success) {
                 toast.error('Failed to upload file to Drive: ' + uploadResult.error);
@@ -132,9 +130,9 @@ export default function TimedPaymentClient({ registrationId, amount, paymentQrUr
             }
 
             const driveUrl = uploadResult.fileId ? `https://drive.google.com/uc?export=view&id=${uploadResult.fileId}` : uploadResult.url;
-            console.log("Extracted Drive URL:", driveUrl);
 
             // 3. Save Payment Record in Supabase
+            setLoadingText('Saving database record...')
             const serverFormData = new FormData();
             serverFormData.append('registrationId', registrationId);
             serverFormData.append('amount', amount.toString());
@@ -147,7 +145,6 @@ export default function TimedPaymentClient({ registrationId, amount, paymentQrUr
                 toast.error(result.error)
             } else {
                 toast.success('Payment submitted successfully! Generating ticket...')
-                // Push to the status checker to reveal the reference number and confetti blast
                 router.push(`/status/${referenceNumber}?new=1`);
             }
         } catch (e) {
@@ -155,6 +152,7 @@ export default function TimedPaymentClient({ registrationId, amount, paymentQrUr
             toast.error('Something went wrong during upload.')
         } finally {
             setLoading(false)
+            setLoadingText('')
         }
     }
 
@@ -209,7 +207,7 @@ export default function TimedPaymentClient({ registrationId, amount, paymentQrUr
 
                     <Button type="submit" className="w-full h-12 text-lg font-bold shadow-md hover:shadow-lg transition-all" disabled={loading}>
                         {loading && <Loader2 className="mr-2 h-5 w-5 animate-spin" />}
-                        {loading ? 'Verifying Upload...' : 'Submit Payment Proof'}
+                        {loading ? (loadingText || 'Verifying Upload...') : 'Submit Payment Proof'}
                     </Button>
                 </form>
             </div>

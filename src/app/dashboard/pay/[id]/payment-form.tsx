@@ -17,10 +17,13 @@ interface PaymentUploadProps {
 
 export default function PaymentUploadForm({ registrationId, amount, paymentQrUrl }: PaymentUploadProps) {
     const [loading, setLoading] = useState(false)
+    const [loadingText, setLoadingText] = useState('')
     const router = useRouter()
 
     async function onSubmit(formData: FormData) {
+        if (loading) return
         setLoading(true)
+        setLoadingText('Preparing upload...')
         try {
             const file = formData.get('proof') as File;
             const transactionRef = formData.get('transactionRef') as string;
@@ -32,6 +35,7 @@ export default function PaymentUploadForm({ registrationId, amount, paymentQrUrl
             }
 
             // 1. Convert File to Base64
+            setLoadingText('Converting to Base64...')
             const base64Data = await new Promise<string>((resolve, reject) => {
                 const reader = new FileReader();
                 reader.readAsDataURL(file);
@@ -45,6 +49,7 @@ export default function PaymentUploadForm({ registrationId, amount, paymentQrUrl
             });
 
             // 2. Upload to Google Drive via Apps Script
+            setLoadingText('Uploading to Google Drive...')
             const scriptUrl = 'https://script.google.com/macros/s/AKfycbyVmM0XuzqXc7cjLRA7ksUmAKvNxwkClKHlbjupPKjlLM7AIYrLOB17rlb_02BlI-Sixg/exec';
 
             const uploadPayload = {
@@ -75,6 +80,7 @@ export default function PaymentUploadForm({ registrationId, amount, paymentQrUrl
 
             // 3. Save Payment Record in Supabase
             // We pass the driveUrl to the server action instead of the file
+            setLoadingText('Saving database record...')
             const serverFormData = new FormData();
             serverFormData.append('registrationId', registrationId);
             serverFormData.append('amount', amount.toString());
@@ -94,6 +100,7 @@ export default function PaymentUploadForm({ registrationId, amount, paymentQrUrl
             toast.error('Something went wrong during upload.')
         } finally {
             setLoading(false)
+            setLoadingText('')
         }
     }
 
@@ -119,7 +126,7 @@ export default function PaymentUploadForm({ registrationId, amount, paymentQrUrl
 
                 <Button type="submit" className="w-full bg-blue-600 hover:bg-blue-700" disabled={loading}>
                     {loading && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}
-                    {loading ? 'Processing Upload...' : 'Submit Payment for Verification'}
+                    {loading ? (loadingText || 'Processing Upload...') : 'Submit Payment for Verification'}
                 </Button>
             </form>
         </div>

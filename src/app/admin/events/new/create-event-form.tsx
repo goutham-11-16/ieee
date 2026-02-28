@@ -14,10 +14,13 @@ import { createEvent } from '../actions'
 export function CreateEventForm({ canPublishDirectly }: { canPublishDirectly: boolean }) {
     const [isSubmitting, setIsSubmitting] = useState(false)
     const [submitAction, setSubmitAction] = useState<'draft' | 'submit'>('submit')
+    const [loadingText, setLoadingText] = useState('')
 
     const handleSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
         e.preventDefault()
+        if (isSubmitting) return // Prevent double submission
         setIsSubmitting(true)
+        setLoadingText('Preparing data...')
 
         try {
             const formData = new FormData(e.currentTarget)
@@ -28,6 +31,7 @@ export function CreateEventForm({ canPublishDirectly }: { canPublishDirectly: bo
             // Compress Banner
             const bannerFile = formData.get('banner') as File
             if (bannerFile && bannerFile.size > 0) {
+                setLoadingText('Compressing Banner Image...')
                 const compressedBanner = await compressImage(bannerFile, { maxSizeMB: 0.1, maxWidthOrHeight: 1200 })
                 formData.set('banner', compressedBanner)
             }
@@ -35,17 +39,20 @@ export function CreateEventForm({ canPublishDirectly }: { canPublishDirectly: bo
             // Compress QR Code
             const qrFile = formData.get('paymentQr') as File
             if (qrFile && qrFile.size > 0) {
+                setLoadingText('Compressing QR Code...')
                 const compressedQr = await compressImage(qrFile, { maxSizeMB: 0.1, maxWidthOrHeight: 800 })
                 formData.set('paymentQr', compressedQr)
             }
 
             // Call Server Action
+            setLoadingText('Uploading to Database & Drive...')
             await createEvent(formData)
         } catch (error) {
             console.error("Error submitting form:", error)
             alert("Failed to submit event. Please check the console for details.")
         } finally {
             setIsSubmitting(false)
+            setLoadingText('')
         }
     }
 
@@ -145,19 +152,14 @@ export function CreateEventForm({ canPublishDirectly }: { canPublishDirectly: bo
                 <div className="space-y-2">
                     <Label htmlFor="maxCapacity">Max Capacity (Optional)</Label>
                     <Input id="maxCapacity" name="maxCapacity" type="number" />
+                    <Label className="flex items-center gap-2 text-xs font-normal cursor-pointer mt-1 text-muted-foreground">
+                        <input type="checkbox" name="isCapacityByTeams" className="rounded border-gray-300" />
+                        Count capacity by Number of Teams (if Team Event)
+                    </Label>
                 </div>
             </div>
 
-            <div className="space-y-2">
-                <Label htmlFor="coordinators">Coordinators (JSON)</Label>
-                <Textarea
-                    id="coordinators"
-                    name="coordinators"
-                    placeholder='[{"name": "Alice", "email": "alice@example.com"}]'
-                    className="font-mono text-xs"
-                />
-                <p className="text-xs text-muted-foreground">Enter as JSON array for now. UI builder coming soon.</p>
-            </div>
+
 
             <AttendanceSessionsBuilder />
 
@@ -177,10 +179,10 @@ export function CreateEventForm({ canPublishDirectly }: { canPublishDirectly: bo
 
                 <div className="flex gap-2">
                     <Button type="submit" onClick={() => setSubmitAction('draft')} variant="outline" disabled={isSubmitting}>
-                        {isSubmitting ? 'Saving...' : 'Save as Draft'}
+                        {isSubmitting && submitAction === 'draft' ? (loadingText || 'Saving...') : 'Save as Draft'}
                     </Button>
                     <Button type="submit" onClick={() => setSubmitAction('submit')} disabled={isSubmitting}>
-                        {isSubmitting ? 'Submitting...' : (canPublishDirectly ? 'Publish Event' : 'Submit for Approval')}
+                        {isSubmitting && submitAction === 'submit' ? (loadingText || 'Submitting...') : (canPublishDirectly ? 'Publish Event' : 'Submit for Approval')}
                     </Button>
                 </div>
             </div>

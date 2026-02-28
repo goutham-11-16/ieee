@@ -41,7 +41,8 @@ export default async function StatusDashboardPage(props: {
                 is_fee_per_person,
                 payment_qr_url,
                 whatsapp_link,
-                instagram_link
+                instagram_link,
+                attendance_sessions
             ),
             payments (
                 status,
@@ -50,7 +51,8 @@ export default async function StatusDashboardPage(props: {
             ),
             attendance (
                 check_in_time,
-                check_out_time
+                check_out_time,
+                session_name
             ),
             user:profiles!user_id(full_name, email)
         `)
@@ -224,22 +226,43 @@ export default async function StatusDashboardPage(props: {
                             <section>
                                 <h4 className="text-lg font-semibold border-b pb-2 mb-4">Attendance Tracker</h4>
                                 <div className="space-y-3">
-                                    <div className="flex items-center justify-between bg-slate-50 dark:bg-slate-900 border p-3 rounded-lg">
-                                        <span className="font-medium">Check-In</span>
-                                        {checkedIn ? (
-                                            <Badge variant="success">{new Date(checkedIn).toLocaleTimeString()}</Badge>
-                                        ) : (
-                                            <Badge variant="outline">Awaiting Scan</Badge>
-                                        )}
-                                    </div>
-                                    <div className="flex items-center justify-between bg-slate-50 dark:bg-slate-900 border p-3 rounded-lg">
-                                        <span className="font-medium">Check-Out</span>
-                                        {checkedOut ? (
-                                            <Badge variant="secondary">{new Date(checkedOut).toLocaleTimeString()}</Badge>
-                                        ) : (
-                                            <Badge variant="outline">--:--</Badge>
-                                        )}
-                                    </div>
+                                    {reg.event.attendance_sessions && reg.event.attendance_sessions.length > 0 ? (
+                                        reg.event.attendance_sessions.map((sessionName: string) => {
+                                            const sessionRecord = reg.attendance?.find((a: any) => a.session_name === sessionName) || null;
+                                            return (
+                                                <div key={sessionName} className="flex flex-col gap-2 bg-slate-50 dark:bg-slate-900 border p-3 rounded-lg">
+                                                    <div className="font-semibold text-sm border-b pb-1">{sessionName}</div>
+                                                    <div className="flex justify-between items-center mt-1">
+                                                        <span className="text-sm font-medium text-muted-foreground">Status</span>
+                                                        {sessionRecord?.check_in_time ? (
+                                                            <Badge variant="success">Present - {new Date(sessionRecord.check_in_time).toLocaleTimeString()}</Badge>
+                                                        ) : (
+                                                            <Badge variant="outline">Absent / Awaiting</Badge>
+                                                        )}
+                                                    </div>
+                                                </div>
+                                            )
+                                        })
+                                    ) : (
+                                        <>
+                                            <div className="flex items-center justify-between bg-slate-50 dark:bg-slate-900 border p-3 rounded-lg">
+                                                <span className="font-medium">Check-In</span>
+                                                {checkedIn ? (
+                                                    <Badge variant="success">{new Date(checkedIn).toLocaleTimeString()}</Badge>
+                                                ) : (
+                                                    <Badge variant="outline">Awaiting Scan</Badge>
+                                                )}
+                                            </div>
+                                            <div className="flex items-center justify-between bg-slate-50 dark:bg-slate-900 border p-3 rounded-lg">
+                                                <span className="font-medium">Check-Out</span>
+                                                {checkedOut ? (
+                                                    <Badge variant="secondary">{new Date(checkedOut).toLocaleTimeString()}</Badge>
+                                                ) : (
+                                                    <Badge variant="outline">--:--</Badge>
+                                                )}
+                                            </div>
+                                        </>
+                                    )}
                                 </div>
                             </section>
                         </div>

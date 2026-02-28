@@ -37,8 +37,13 @@ export default async function EventDetailsPage(props: { params: Promise<{ id: st
                     const expTime = new Date(reg.expires_at).getTime()
                     if (nowTime > expTime) return acc // Expired seat
                 }
-                const teamCount = Array.isArray(reg.team_members) ? reg.team_members.length : 0
-                return acc + 1 + teamCount
+
+                if (event.is_capacity_by_teams) {
+                    return acc + 1
+                } else {
+                    const teamCount = Array.isArray(reg.team_members) ? reg.team_members.length : 0
+                    return acc + 1 + teamCount
+                }
             }, 0)
         }
     }
@@ -180,24 +185,7 @@ export default async function EventDetailsPage(props: { params: Promise<{ id: st
                         <p className="whitespace-pre-wrap">{event.description}</p>
                     </div>
 
-                    {event.coordinators && event.coordinators.length > 0 && (
-                        <div className="border-t pt-6">
-                            <h3 className="text-xl font-semibold mb-4">Event Coordinators</h3>
-                            <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-                                {event.coordinators.map((coordinator: any, index: number) => (
-                                    <div key={index} className="flex items-center gap-3 p-3 rounded-lg bg-slate-50 dark:bg-slate-900 border">
-                                        <div className="h-10 w-10 rounded-full bg-blue-100 flex items-center justify-center text-blue-600 font-bold">
-                                            {coordinator.name[0]}
-                                        </div>
-                                        <div>
-                                            <p className="font-medium">{coordinator.name}</p>
-                                            <p className="text-sm text-gray-500">{coordinator.email}</p>
-                                        </div>
-                                    </div>
-                                ))}
-                            </div>
-                        </div>
-                    )}
+
                 </div>
             </div>
         </div>

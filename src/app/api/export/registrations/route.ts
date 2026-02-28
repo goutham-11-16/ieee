@@ -16,6 +16,13 @@ export async function GET(request: NextRequest) {
       id,
       status,
       created_at,
+      guest_name,
+      guest_email,
+      guest_phone,
+      guest_institution,
+      guest_reg_no,
+      team_members,
+      custom_responses,
       user:profiles!user_id(full_name, email),
       event:events(title, date),
       payment:payments(amount, status, transaction_reference)
@@ -27,19 +34,33 @@ export async function GET(request: NextRequest) {
     }
 
     // Convert to CSV
-    const headers = ['Registration ID', 'User Name', 'Email', 'Event', 'Event Date', 'Status', 'Payment Status', 'Amount', 'Transaction Ref', 'Date Registered']
-    const rows = registrations.map((reg: any) => [
-        reg.id,
-        reg.user?.full_name || 'N/A',
-        reg.user?.email || 'N/A',
-        reg.event?.title || 'N/A',
-        new Date(reg.event?.date).toLocaleDateString(),
-        reg.status,
-        reg.payment?.[0]?.status || 'N/A', // Assuming array or object depending on join
-        reg.payment?.[0]?.amount || 0,
-        reg.payment?.[0]?.transaction_reference || 'N/A',
-        new Date(reg.created_at).toLocaleString()
-    ])
+    const headers = ['Registration ID', 'Leader Name', 'Leader Email', 'Phone', 'Institution', 'Reg No', 'Event', 'Event Date', 'Status', 'Payment Status', 'Amount', 'Date Registered', 'Team Size', 'Custom Responses']
+    const rows = registrations.map((reg: any) => {
+        const teamCount = Array.isArray(reg.team_members) ? reg.team_members.length : 0;
+        let customResponsesStr = '';
+        if (reg.custom_responses) {
+            try {
+                customResponsesStr = Object.entries(reg.custom_responses).map(([k, v]) => `${k}: ${v}`).join(' | ');
+            } catch (e) { }
+        }
+
+        return [
+            reg.id,
+            reg.guest_name || reg.user?.full_name || 'N/A',
+            reg.guest_email || reg.user?.email || 'N/A',
+            reg.guest_phone || 'N/A',
+            reg.guest_institution || 'N/A',
+            reg.guest_reg_no || 'N/A',
+            reg.event?.title || 'N/A',
+            new Date(reg.event?.date).toLocaleDateString(),
+            reg.status,
+            reg.payment?.[0]?.status || 'N/A',
+            reg.payment?.[0]?.amount || 0,
+            new Date(reg.created_at).toLocaleString(),
+            teamCount,
+            customResponsesStr
+        ]
+    })
 
     const csvContent = [
         headers.join(','),

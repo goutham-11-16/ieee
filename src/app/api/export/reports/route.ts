@@ -49,23 +49,24 @@ export async function GET(request: NextRequest) {
 
     if (type === 'registrations') {
         const { data } = await supabase.from('registrations')
-            .select('id, status, created_at, guest_name, guest_email, team_members, user:profiles!user_id(full_name, email)')
+            .select('id, status, created_at, guest_name, guest_email, guest_phone, guest_reg_no, custom_responses, team_members, user:profiles!user_id(full_name, email)')
             .eq('event_id', eventId)
 
-        head = [['Name', 'Email', 'Role', 'Status', 'Date']]
+        head = [['Name', 'Email', 'Phone', 'Reg No', 'Role', 'Status']]
         const rawBody: any[][] = []
 
             ; (data || []).forEach((r: any) => {
                 const leaderName = r.guest_name || r.user?.full_name || 'Guest'
                 const leaderEmail = r.guest_email || r.user?.email || 'N/A'
-                const dateStr = new Date(r.created_at).toLocaleDateString()
+                const phone = r.guest_phone || 'N/A'
+                const regNo = r.guest_reg_no || 'N/A'
 
-                rawBody.push([leaderName, leaderEmail, 'Leader / Solo', r.status, dateStr])
+                rawBody.push([leaderName, leaderEmail, phone, regNo, 'Leader / Solo', r.status])
 
                 if (r.team_members && Array.isArray(r.team_members)) {
                     r.team_members.forEach((m: any) => {
                         if (m.guestName) {
-                            rawBody.push([`  -> ${m.guestName}`, m.guestEmail || 'N/A', 'Team Member', r.status, dateStr])
+                            rawBody.push([`  -> ${m.guestName}`, m.guestEmail || 'N/A', m.guestPhone || 'N/A', m.guestRegNo || 'N/A', 'Team Member', r.status])
                         }
                     })
                 }

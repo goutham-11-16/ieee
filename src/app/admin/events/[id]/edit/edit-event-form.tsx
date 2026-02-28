@@ -13,10 +13,13 @@ import { updateEvent } from './actions'
 
 export function EditEventForm({ event, profileRole }: { event: any, profileRole: string }) {
     const [isSubmitting, setIsSubmitting] = useState(false)
+    const [loadingText, setLoadingText] = useState('')
 
     const handleSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
         e.preventDefault()
+        if (isSubmitting) return
         setIsSubmitting(true)
+        setLoadingText('Preparing data...')
 
         try {
             const formData = new FormData(e.currentTarget)
@@ -24,6 +27,7 @@ export function EditEventForm({ event, profileRole }: { event: any, profileRole:
             // Compress Banner if provided
             const bannerFile = formData.get('banner') as File
             if (bannerFile && bannerFile.size > 0) {
+                setLoadingText('Compressing Banner Image...')
                 const compressedBanner = await compressImage(bannerFile, { maxSizeMB: 0.1, maxWidthOrHeight: 1200 })
                 formData.set('banner', compressedBanner)
             }
@@ -31,17 +35,20 @@ export function EditEventForm({ event, profileRole }: { event: any, profileRole:
             // Compress QR Code if provided
             const qrFile = formData.get('paymentQr') as File
             if (qrFile && qrFile.size > 0) {
+                setLoadingText('Compressing QR Code...')
                 const compressedQr = await compressImage(qrFile, { maxSizeMB: 0.1, maxWidthOrHeight: 800 })
                 formData.set('paymentQr', compressedQr)
             }
 
             // Call Server Action
+            setLoadingText('Uploading updates to server...')
             await updateEvent(formData)
         } catch (error) {
             console.error("Error updating event:", error)
             alert("Failed to update event. Please check the console for details.")
         } finally {
             setIsSubmitting(false)
+            setLoadingText('')
         }
     }
 
@@ -146,19 +153,14 @@ export function EditEventForm({ event, profileRole }: { event: any, profileRole:
                 <div className="space-y-2">
                     <Label htmlFor="maxCapacity">Max Capacity (Optional)</Label>
                     <Input id="maxCapacity" name="maxCapacity" type="number" defaultValue={event.max_capacity || ''} />
+                    <Label className="flex items-center gap-2 text-xs font-normal cursor-pointer mt-1 text-muted-foreground">
+                        <input type="checkbox" name="isCapacityByTeams" defaultChecked={event.is_capacity_by_teams} className="rounded border-gray-300" />
+                        Count capacity by Number of Teams (if Team Event)
+                    </Label>
                 </div>
             </div>
 
-            <div className="space-y-2">
-                <Label htmlFor="coordinators">Coordinators (JSON)</Label>
-                <Textarea
-                    id="coordinators"
-                    name="coordinators"
-                    defaultValue={JSON.stringify(event.coordinators || [])}
-                    className="font-mono text-xs"
-                />
-                <p className="text-xs text-muted-foreground">Enter as JSON array for now. UI builder coming soon.</p>
-            </div>
+
 
             <AttendanceSessionsBuilder initialSessions={event.attendance_sessions || []} />
 
@@ -188,7 +190,7 @@ export function EditEventForm({ event, profileRole }: { event: any, profileRole:
                 </Button>
 
                 <Button type="submit" disabled={isSubmitting}>
-                    {isSubmitting ? 'Saving...' : (profileRole === 'event_admin' ? 'Request Update Approval' : 'Save Changes')}
+                    {isSubmitting ? (loadingText || 'Saving...') : (profileRole === 'event_admin' ? 'Request Update Approval' : 'Save Changes')}
                 </Button>
             </div>
         </form>

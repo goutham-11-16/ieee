@@ -40,6 +40,7 @@ export async function updateEvent(formData: FormData) {
 
     const isFeePerPerson = formData.get('isFeePerPerson') === 'on'
     const isTeamEvent = formData.get('isTeamEvent') === 'on'
+    const isCapacityByTeams = formData.get('isCapacityByTeams') === 'on'
     const minTeamSize = formData.get('minTeamSize') ? parseInt(formData.get('minTeamSize') as string) : 1
     const maxTeamSize = formData.get('maxTeamSize') ? parseInt(formData.get('maxTeamSize') as string) : 1
 
@@ -143,8 +144,7 @@ export async function updateEvent(formData: FormData) {
         attendanceSessions = JSON.parse((formData.get('attendanceSessions') as string) || '[]')
     } catch (e) { console.error('Error parsing JSON schemas from form', e) }
 
-    const coordinatorsRaw = formData.get('coordinators') as string
-    const coordinators = coordinatorsRaw ? JSON.parse(coordinatorsRaw) : []
+
 
     const eventData = {
         title,
@@ -160,8 +160,9 @@ export async function updateEvent(formData: FormData) {
         payment_deadline: paymentDeadline,
         fees,
         is_fee_per_person: isFeePerPerson,
-        coordinators,
+
         is_team_event: isTeamEvent,
+        is_capacity_by_teams: isCapacityByTeams,
         min_team_size: minTeamSize,
         max_team_size: maxTeamSize,
         disabled_default_fields: disabledDefaultFields,

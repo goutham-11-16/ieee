@@ -251,6 +251,29 @@ export async function generateCertificates(eventId: string) {
                 .from('certificates')
                 .upload(fileName, Buffer.from(pdfBytes), { contentType: 'application/pdf' })
 
+            // Optional Output to Google Drive
+            try {
+                const scriptUrl = process.env.NEXT_PUBLIC_GOOGLE_SCRIPT_URL;
+                if (scriptUrl) {
+                    const base64Data = Buffer.from(pdfBytes).toString('base64');
+                    const uploadPayload = {
+                        base64Data: base64Data,
+                        filename: `${pName.replace(/\s+/g, '_')}_${uniqueCode}.pdf`,
+                        mimeType: 'application/pdf',
+                        eventTitle: reg.event?.title?.trim() || 'Unknown_Event',
+                        targetFolder: 'Certificates'
+                    };
+
+                    await fetch(scriptUrl, {
+                        method: 'POST',
+                        headers: { 'Content-Type': 'text/plain' },
+                        body: JSON.stringify(uploadPayload)
+                    });
+                }
+            } catch (e) {
+                console.error("Drive upload failed for cert:", e)
+            }
+
             await supabase.from('certificates').insert({
                 registration_id: reg.id,
                 template_id: template.id,
