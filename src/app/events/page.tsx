@@ -114,3 +114,4 @@ function EventGrid({ events, emptyMessage }: { events: any[], emptyMessage: stri
         </div>
     )
 }
+
