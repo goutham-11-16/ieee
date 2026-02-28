@@ -63,7 +63,7 @@ export default async function EventDetailsPage(props: { params: Promise<{ id: st
                     <img
                         src={getDriveImageUrl(event.banner_url)}
                         alt={event.title}
-                        className="w-full h-80 object-cover"
+                        className="w-full h-56 md:h-80 object-cover"
                     />
                 )}
                 <div className="p-8">

@@ -81,18 +81,18 @@ export default async function AdminPaymentsPage(props: { searchParams: Promise<{
                         <CardTitle>Registration Details</CardTitle>
                     </CardHeader>
                     <CardContent className="space-y-6 pt-6">
-                        <div className="grid grid-cols-2 gap-6 text-sm">
+                        <div className="grid grid-cols-1 sm:grid-cols-2 gap-6 text-sm">
                             <div>
                                 <p className="text-muted-foreground mb-1">Name:</p>
-                                <p className="font-semibold text-lg">{registration.guest_name || userData?.full_name}</p>
+                                <p className="font-semibold text-lg break-words">{registration.guest_name || userData?.full_name}</p>
                             </div>
                             <div>
                                 <p className="text-muted-foreground mb-1">Email:</p>
-                                <p className="font-medium">{registration.guest_email || userData?.email || 'N/A'}</p>
+                                <p className="font-medium break-words">{registration.guest_email || userData?.email || 'N/A'}</p>
                             </div>
                             <div>
                                 <p className="text-muted-foreground mb-1">Event:</p>
-                                <p className="font-medium">{eventData?.title}</p>
+                                <p className="font-medium break-words">{eventData?.title}</p>
                             </div>
                             <div>
                                 <p className="text-muted-foreground mb-1">Amount Due:</p>
@@ -106,14 +106,14 @@ export default async function AdminPaymentsPage(props: { searchParams: Promise<{
                             </div>
                             <div>
                                 <p className="text-muted-foreground mb-1">Ref ID:</p>
-                                <p className="font-mono bg-slate-100 p-1 rounded inline-block">{registration.reference_number}</p>
+                                <p className="font-mono bg-slate-100 p-1 rounded inline-block break-words max-w-full">{registration.reference_number}</p>
                             </div>
                         </div>
 
                         <div className="border-t pt-6 mt-6">
                             {(registration.payments && registration.payments.length > 0 && registration.payments.some((p: any) => p.status === 'verified')) ? (
                                 <div className="flex items-center gap-3 text-emerald-700 bg-emerald-50 border border-emerald-200 p-4 rounded-lg">
-                                    <CheckCircleIcon className="w-6 h-6" />
+                                    <CheckCircleIcon className="w-6 h-6 shrink-0" />
                                     <div>
                                         <p className="font-bold text-lg">Payment Verified</p>
                                         <p className="text-sm">This registration has already been paid and verified by an admin.</p>
@@ -129,9 +129,9 @@ export default async function AdminPaymentsPage(props: { searchParams: Promise<{
                                             <p className="font-semibold mb-1">Manual Verification Required</p>
                                             <p className="text-sm">Verify that you have received the correct payment of exactly <b>₹{eventData?.fees}</b> from the registrant before clicking confirm.</p>
                                         </div>
-                                        <Button className="w-full h-14 text-lg font-bold shadow-md" size="lg" disabled={eventData?.fees <= 0}>
-                                            <CheckCircleIcon className="w-6 h-6 mr-2" />
-                                            {eventData?.fees <= 0 ? 'Event is Free (No Payment Needed)' : 'Confirm Offline Verification & Mark as Paid'}
+                                        <Button className="w-full h-auto py-4 text-base md:text-lg font-bold shadow-md whitespace-normal" size="lg" disabled={eventData?.fees <= 0}>
+                                            <CheckCircleIcon className="w-6 h-6 mr-2 shrink-0" />
+                                            <span>{eventData?.fees <= 0 ? 'Event is Free (No Payment Needed)' : 'Confirm Offline Verification & Mark as Paid'}</span>
                                         </Button>
                                     </div>
                                 </form>

@@ -107,7 +107,7 @@ export default async function DashboardPage() {
                                         </div>
                                     </div>
 
-                                    <div className="space-y-4 flex-1 border-l pl-0 md:pl-6 border-slate-100 dark:border-slate-800">
+                                    <div className="space-y-4 flex-1 border-t md:border-t-0 md:border-l pt-4 md:pt-0 pl-0 md:pl-6 border-slate-100 dark:border-slate-800">
                                         <h4 className="text-sm font-medium text-muted-foreground mb-1">Payment & Ticket</h4>
 
                                         {isPyamentRequired ? (

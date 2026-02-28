@@ -26,7 +26,7 @@ export default async function SiteHeader() {
                         <img
                             src="https://i.ibb.co/yFsM0hzC/Gemini-Generated-Image-lb3h34lb3h34lb3h.png"
                             alt="IEEE SMC KARE Logo"
-                            className="h-24 w-auto object-contain rounded-md"
+                            className="h-12 md:h-20 lg:h-24 w-auto object-contain rounded-md"
                         />
                     </div>
                 </Link>

@@ -49,7 +49,7 @@ export function EditEventForm({ event, profileRole }: { event: any, profileRole:
                 <Input id="title" name="title" required defaultValue={event.title} />
             </div>
 
-            <div className="grid grid-cols-2 gap-4">
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                 <div className="space-y-2">
                     <Label htmlFor="eventType">Event Type</Label>
                     <select
@@ -119,7 +119,7 @@ export function EditEventForm({ event, profileRole }: { event: any, profileRole:
             </div>
 
 
-            <div className="grid grid-cols-2 gap-4">
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                 <div className="space-y-2">
                     <Label htmlFor="paymentDeadline">Payment Deadline (Optional)</Label>
                     <Input id="paymentDeadline" name="paymentDeadline" type="datetime-local" defaultValue={event.payment_deadline ? new Date(event.payment_deadline).toISOString().slice(0, 16) : ''} />
@@ -132,7 +132,7 @@ export function EditEventForm({ event, profileRole }: { event: any, profileRole:
                 </div>
             </div>
 
-            <div className="grid grid-cols-2 gap-4">
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                 <div className="space-y-2">
                     <Label htmlFor="location">Location</Label>
                     <Input id="location" name="location" defaultValue={event.location || ''} />
@@ -171,12 +171,12 @@ export function EditEventForm({ event, profileRole }: { event: any, profileRole:
                 </div>
             </div>
 
-            <div className="flex gap-4 justify-end items-center border-t pt-4">
-                <Button variant="ghost" asChild disabled={isSubmitting}>
+            <div className="flex flex-col md:flex-row gap-4 justify-between items-center border-t pt-4">
+                <Button variant="ghost" className="w-full md:w-auto" asChild disabled={isSubmitting}>
                     <Link href={`/admin/events/${event.id}`}>Cancel</Link>
                 </Button>
 
-                <Button type="submit" disabled={isSubmitting}>
+                <Button type="submit" className="w-full md:w-auto" disabled={isSubmitting}>
                     {isSubmitting ? (loadingText || 'Saving...') : (profileRole === 'event_admin' ? 'Request Update Approval' : 'Save Changes')}
                 </Button>
             </div>

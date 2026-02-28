@@ -51,7 +51,7 @@ export function CreateEventForm({ canPublishDirectly }: { canPublishDirectly: bo
                 <Input id="title" name="title" required placeholder="Annual Tech Conference" />
             </div>
 
-            <div className="grid grid-cols-2 gap-4">
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                 <div className="space-y-2">
                     <Label htmlFor="eventType">Event Type</Label>
                     <select
@@ -119,7 +119,7 @@ export function CreateEventForm({ canPublishDirectly }: { canPublishDirectly: bo
                 </div>
             </div>
 
-            <div className="grid grid-cols-2 gap-4">
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                 <div className="space-y-2">
                     <Label htmlFor="paymentDeadline">Payment Deadline (Optional)</Label>
                     <Input id="paymentDeadline" name="paymentDeadline" type="datetime-local" />
@@ -132,7 +132,7 @@ export function CreateEventForm({ canPublishDirectly }: { canPublishDirectly: bo
                 </div>
             </div>
 
-            <div className="grid grid-cols-2 gap-4">
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                 <div className="space-y-2">
                     <Label htmlFor="location">Location</Label>
                     <Input id="location" name="location" placeholder="Main Hall or Zoom" />
@@ -160,16 +160,16 @@ export function CreateEventForm({ canPublishDirectly }: { canPublishDirectly: bo
                 </div>
             </div>
 
-            <div className="flex gap-4 justify-end items-center border-t pt-4">
-                <Button variant="ghost" asChild disabled={isSubmitting}>
+            <div className="flex flex-col md:flex-row gap-4 justify-between items-center border-t pt-4">
+                <Button variant="ghost" className="w-full md:w-auto" asChild disabled={isSubmitting}>
                     <Link href="/admin/events">Cancel</Link>
                 </Button>
 
-                <div className="flex gap-2">
-                    <Button type="submit" onClick={() => setSubmitAction('draft')} variant="outline" disabled={isSubmitting}>
+                <div className="flex flex-col md:flex-row gap-2 w-full md:w-auto">
+                    <Button type="submit" className="w-full md:w-auto" onClick={() => setSubmitAction('draft')} variant="outline" disabled={isSubmitting}>
                         {isSubmitting && submitAction === 'draft' ? (loadingText || 'Saving...') : 'Save as Draft'}
                     </Button>
-                    <Button type="submit" onClick={() => setSubmitAction('submit')} disabled={isSubmitting}>
+                    <Button type="submit" className="w-full md:w-auto" onClick={() => setSubmitAction('submit')} disabled={isSubmitting}>
                         {isSubmitting && submitAction === 'submit' ? (loadingText || 'Submitting...') : (canPublishDirectly ? 'Publish Event' : 'Submit for Approval')}
                     </Button>
                 </div>

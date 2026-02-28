@@ -76,7 +76,7 @@ export default async function AdminLayout({
                     </div>
                 </nav>
             </aside>
-            <main className="flex-1 p-8 bg-gray-50 dark:bg-gray-900">
+            <main className="flex-1 min-w-0 p-4 md:p-8 bg-gray-50 dark:bg-gray-900">
                 {children}
             </main>
         </div>

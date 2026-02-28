@@ -57,7 +57,7 @@ export default async function AdminEventDashboard(props: { params: Promise<{ id:
                         </div>
                     </div>
 
-                    <div className="flex gap-2">
+                    <div className="flex flex-wrap gap-2 mt-4 md:mt-0">
                         <Button variant="outline" asChild>
                             <Link href={`/admin/events/${event.id}/edit`}>
                                 <EditIcon className="mr-2 w-4 h-4" /> Edit
