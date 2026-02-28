@@ -21,20 +21,37 @@ export default async function AdminEventDashboard(props: { params: Promise<{ id:
 
     if (!event) notFound()
 
-    // Fetch Counts
-    const { count: registrationCount } = await supabase
+    // Fetch Active Registrations (exclude cancelled/rejected/expired)
+    const { data: activeRegs, count: registrationCount } = await supabase
         .from('registrations')
-        .select('*', { count: 'exact', head: true })
+        .select('team_members, status, expires_at', { count: 'exact' })
         .eq('event_id', params.id)
+        .in('status', ['approved', 'pending_approval', 'pending_payment'])
+
+    const now = new Date()
+    const validRegs = activeRegs?.filter(reg => {
+        if (reg.status === 'pending_payment' && reg.expires_at) {
+            return new Date(reg.expires_at) > now
+        }
+        return true
+    }) || []
+
+    const validCount = validRegs.length
+
+    // Calculate total participants if needed
+    const participantCount = validRegs.reduce((acc, reg) => {
+        if (event.is_capacity_by_teams) return acc + 1
+        const teamSize = Array.isArray(reg.team_members) ? reg.team_members.length : 0
+        return acc + 1 + teamSize
+    }, 0)
 
     const { count: attendedCount } = await supabase
         .from('attendance')
         .select('*', { count: 'exact', head: true })
         .eq('event_id', params.id)
 
-    // Simplified Revenue (sum in DB or calc)
-    // For now, estimating
-    const revenue = (registrationCount || 0) * event.fees
+    // Revenue based on valid registrations
+    const revenue = validCount * event.fees
 
     return (
         <div className="container mx-auto py-8 px-4">
@@ -73,13 +90,21 @@ export default async function AdminEventDashboard(props: { params: Promise<{ id:
                 </div>
             </div>
 
-            <div className="grid grid-cols-1 md:grid-cols-4 gap-4 mb-8">
+            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-5 gap-4 mb-8">
                 <Card>
                     <CardHeader className="pb-2">
-                        <CardTitle className="text-sm font-medium text-muted-foreground">Total Registrations</CardTitle>
+                        <CardTitle className="text-sm font-medium text-muted-foreground">Active Regs</CardTitle>
                     </CardHeader>
                     <CardContent>
-                        <div className="text-2xl font-bold">{registrationCount}</div>
+                        <div className="text-2xl font-bold">{validCount}</div>
+                    </CardContent>
+                </Card>
+                <Card>
+                    <CardHeader className="pb-2">
+                        <CardTitle className="text-sm font-medium text-muted-foreground">Participants</CardTitle>
+                    </CardHeader>
+                    <CardContent>
+                        <div className="text-2xl font-bold">{participantCount}</div>
                     </CardContent>
                 </Card>
                 <Card>

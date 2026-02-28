@@ -18,7 +18,10 @@ export default async function AdminDashboardOverview() {
 
     // Fetch top-level stats
     const { count: eventsCount } = await supabase.from('events').select('*', { count: 'exact', head: true })
-    const { count: regsCount } = await supabase.from('registrations').select('*', { count: 'exact', head: true })
+    const { count: regsCount } = await supabase
+        .from('registrations')
+        .select('*', { count: 'exact', head: true })
+        .in('status', ['approved', 'pending_approval', 'pending_payment'])
 
     // Fetch recent registrations
     const { data: recentRegs } = await supabase
