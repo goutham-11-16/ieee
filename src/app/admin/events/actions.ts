@@ -32,7 +32,6 @@ export async function createEvent(formData: FormData) {
     // New Fields
     const registrationStart = formData.get('registrationStart') as string || null
     const registrationEnd = formData.get('registrationEnd') as string || null
-    const paymentDeadline = formData.get('paymentDeadline') as string || null
     const fees = formData.get('fees') ? parseFloat(formData.get('fees') as string) : 0.00
 
     // Social Links
@@ -96,7 +95,6 @@ export async function createEvent(formData: FormData) {
         created_by: user.id,
         registration_start: registrationStart,
         registration_end: registrationEnd,
-        payment_deadline: paymentDeadline,
         fees,
         is_fee_per_person: isFeePerPerson,
 

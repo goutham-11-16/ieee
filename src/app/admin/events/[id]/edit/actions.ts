@@ -30,7 +30,6 @@ export async function updateEvent(formData: FormData) {
 
     const registrationStart = formData.get('registrationStart') ? formData.get('registrationStart') as string : null
     const registrationEnd = formData.get('registrationEnd') ? formData.get('registrationEnd') as string : null
-    const paymentDeadline = formData.get('paymentDeadline') ? formData.get('paymentDeadline') as string : null
     const fees = formData.get('fees') ? parseFloat(formData.get('fees') as string) : 0.00
 
     // Social Links
@@ -74,7 +73,6 @@ export async function updateEvent(formData: FormData) {
         requires_approval: requiresApproval,
         registration_start: registrationStart,
         registration_end: registrationEnd,
-        payment_deadline: paymentDeadline,
         fees,
         is_fee_per_person: isFeePerPerson,
 

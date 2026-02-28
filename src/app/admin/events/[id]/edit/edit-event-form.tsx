@@ -37,7 +37,7 @@ export function EditEventForm({ event, profileRole }: { event: any, profileRole:
             const formData = new FormData(e.currentTarget)
 
             // Normalize dates to UTC to avoid timezone discrepancies
-            const dateFields = ['date', 'endDate', 'registrationStart', 'registrationEnd', 'paymentDeadline']
+            const dateFields = ['date', 'endDate', 'registrationStart', 'registrationEnd']
             dateFields.forEach(field => {
                 const value = formData.get(field)
                 if (value && typeof value === 'string' && value.length > 0) {
@@ -151,17 +151,10 @@ export function EditEventForm({ event, profileRole }: { event: any, profileRole:
             </div>
 
 
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                <div className="space-y-2">
-                    <Label htmlFor="paymentDeadline">Payment Deadline (Optional)</Label>
-                    <Input id="paymentDeadline" name="paymentDeadline" type="datetime-local" defaultValue={toLocalISOString(event.payment_deadline)} />
-                    <p className="text-xs text-muted-foreground">After this date, unpaid registrations will be expired.</p>
-                </div>
-                <div className="space-y-2">
-                    <Label htmlFor="paymentQrUrl">Payment QR Code {event.payment_qr_url && '(Uploaded)'}</Label>
-                    <DriveImageUploader id="paymentQrUrl" name="paymentQrUrl" folderName="QR Code" existingUrl={event.payment_qr_url || ''} required={!event.payment_qr_url} />
-                    <p className="text-xs text-muted-foreground">{event.payment_qr_url ? 'Upload a new QR code to replace the existing one.' : 'Upload the QR code that applicants should scan to pay the fee.'}</p>
-                </div>
+            <div className="space-y-2">
+                <Label htmlFor="paymentQrUrl">Payment QR Code {event.payment_qr_url && '(Uploaded)'}</Label>
+                <DriveImageUploader id="paymentQrUrl" name="paymentQrUrl" folderName="QR Code" existingUrl={event.payment_qr_url || ''} required={!event.payment_qr_url} />
+                <p className="text-xs text-muted-foreground">{event.payment_qr_url ? 'Upload a new QR code to replace the existing one.' : 'Upload the QR code that applicants should scan to pay the fee.'}</p>
             </div>
 
             <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
