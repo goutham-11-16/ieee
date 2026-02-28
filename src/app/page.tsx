@@ -8,16 +8,8 @@ import { AnimatedHero } from "@/components/ui/animated-hero"
 import { StatsSection } from "@/components/home/stats-section"
 import { ScrollReveal } from "@/components/ui/scroll-reveal"
 import { BentoGrid, BentoGridItem } from "@/components/ui/bento-grid"
-import { FloatingNav } from "@/components/ui/floating-navbar"
 import { InfiniteMovingCards } from "@/components/ui/infinite-moving-cards"
 
-const navItems = [
-  { name: "Home", link: "/", icon: <ArrowRight className="h-4 w-4" /> },
-  { name: "Events", link: "/events", icon: <Calendar className="h-4 w-4" /> },
-  { name: "About", link: "/about", icon: <Users className="h-4 w-4" /> },
-  { name: "Team", link: "/team", icon: <Users className="h-4 w-4" /> },
-  { name: "Contact", link: "/contact", icon: <ArrowRight className="h-4 w-4" /> }
-]
 
 const testimonials = [
   {
@@ -52,7 +44,6 @@ export default async function Home() {
 
   return (
     <div className="flex flex-col min-h-screen relative">
-      <FloatingNav navItems={navItems} />
 
       {/* Hero Section */}
       <AnimatedHero />
