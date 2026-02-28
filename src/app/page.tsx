@@ -114,7 +114,7 @@ export default async function Home() {
           <div className="grid md:grid-cols-4 gap-8 mb-8">
             <div className="col-span-1 md:col-span-2">
               <div className="flex items-center gap-8 mb-6">
-                <img
+                <img loading="lazy"
                   src="https://i.ibb.co/yFsM0hzC/Gemini-Generated-Image-lb3h34lb3h34lb3h.png"
                   alt="IEEE SMC KARE Logo"
                   className="h-40 w-auto object-contain rounded-lg"

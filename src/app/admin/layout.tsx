@@ -16,67 +16,77 @@ export default async function AdminLayout({
     }
 
     return (
-        <div className="flex min-h-screen flex-col md:flex-row">
-            <aside className="w-full md:w-64 bg-slate-900 text-white p-6 md:min-h-screen">
-                <h2 className="text-2xl font-bold mb-8">Admin Panel</h2>
-                <nav className="flex flex-col gap-2">
+        <div className="flex min-h-screen flex-col md:flex-row bg-background">
+            <aside className="w-full md:w-64 bg-slate-50/50 dark:bg-slate-900/40 border-r border-slate-200 dark:border-slate-800 p-6 md:min-h-screen flex flex-col">
+                <h2 className="text-xl font-bold tracking-tight mb-8 text-slate-900 dark:text-zinc-100">Admin Panel</h2>
+                <nav className="flex flex-col gap-1 flex-1">
                     {['super_admin', 'admin', 'event_admin'].includes(profile.role) && (
                         <>
-                            <Button variant="ghost" asChild className="justify-start text-white hover:text-white hover:bg-slate-800">
+                            <p className="text-xs font-semibold text-muted-foreground uppercase tracking-wider mt-4 mb-2 px-3">Management</p>
+                            <Button variant="ghost" asChild className="justify-start text-muted-foreground hover:bg-slate-200/50 hover:text-slate-900 dark:hover:bg-slate-800 dark:hover:text-slate-100">
                                 <Link href="/admin/events">Events</Link>
                             </Button>
-                            <Button variant="ghost" asChild className="justify-start text-white hover:text-white hover:bg-slate-800">
+                            <Button variant="ghost" asChild className="justify-start text-muted-foreground hover:bg-slate-200/50 hover:text-slate-900 dark:hover:bg-slate-800 dark:hover:text-slate-100">
                                 <Link href="/admin/registrations">Registrations</Link>
                             </Button>
                         </>
                     )}
 
                     {['super_admin', 'admin', 'finance_admin'].includes(profile.role) && (
-                        <Button variant="ghost" asChild className="justify-start text-white hover:text-white hover:bg-slate-800">
+                        <Button variant="ghost" asChild className="justify-start text-muted-foreground hover:bg-slate-200/50 hover:text-slate-900 dark:hover:bg-slate-800 dark:hover:text-slate-100 mt-1">
                             <Link href="/admin/payments">Payments</Link>
                         </Button>
                     )}
 
                     {['super_admin', 'admin'].includes(profile.role) && (
-                        <Button variant="ghost" asChild className="justify-start text-white hover:text-white hover:bg-slate-800">
+                        <Button variant="ghost" asChild className="justify-start text-muted-foreground hover:bg-slate-200/50 hover:text-slate-900 dark:hover:bg-slate-800 dark:hover:text-slate-100 mt-1">
                             <Link href="/admin/approvals">Approvals</Link>
                         </Button>
                     )}
 
                     {['super_admin'].includes(profile.role) && (
-                        <Button variant="ghost" asChild className="justify-start text-white hover:text-white hover:bg-slate-800">
-                            <Link href="/admin/team">Manage Team</Link>
-                        </Button>
+                        <>
+                            <p className="text-xs font-semibold text-muted-foreground uppercase tracking-wider mt-6 mb-2 px-3">Administration</p>
+                            <Button variant="ghost" asChild className="justify-start text-muted-foreground hover:bg-slate-200/50 hover:text-slate-900 dark:hover:bg-slate-800 dark:hover:text-slate-100">
+                                <Link href="/admin/team">Manage Team</Link>
+                            </Button>
+                        </>
                     )}
 
-                    <Button variant="ghost" asChild className="justify-start text-white hover:text-white hover:bg-slate-800">
-                        <Link href="/admin/reports">Reports</Link>
-                    </Button>
+                    {(['super_admin', 'admin', 'content_admin', 'event_admin'].includes(profile.role) || profile.role !== '') && (
+                        <>
+                            <p className="text-xs font-semibold text-muted-foreground uppercase tracking-wider mt-6 mb-2 px-3">Tools</p>
+                            <Button variant="ghost" asChild className="justify-start text-muted-foreground hover:bg-slate-200/50 hover:text-slate-900 dark:hover:bg-slate-800 dark:hover:text-slate-100">
+                                <Link href="/admin/reports">Reports</Link>
+                            </Button>
+                        </>
+                    )}
 
                     {['super_admin', 'admin', 'content_admin', 'event_admin'].includes(profile.role) && (
                         <>
-                            <Button variant="ghost" asChild className="justify-start text-white hover:text-white hover:bg-slate-800">
+                            <Button variant="ghost" asChild className="justify-start text-muted-foreground hover:bg-slate-200/50 hover:text-slate-900 dark:hover:bg-slate-800 dark:hover:text-slate-100 mt-1">
                                 <Link href="/admin/certificates">Certificates</Link>
                             </Button>
-                            <Button variant="ghost" asChild className="justify-start text-amber-500 hover:text-amber-400 hover:bg-slate-800">
+                            <Button variant="ghost" asChild className="justify-start text-amber-600 dark:text-amber-500 hover:bg-slate-200/50 dark:hover:bg-slate-800 mt-1">
                                 <Link href="/admin/certificates/exceptions">Exceptions</Link>
                             </Button>
                         </>
                     )}
 
                     {['super_admin', 'admin', 'event_admin'].includes(profile.role) && (
-                        <Button variant="ghost" asChild className="justify-start text-white hover:text-white hover:bg-slate-800">
+                        <Button variant="ghost" asChild className="justify-start text-muted-foreground hover:bg-slate-200/50 hover:text-slate-900 dark:hover:bg-slate-800 dark:hover:text-slate-100 mt-1">
                             <Link href="/admin/scan">QR Scanner</Link>
                         </Button>
                     )}
-                    <div className="pt-4 mt-auto border-t border-slate-700">
-                        <Button variant="ghost" asChild className="justify-start text-muted-foreground hover:text-white hover:bg-slate-800">
+
+                    <div className="pt-4 mt-auto border-t border-slate-200 dark:border-slate-800">
+                        <Button variant="ghost" asChild className="w-full justify-start text-muted-foreground hover:bg-slate-200/50 hover:text-slate-900 dark:hover:bg-slate-800 dark:hover:text-slate-100">
                             <Link href="/">Back to Site</Link>
                         </Button>
                     </div>
                 </nav>
             </aside>
-            <main className="flex-1 min-w-0 p-4 md:p-8 bg-gray-50 dark:bg-gray-900">
+            <main className="flex-1 min-w-0 p-4 md:p-8 md:px-12 bg-white dark:bg-slate-950">
                 {children}
             </main>
         </div>

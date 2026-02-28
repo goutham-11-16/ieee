@@ -74,7 +74,7 @@ function EventGrid({ events, emptyMessage }: { events: any[], emptyMessage: stri
                 return (
                     <Card key={event.id} className="flex flex-col h-full hover:shadow-xl hover:-translate-y-1 transition-all duration-300 overflow-hidden group border-muted/60">
                         <div className="h-48 overflow-hidden relative">
-                            <img
+                            <img loading="lazy"
                                 src={event.banner_url || "https://images.unsplash.com/photo-1501281668745-f7f57925c3b4?auto=format&fit=crop&q=80&w=1000"}
                                 alt={event.title}
                                 className="w-full h-full object-cover transition-transform duration-500 group-hover:scale-105"
