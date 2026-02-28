@@ -1,5 +1,3 @@
-import { getCurrentProfile } from '@/lib/auth'
-import SiteHeader from '@/components/site-header-client'
 import { AnimatedHero } from '@/components/ui/animated-hero'
 import { BentoStats } from '@/components/home/bento-stats'
 import { FeaturesSection } from '@/components/home/features-section'
@@ -10,12 +8,8 @@ import { Suspense } from 'react'
 import { FeaturedEventsSkeleton } from '@/components/home/featured-events-skeleton'
 
 export default async function Home() {
-  const profile = await getCurrentProfile()
-
   return (
-    <main className="min-h-screen bg-white dark:bg-slate-950 selection:bg-blue-100 dark:selection:bg-blue-900/30 overflow-x-hidden">
-      <SiteHeader profile={profile} />
-
+    <div className="min-h-screen bg-white dark:bg-slate-950 selection:bg-blue-100 dark:selection:bg-blue-900/30 overflow-x-hidden">
       <div className="relative">
         <AnimatedHero />
 
@@ -35,7 +29,7 @@ export default async function Home() {
       </div>
 
       <SiteFooter />
-    </main>
+    </div>
   )
 }
 
