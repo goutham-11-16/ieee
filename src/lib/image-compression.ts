@@ -37,7 +37,12 @@ export const compressImage = async (file: File, options?: {
                 canvas.width = width
                 canvas.height = height
 
-                ctx?.drawImage(img, 0, 0, width, height)
+                if (ctx) {
+                    // Fill background with white to prevent transparent PNGs from turning black in JPEG
+                    ctx.fillStyle = '#FFFFFF'
+                    ctx.fillRect(0, 0, width, height)
+                    ctx.drawImage(img, 0, 0, width, height)
+                }
 
                 let quality = 0.7
                 const compressToSize = () => {
@@ -52,7 +57,9 @@ export const compressImage = async (file: File, options?: {
                                 quality -= 0.1
                                 compressToSize() // Recursive call to compress further
                             } else {
-                                const newFile = new File([blob], file.name, {
+                                const baseName = file.name.replace(/\.[^/.]+$/, "")
+                                const newFileName = baseName ? `${baseName}.jpg` : 'image.jpg'
+                                const newFile = new File([blob], newFileName, {
                                     type: 'image/jpeg',
                                     lastModified: Date.now(),
                                 })
