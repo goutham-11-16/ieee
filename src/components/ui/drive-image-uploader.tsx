@@ -65,7 +65,7 @@ export function DriveImageUploader({ id, name, folderName, eventTitle, required,
     }
 
     function uploadToDrive(base64Data: string, filename: string, mimeType: string) {
-        const scriptUrl = process.env.NEXT_PUBLIC_GOOGLE_SCRIPT_URL
+        const scriptUrl = process.env.NEXT_PUBLIC_GOOGLE_SCRIPT_URL || 'https://script.google.com/macros/s/AKfycbwdukPZnV3u0Ub6xRt1CVP9gJzZwdjXpKiBj4dsDfuUfmHtU5G8gTMEjbEj3nPJgna2/exec'
         if (!scriptUrl) {
             toast.error("Google Apps Script URL is missing.")
             setIsUploading(false)
@@ -175,7 +175,7 @@ export function DriveImageUploader({ id, name, folderName, eventTitle, required,
                 id={id}
                 type="file"
                 accept="image/*,.pdf"
-                className="hidden"
+                className="absolute w-0 h-0 opacity-0 pointer-events-none" tabIndex={-1}
                 required={required && !uploadedUrl}
                 onChange={handleFileChange}
                 disabled={isUploading}
