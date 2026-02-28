@@ -173,7 +173,7 @@ export default async function StatusDashboardPage(props: {
                                     </div>
                                     <div>
                                         <span className="text-muted-foreground block mb-1">Event Fee</span>
-                                        <span className="font-medium">{reg.event.fees > 0 ? `$${reg.event.fees}` : 'Free'}</span>
+                                        <span className="font-medium">{reg.event.fees > 0 ? `₹${reg.event.fees}` : 'Free'}</span>
                                     </div>
                                     {reg.custom_responses && Object.entries(reg.custom_responses).map(([key, value]) => {
                                         // Retrieve label from schema if possible

@@ -70,7 +70,7 @@ export async function verifyPayment(paymentId: string, registrationId: string) {
 
         drawField('Event:', eventTitle || 'Unknown Event', height - 180)
         drawField('Payer:', payerName || 'N/A', height - 200)
-        drawField('Amount:', `$${p.amount}`, height - 220)
+        drawField('Amount:', `₹${p.amount}`, height - 220)
         drawField('Ref ID:', p.transaction_reference || 'N/A', height - 240)
 
         page.drawText('Status: VERIFIED', { x: 50, y: height - 280, size: 16, font: fontBold, color: rgb(0, 0.6, 0) })
@@ -131,7 +131,6 @@ export async function verifyPayment(paymentId: string, registrationId: string) {
             .from('registrations')
             .update({ status: 'approved' })
             .eq('id', registrationId)
-        // .in('status', ['pending_approval', 'pending_payment']) // Approve it as long as payment is verified.
 
         await logAction('VERIFY_PAYMENT', 'payments', paymentId, { status: 'verified', generatedReceipt: fileName })
 

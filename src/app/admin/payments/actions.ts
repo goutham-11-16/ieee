@@ -64,7 +64,7 @@ export async function markRegistrationAsPaid(registrationId: string) {
         drawField('Date:', new Date().toLocaleDateString(), height - 140)
         drawField('Event:', reg.event?.title || 'Unknown Event', height - 180)
         drawField('Payer:', reg.guest_name || reg.user?.full_name || 'N/A', height - 200)
-        drawField('Amount Paid:', `$${amount}`, height - 220)
+        drawField('Amount Paid:', `₹${amount}`, height - 220)
         drawField('Ref ID:', transactionRef, height - 240)
 
         page.drawText('Status: PAID & VERIFIED', { x: 50, y: height - 280, size: 16, font: fontBold, color: rgb(0, 0.6, 0) })
@@ -103,12 +103,11 @@ export async function markRegistrationAsPaid(registrationId: string) {
     }
 
     // 4. Update Registration Status
-    if (reg.status === 'pending_approval') {
-        await supabase
-            .from('registrations')
-            .update({ status: 'approved' })
-            .eq('id', registrationId)
-    }
+    // Even if it was pending_payment, verify payment -> Approves it.
+    await supabase
+        .from('registrations')
+        .update({ status: 'approved' })
+        .eq('id', registrationId)
 
     await logAction('VERIFY_PAYMENT', 'payments', payment.id, { status: 'verified', method: 'in-person' })
 

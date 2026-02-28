@@ -188,6 +188,7 @@ export async function registerGuest(formData: FormData) {
             guest_phone: guestPhone,
             guest_institution: guestInstitution,
             reference_number: referenceNumber,
+            ticket_qr_uuid: crypto.randomUUID(),
             status,
             expires_at: expiresAt,
             custom_responses: customResponses,
