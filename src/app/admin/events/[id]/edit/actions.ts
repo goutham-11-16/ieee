@@ -2,7 +2,6 @@
 
 import { createClient } from '@/lib/supabase/server'
 import { revalidatePath } from 'next/cache'
-import { redirect } from 'next/navigation'
 import { createApprovalRequest } from '@/lib/actions/approvals'
 import { logAction } from '@/lib/actions/audit'
 
@@ -103,7 +102,7 @@ export async function updateEvent(formData: FormData) {
         if (error) return { error: error.message }
         await logAction('UPDATE_EVENT', 'events', eventId, eventData)
         revalidatePath(`/admin/events/${eventId}`)
-        redirect(`/admin/events/${eventId}`)
+        return { success: true }
     } else {
         // Event Admin must request approval to update full metadata
         const result = await createApprovalRequest(
@@ -116,6 +115,6 @@ export async function updateEvent(formData: FormData) {
         if (result.error) return result
         await logAction('REQUEST_UPDATE_EVENT', 'events', eventId, { title })
         revalidatePath(`/admin/events/${eventId}`)
-        redirect(`/admin/events/${eventId}`)
+        return { success: true }
     }
 }

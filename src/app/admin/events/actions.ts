@@ -2,7 +2,6 @@
 
 import { createClient } from '@/lib/supabase/server'
 import { revalidatePath } from 'next/cache'
-import { redirect } from 'next/navigation'
 import { logAction } from '@/lib/actions/audit'
 import { createApprovalRequest } from '@/lib/actions/approvals'
 
@@ -125,7 +124,7 @@ export async function createEvent(formData: FormData) {
         )
         await logAction('CREATE_EVENT_REQUEST', 'events', '00000000-0000-0000-0000-000000000000', { title, status: 'pending_approval' })
         revalidatePath('/admin/events')
-        redirect('/admin/events')
+        return { success: true }
     }
 
     const { data, error } = await supabase
@@ -142,7 +141,7 @@ export async function createEvent(formData: FormData) {
     await logAction('CREATE_EVENT', 'events', data.id, { title, status })
 
     revalidatePath('/admin/events')
-    redirect('/admin/events')
+    return { success: true }
 }
 
 export async function deleteEvent(eventId: string) {

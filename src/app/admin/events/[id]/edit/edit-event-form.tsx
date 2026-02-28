@@ -10,10 +10,13 @@ import { AttendanceSessionsBuilder } from '../../new/attendance-sessions-builder
 import Link from 'next/link'
 import { updateEvent } from './actions'
 import { DriveImageUploader } from '@/components/ui/drive-image-uploader'
+import { useRouter } from 'next/navigation'
+import { toast } from 'sonner'
 
 export function EditEventForm({ event, profileRole }: { event: any, profileRole: string }) {
     const [isSubmitting, setIsSubmitting] = useState(false)
     const [loadingText, setLoadingText] = useState('')
+    const router = useRouter()
 
     const handleSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
         e.preventDefault()
@@ -29,11 +32,17 @@ export function EditEventForm({ event, profileRole }: { event: any, profileRole:
 
             // Call Server Action
             setLoadingText('Uploading updates to server...')
-            await updateEvent(formData)
+            const result = await updateEvent(formData)
+
+            if (result?.error) {
+                toast.error(result.error)
+            } else if (result?.success) {
+                toast.success('Event Updated Successfully')
+                router.push(`/admin/events/${event.id}`)
+            }
         } catch (error: any) {
-            if (error?.message === 'NEXT_REDIRECT') throw error;
             console.error("Error updating event:", error)
-            alert("Failed to update event. Please check the console for details.")
+            toast.error("Failed to update event. An unexpected error occurred.")
         } finally {
             setIsSubmitting(false)
             setLoadingText('')

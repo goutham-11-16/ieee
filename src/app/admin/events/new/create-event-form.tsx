@@ -10,11 +10,14 @@ import { AttendanceSessionsBuilder } from './attendance-sessions-builder'
 import Link from 'next/link'
 import { createEvent } from '../actions'
 import { DriveImageUploader } from '@/components/ui/drive-image-uploader'
+import { useRouter } from 'next/navigation'
+import { toast } from 'sonner'
 
 export function CreateEventForm({ canPublishDirectly }: { canPublishDirectly: boolean }) {
     const [isSubmitting, setIsSubmitting] = useState(false)
     const [submitAction, setSubmitAction] = useState<'draft' | 'submit'>('submit')
     const [loadingText, setLoadingText] = useState('')
+    const router = useRouter()
 
     const handleSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
         e.preventDefault()
@@ -33,11 +36,17 @@ export function CreateEventForm({ canPublishDirectly }: { canPublishDirectly: bo
 
             // Call Server Action
             setLoadingText('Uploading to Database & Drive...')
-            await createEvent(formData)
+            const result = await createEvent(formData)
+
+            if (result?.error) {
+                toast.error(result.error)
+            } else if (result?.success) {
+                toast.success('Event Created Successfully')
+                router.push('/admin/events')
+            }
         } catch (error: any) {
-            if (error?.message === 'NEXT_REDIRECT') throw error;
             console.error("Error submitting form:", error)
-            alert("Failed to submit event. Please check the console for details.")
+            toast.error("Failed to submit event. An unexpected error occurred.")
         } finally {
             setIsSubmitting(false)
             setLoadingText('')
