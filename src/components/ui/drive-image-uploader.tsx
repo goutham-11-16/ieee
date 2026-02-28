@@ -64,54 +64,13 @@ export function DriveImageUploader({ id, name, folderName, eventTitle, required,
         }
     }
 
-    function uploadToDrive(base64Data: string, filename: string, mimeType: string) {
+    async function uploadToDrive(base64Data: string, filename: string, mimeType: string) {
         const scriptUrl = process.env.NEXT_PUBLIC_GOOGLE_SCRIPT_URL || 'https://script.google.com/macros/s/AKfycbwdukPZnV3u0Ub6xRt1CVP9gJzZwdjXpKiBj4dsDfuUfmHtU5G8gTMEjbEj3nPJgna2/exec'
+
         if (!scriptUrl) {
             toast.error("Google Apps Script URL is missing.")
             setIsUploading(false)
             return
-        }
-
-        const xhr = new XMLHttpRequest()
-        xhr.open('POST', scriptUrl, true)
-        xhr.setRequestHeader('Content-Type', 'text/plain')
-
-        xhr.upload.onprogress = (event) => {
-            if (event.lengthComputable) {
-                const percent = Math.round((event.loaded / event.total) * 100)
-                // Fake a little bit of delay at 100% since GAS takes a moment to process after sending
-                setProgress(percent > 95 ? 95 : percent)
-            }
-        }
-
-        xhr.onload = () => {
-            if (xhr.status === 200 || xhr.status === 302) {
-                try {
-                    const res = JSON.parse(xhr.responseText)
-                    if (res.success) {
-                        setProgress(100)
-                        const url = res.fileId ? `https://drive.google.com/uc?export=download&id=${res.fileId}` : res.url
-                        setUploadedUrl(url)
-                        toast.success("Image uploaded successfully!")
-                    } else {
-                        toast.error("Drive upload failed: " + res.error)
-                    }
-                } catch (e) {
-                    toast.error("Invalid response from Drive server")
-                }
-            } else {
-                toast.error("Upload failed with network error")
-            }
-
-            // Allow state to settle, hide modal after 500ms
-            setTimeout(() => {
-                setIsUploading(false)
-            }, 500)
-        }
-
-        xhr.onerror = () => {
-            setIsUploading(false)
-            toast.error("Network error during upload")
         }
 
         // Dynamically get Title from DOM if eventTitle is absent
@@ -121,9 +80,70 @@ export function DriveImageUploader({ id, name, folderName, eventTitle, required,
             actualEventTitle = titleEl?.value ? titleEl.value : 'Misc Uploads';
         }
 
-        xhr.send(JSON.stringify({
-            base64Data, filename, mimeType, targetFolder: folderName, eventTitle: actualEventTitle
-        }))
+        try {
+            // Fake progress for UI since fetch doesn't support upload progress natively in all browsers
+            let currentProgress = 0;
+            const progressInterval = setInterval(() => {
+                currentProgress += Math.random() * 10;
+                if (currentProgress > 90) {
+                    clearInterval(progressInterval);
+                    currentProgress = 90;
+                }
+                setProgress(Math.round(currentProgress));
+            }, 200);
+
+            const payload = {
+                base64Data,
+                filename,
+                mimeType,
+                targetFolder: folderName,
+                eventTitle: actualEventTitle
+            };
+
+            console.log("Starting upload to Drive...", { filename, mimeType, folderName });
+
+            const response = await fetch(scriptUrl, {
+                method: 'POST',
+                mode: 'cors',
+                headers: {
+                    'Content-Type': 'text/plain', // Known workaround for GAS CORS
+                },
+                body: JSON.stringify(payload)
+            });
+
+            clearInterval(progressInterval);
+
+            if (!response.ok) {
+                console.error("Upload failed with status:", response.status);
+                throw new Error(`Upload server returned ${response.status}`);
+            }
+
+            const res = await response.json();
+            console.log("Drive upload response:", res);
+
+            if (res.success) {
+                setProgress(100);
+                const url = res.fileId ? `https://drive.google.com/uc?export=download&id=${res.fileId}` : res.url;
+                setUploadedUrl(url);
+                toast.success("Image uploaded successfully!");
+            } else {
+                console.error("Drive upload error:", res.error);
+                toast.error("Drive upload failed: " + (res.error || "Unknown error"));
+            }
+        } catch (error: any) {
+            console.error("Network or Processing error during upload:", error);
+            // Handle specific error cases if needed
+            if (error.message?.includes('fetch')) {
+                toast.error("Connection failed. Please check your internet or firewall.");
+            } else {
+                toast.error(`Upload error: ${error.message || "Network failure"}`);
+            }
+        } finally {
+            // Allow state to settle, hide modal after 500ms
+            setTimeout(() => {
+                setIsUploading(false);
+            }, 500);
+        }
     }
 
     return (
