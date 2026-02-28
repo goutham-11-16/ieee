@@ -55,19 +55,34 @@ function EventGrid({ events, emptyMessage }: { events: any[], emptyMessage: stri
     return (
         <div className="grid gap-6 md:grid-cols-2 lg:grid-cols-3">
             {events.map((event) => {
-                const isPast = new Date(event.date) < new Date()
-                const daysUntil = Math.ceil((new Date(event.date).getTime() - new Date().getTime()) / (1000 * 3600 * 24))
+                const now = new Date()
+                const eventDate = new Date(event.date)
+                const isPast = eventDate < now
+
+                const regStart = event.registration_start ? new Date(event.registration_start) : null
+                const regEnd = event.registration_end ? new Date(event.registration_end) : eventDate
+
+                const isBeforeReg = regStart ? now < regStart : false
+                const isRegClosed = now > regEnd
+                const isClosingSoon = !isRegClosed && !isBeforeReg && (regEnd.getTime() - now.getTime()) < 24 * 60 * 60 * 1000
+
                 let badgeClass = ''
                 let badgeText = ''
 
                 if (isPast) {
                     badgeClass = 'bg-slate-100 text-slate-800 border-slate-200'
                     badgeText = 'Completed'
-                } else if (daysUntil <= 3 && daysUntil >= 0) {
-                    badgeClass = 'bg-red-100 text-red-800 border-red-200 animate-pulse'
-                    badgeText = `Closes in ${daysUntil} day${daysUntil !== 1 ? 's' : ''}`
+                } else if (isBeforeReg) {
+                    badgeClass = 'bg-amber-100 text-amber-800 border-amber-200'
+                    badgeText = 'Starts Soon'
+                } else if (isRegClosed) {
+                    badgeClass = 'bg-red-100 text-red-800 border-red-200'
+                    badgeText = 'Registration Closed'
+                } else if (isClosingSoon) {
+                    badgeClass = 'bg-orange-100 text-orange-800 border-orange-200 animate-pulse'
+                    badgeText = 'Closing Soon'
                 } else {
-                    badgeClass = 'bg-blue-100 text-blue-800 border-blue-200'
+                    badgeClass = 'bg-emerald-100 text-emerald-800 border-emerald-200'
                     badgeText = 'Live'
                 }
 
@@ -114,4 +129,6 @@ function EventGrid({ events, emptyMessage }: { events: any[], emptyMessage: stri
         </div>
     )
 }
+
+
 

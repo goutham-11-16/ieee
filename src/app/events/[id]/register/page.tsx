@@ -18,8 +18,23 @@ export default async function RegisterPage(props: { params: Promise<{ id: string
     }
 
     const now = new Date()
+    const regStart = event.registration_start ? new Date(event.registration_start) : null
     const regEnd = event.registration_end ? new Date(event.registration_end) : new Date(event.date)
-    const isRegistrationClosed = regEnd < now
+
+    const isBeforeReg = regStart ? now < regStart : false
+    const isRegistrationClosed = now > regEnd
+
+    if (isBeforeReg) {
+        return (
+            <div className="container mx-auto py-24 px-4 text-center">
+                <h1 className="text-3xl font-bold text-amber-600 mb-4">Registration Not Yet Open</h1>
+                <p className="text-muted-foreground mb-8">Registration for {event.title} will open on {regStart?.toLocaleString()}.</p>
+                <Link href={`/events/${event.id}`} className="text-blue-600 hover:underline inline-flex items-center">
+                    <ArrowLeftIcon className="w-4 h-4 mr-2" /> Back to Event
+                </Link>
+            </div>
+        )
+    }
 
     if (isRegistrationClosed) {
         return (

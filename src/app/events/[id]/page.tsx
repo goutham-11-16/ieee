@@ -20,8 +20,12 @@ export default async function EventDetailsPage(props: { params: Promise<{ id: st
 
 
     const now = new Date()
+    const regStart = event.registration_start ? new Date(event.registration_start) : null
     const regEnd = event.registration_end ? new Date(event.registration_end) : new Date(event.date)
-    const isClosingSoon = regEnd > now && (regEnd.getTime() - now.getTime()) < 24 * 60 * 60 * 1000 // 24 hours
+
+    const isBeforeReg = regStart ? now < regStart : false
+    const isRegClosed = now > regEnd
+    const isClosingSoon = !isRegClosed && !isBeforeReg && (regEnd.getTime() - now.getTime()) < 24 * 60 * 60 * 1000 // 24 hours
 
     let takenSeats = 0
     if (event.max_capacity) {
@@ -179,7 +183,11 @@ export default async function EventDetailsPage(props: { params: Promise<{ id: st
                         <Button disabled variant="destructive" size="lg" className="w-full sm:w-auto px-8 rounded-full shadow-md">
                             Sold Out
                         </Button>
-                    ) : !isClosingSoon && regEnd < now ? (
+                    ) : isBeforeReg ? (
+                        <Button disabled variant="outline" size="lg" className="w-full sm:w-auto px-8 rounded-full shadow-md">
+                            Registration Opens Soon
+                        </Button>
+                    ) : isRegClosed ? (
                         <Button disabled variant="destructive" size="lg" className="w-full sm:w-auto px-8 rounded-full shadow-md">
                             Registration Closed
                         </Button>

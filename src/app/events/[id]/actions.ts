@@ -33,14 +33,19 @@ export async function registerForEvent(eventId: string) {
     // Fetch event to check approval and deadlines
     const { data: event } = await supabase
         .from('events')
-        .select('requires_approval, registration_end, date')
+        .select('requires_approval, registration_start, registration_end, date')
         .eq('id', eventId)
         .single()
 
     if (!event) return { error: 'Event not found' }
 
     const now = new Date()
+    const openDate = event.registration_start ? new Date(event.registration_start) : null
     const closeDate = event.registration_end ? new Date(event.registration_end) : new Date(event.date)
+
+    if (openDate && now < openDate) {
+        return { error: 'Registration for this event has not opened yet.' }
+    }
 
     if (now > closeDate) {
         return { error: 'Registration for this event is closed.' }
@@ -88,7 +93,7 @@ export async function registerGuest(formData: FormData) {
     // Fetch event
     const { data: event } = await supabase
         .from('events')
-        .select('requires_approval, registration_end, date, max_capacity, fees, is_capacity_by_teams')
+        .select('requires_approval, registration_start, registration_end, date, max_capacity, fees, is_capacity_by_teams')
         .eq('id', eventId)
         .single()
 
@@ -151,7 +156,12 @@ export async function registerGuest(formData: FormData) {
     }
 
     const now = new Date()
+    const openDate = event.registration_start ? new Date(event.registration_start) : null
     const closeDate = event.registration_end ? new Date(event.registration_end) : new Date(event.date)
+
+    if (openDate && now < openDate) {
+        return { error: 'Registration for this event has not opened yet.' }
+    }
 
     if (now > closeDate) {
         return { error: 'Registration for this event is closed.' }
