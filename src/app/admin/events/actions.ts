@@ -123,6 +123,7 @@ export async function createEvent(formData: FormData) {
             eventData
         )
         await logAction('CREATE_EVENT_REQUEST', 'events', '00000000-0000-0000-0000-000000000000', { title, status: 'pending_approval' })
+        revalidatePath('/events')
         revalidatePath('/admin/events')
         return { success: true }
     }
@@ -140,6 +141,8 @@ export async function createEvent(formData: FormData) {
 
     await logAction('CREATE_EVENT', 'events', data.id, { title, status })
 
+    revalidatePath('/events')
+    revalidatePath(`/events/${data.id}`)
     revalidatePath('/admin/events')
     return { success: true }
 }

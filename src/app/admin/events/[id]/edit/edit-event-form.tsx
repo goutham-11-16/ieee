@@ -18,6 +18,15 @@ export function EditEventForm({ event, profileRole }: { event: any, profileRole:
     const [loadingText, setLoadingText] = useState('')
     const router = useRouter()
 
+    // Helper to convert UTC date to local ISO string for datetime-local input
+    const toLocalISOString = (dateString: string | null) => {
+        if (!dateString) return ''
+        const date = new Date(dateString)
+        const offset = date.getTimezoneOffset()
+        const localDate = new Date(date.getTime() - (offset * 60 * 1000))
+        return localDate.toISOString().slice(0, 16)
+    }
+
     const handleSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
         e.preventDefault()
         if (isSubmitting) return
@@ -26,6 +35,20 @@ export function EditEventForm({ event, profileRole }: { event: any, profileRole:
 
         try {
             const formData = new FormData(e.currentTarget)
+
+            // Normalize dates to UTC to avoid timezone discrepancies
+            const dateFields = ['date', 'endDate', 'registrationStart', 'registrationEnd', 'paymentDeadline']
+            dateFields.forEach(field => {
+                const value = formData.get(field)
+                if (value && typeof value === 'string' && value.length > 0) {
+                    try {
+                        const isoDate = new Date(value).toISOString()
+                        formData.set(field, isoDate)
+                    } catch (e) {
+                        console.error(`Error normalizing date field ${field}:`, e)
+                    }
+                }
+            })
 
             // Note: Banner and QR Code are now handled asynchronously by DriveImageUploader
             // and their URLs are automatically submitted as hidden fields 'bannerUrl' and 'paymentQrUrl'
@@ -111,19 +134,19 @@ export function EditEventForm({ event, profileRole }: { event: any, profileRole:
             <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
                 <div className="space-y-2">
                     <Label htmlFor="date">Event Start Slot</Label>
-                    <Input id="date" name="date" type="datetime-local" required defaultValue={event.date ? new Date(event.date).toISOString().slice(0, 16) : ''} />
+                    <Input id="date" name="date" type="datetime-local" required defaultValue={toLocalISOString(event.date)} />
                 </div>
                 <div className="space-y-2">
                     <Label htmlFor="endDate">Event Ending Slot</Label>
-                    <Input id="endDate" name="endDate" type="datetime-local" required defaultValue={event.end_date ? new Date(event.end_date).toISOString().slice(0, 16) : ''} />
+                    <Input id="endDate" name="endDate" type="datetime-local" required defaultValue={toLocalISOString(event.end_date)} />
                 </div>
                 <div className="space-y-2">
                     <Label htmlFor="registrationStart">Registration Open</Label>
-                    <Input id="registrationStart" name="registrationStart" type="datetime-local" defaultValue={event.registration_start ? new Date(event.registration_start).toISOString().slice(0, 16) : ''} />
+                    <Input id="registrationStart" name="registrationStart" type="datetime-local" defaultValue={toLocalISOString(event.registration_start)} />
                 </div>
                 <div className="space-y-2">
                     <Label htmlFor="registrationEnd">Registration Close</Label>
-                    <Input id="registrationEnd" name="registrationEnd" type="datetime-local" defaultValue={event.registration_end ? new Date(event.registration_end).toISOString().slice(0, 16) : ''} />
+                    <Input id="registrationEnd" name="registrationEnd" type="datetime-local" defaultValue={toLocalISOString(event.registration_end)} />
                 </div>
             </div>
 
@@ -131,7 +154,7 @@ export function EditEventForm({ event, profileRole }: { event: any, profileRole:
             <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                 <div className="space-y-2">
                     <Label htmlFor="paymentDeadline">Payment Deadline (Optional)</Label>
-                    <Input id="paymentDeadline" name="paymentDeadline" type="datetime-local" defaultValue={event.payment_deadline ? new Date(event.payment_deadline).toISOString().slice(0, 16) : ''} />
+                    <Input id="paymentDeadline" name="paymentDeadline" type="datetime-local" defaultValue={toLocalISOString(event.payment_deadline)} />
                     <p className="text-xs text-muted-foreground">After this date, unpaid registrations will be expired.</p>
                 </div>
                 <div className="space-y-2">
@@ -189,6 +212,6 @@ export function EditEventForm({ event, profileRole }: { event: any, profileRole:
                     {isSubmitting ? (loadingText || 'Saving...') : (profileRole === 'event_admin' ? 'Request Update Approval' : 'Save Changes')}
                 </Button>
             </div>
-        </form>
+        </form >
     )
 }

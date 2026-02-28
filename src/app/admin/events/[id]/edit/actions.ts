@@ -101,6 +101,9 @@ export async function updateEvent(formData: FormData) {
 
         if (error) return { success: false, error: error.message }
         await logAction('UPDATE_EVENT', 'events', eventId, eventData)
+        revalidatePath('/events')
+        revalidatePath(`/events/${eventId}`)
+        revalidatePath(`/events/${eventId}/register`)
         revalidatePath(`/admin/events/${eventId}`)
         return { success: true }
     } else {
@@ -114,6 +117,8 @@ export async function updateEvent(formData: FormData) {
 
         if (result.error) return { success: false, error: result.error }
         await logAction('REQUEST_UPDATE_EVENT', 'events', eventId, { title })
+        revalidatePath('/events')
+        revalidatePath(`/events/${eventId}`)
         revalidatePath(`/admin/events/${eventId}`)
         return { success: true }
     }

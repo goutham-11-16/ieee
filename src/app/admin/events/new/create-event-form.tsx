@@ -31,6 +31,20 @@ export function CreateEventForm({ canPublishDirectly }: { canPublishDirectly: bo
             // Explicitly append the tracked action to ensure the server knows whether to publish or draft
             formData.append('action', submitAction)
 
+            // Normalize dates to UTC to avoid timezone discrepancies
+            const dateFields = ['date', 'endDate', 'registrationStart', 'registrationEnd', 'paymentDeadline']
+            dateFields.forEach(field => {
+                const value = formData.get(field)
+                if (value && typeof value === 'string' && value.length > 0) {
+                    try {
+                        const isoDate = new Date(value).toISOString()
+                        formData.set(field, isoDate)
+                    } catch (e) {
+                        console.error(`Error normalizing date field ${field}:`, e)
+                    }
+                }
+            })
+
             // Note: Banner and QR Code are now handled asynchronously by DriveImageUploader
             // and their URLs are automatically submitted as hidden fields 'bannerUrl' and 'paymentQrUrl'
 
