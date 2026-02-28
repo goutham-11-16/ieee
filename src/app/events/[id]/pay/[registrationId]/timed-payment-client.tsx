@@ -9,6 +9,7 @@ import { toast } from 'sonner'
 import { useRouter } from 'next/navigation'
 import { Loader2, AlertCircleIcon, ClockIcon } from 'lucide-react'
 import { compressImage } from '@/lib/image-compression'
+import { getDriveImageUrl } from '@/lib/utils'
 
 interface TimedPaymentClientProps {
     registrationId: string;
@@ -189,7 +190,7 @@ export default function TimedPaymentClient({ registrationId, amount, paymentQrUr
                 {paymentQrUrl && (
                     <div className="flex flex-col items-center justify-center p-4 bg-white dark:bg-black rounded-xl mb-6 shadow-sm border">
                         <p className="text-xs font-bold text-slate-400 tracking-wider uppercase mb-4">Scan QR to Pay</p>
-                        <img src={paymentQrUrl} alt="Payment QR Code" className="w-56 h-56 object-contain" />
+                        <img src={getDriveImageUrl(paymentQrUrl)} alt="Payment QR Code" className="w-56 h-56 object-contain" />
                     </div>
                 )}
 

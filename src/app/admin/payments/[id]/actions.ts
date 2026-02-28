@@ -131,7 +131,7 @@ export async function verifyPayment(paymentId: string, registrationId: string) {
             .from('registrations')
             .update({ status: 'approved' })
             .eq('id', registrationId)
-            .eq('status', 'pending_approval') // Only auto-approve if pending
+        // .in('status', ['pending_approval', 'pending_payment']) // Approve it as long as payment is verified.
 
         await logAction('VERIFY_PAYMENT', 'payments', paymentId, { status: 'verified', generatedReceipt: fileName })
 

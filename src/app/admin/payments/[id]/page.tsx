@@ -47,13 +47,20 @@ export default async function PaymentReviewPage(props: { params: Promise<{ id: s
             .getPublicUrl(publicUrl);
         publicUrl = data.publicUrl;
         previewUrl = data.publicUrl;
-    } else if (publicUrl && publicUrl.includes('drive.google.com/file/d/')) {
-        // Convert Google Drive viewer links to direct image embed links
+    } else if (publicUrl && (publicUrl.includes('drive.google.com/file/d/') || publicUrl.includes('drive.google.com/uc?'))) {
         isGoogleDrive = true;
-        const match = publicUrl.match(/\/d\/(.+?)\//);
-        if (match && match[1]) {
-            publicUrl = `https://drive.google.com/uc?export=download&id=${match[1]}`;
-            previewUrl = `https://drive.google.com/file/d/${match[1]}/preview`;
+        let fileId = '';
+        const matchFileD = publicUrl.match(/\/d\/(.+?)\//);
+        const matchUc = publicUrl.match(/id=([^&]+)/);
+        if (matchFileD && matchFileD[1]) {
+            fileId = matchFileD[1];
+        } else if (matchUc && matchUc[1]) {
+            fileId = matchUc[1];
+        }
+
+        if (fileId) {
+            publicUrl = `https://drive.google.com/uc?export=download&id=${fileId}`;
+            previewUrl = `https://drive.google.com/file/d/${fileId}/preview`;
         }
     }
 
@@ -150,7 +157,7 @@ export default async function PaymentReviewPage(props: { params: Promise<{ id: s
                         </CardContent>
                     </Card>
 
-                    {payment.status === 'pending' && (
+                    {payment.status === 'pending_verification' && (
                         <Card>
                             <CardHeader>
                                 <CardTitle>Actions</CardTitle>

@@ -101,6 +101,8 @@ export default function GuestRegistrationForm({
     const totalFee = (baseFee || 0) * (isFeePerPerson ? currentTotalSize : 1)
 
     async function onSubmit(formData: FormData) {
+        if (loading) return // Anti-double submit
+
         if (isTeamEvent && currentTotalSize < minTeamSize) {
             toast.error(`This is a team event. You must have at least ${minTeamSize} members.`)
             return

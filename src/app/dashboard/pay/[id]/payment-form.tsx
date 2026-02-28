@@ -8,6 +8,7 @@ import { uploadPaymentProof } from './actions'
 import { toast } from 'sonner'
 import { useRouter } from 'next/navigation'
 import { Loader2 } from 'lucide-react'
+import { getDriveImageUrl } from '@/lib/utils'
 
 interface PaymentUploadProps {
     registrationId: string;
@@ -109,7 +110,7 @@ export default function PaymentUploadForm({ registrationId, amount, paymentQrUrl
             {paymentQrUrl && (
                 <div className="flex flex-col items-center justify-center p-4 border rounded-lg bg-orange-50 dark:bg-orange-950/20">
                     <p className="text-sm font-medium mb-3 text-center">Scan this QR Code to Pay</p>
-                    <img src={paymentQrUrl} alt="Payment QR Code" className="w-48 h-48 object-contain bg-white p-2 rounded-md shadow-sm" />
+                    <img src={getDriveImageUrl(paymentQrUrl)} alt="Payment QR Code" className="w-48 h-48 object-contain bg-white p-2 rounded-md shadow-sm" />
                 </div>
             )}
 

@@ -3,6 +3,7 @@ import { Button } from '@/components/ui/button'
 import { notFound } from 'next/navigation'
 import Link from 'next/link'
 import { CalendarIcon, MapPinIcon, ClockIcon, TimerIcon, CreditCardIcon } from 'lucide-react'
+import { getDriveImageUrl } from '@/lib/utils'
 
 export default async function EventDetailsPage(props: { params: Promise<{ id: string }> }) {
     const params = await props.params
@@ -60,7 +61,7 @@ export default async function EventDetailsPage(props: { params: Promise<{ id: st
                 )}
                 {event.banner_url && (
                     <img
-                        src={event.banner_url}
+                        src={getDriveImageUrl(event.banner_url)}
                         alt={event.title}
                         className="w-full h-80 object-cover"
                     />
