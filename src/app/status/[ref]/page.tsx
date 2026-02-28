@@ -227,10 +227,12 @@ export default async function StatusDashboardPage(props: {
                                 <h4 className="text-lg font-semibold border-b pb-2 mb-4">Attendance Tracker</h4>
                                 <div className="space-y-3">
                                     {reg.event.attendance_sessions && reg.event.attendance_sessions.length > 0 ? (
-                                        reg.event.attendance_sessions.map((sessionName: string) => {
+                                        reg.event.attendance_sessions.map((session: any) => {
+                                            const sessionName = typeof session === 'string' ? session : session.name;
+                                            const sessionId = typeof session === 'string' ? session : (session.id || session.name);
                                             const sessionRecord = reg.attendance?.find((a: any) => a.session_name === sessionName) || null;
                                             return (
-                                                <div key={sessionName} className="flex flex-col gap-2 bg-slate-50 dark:bg-slate-900 border p-3 rounded-lg">
+                                                <div key={sessionId} className="flex flex-col gap-2 bg-slate-50 dark:bg-slate-900 border p-3 rounded-lg">
                                                     <div className="font-semibold text-sm border-b pb-1">{sessionName}</div>
                                                     <div className="flex justify-between items-center mt-1">
                                                         <span className="text-sm font-medium text-muted-foreground">Status</span>

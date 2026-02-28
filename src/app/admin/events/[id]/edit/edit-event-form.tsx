@@ -43,7 +43,8 @@ export function EditEventForm({ event, profileRole }: { event: any, profileRole:
             // Call Server Action
             setLoadingText('Uploading updates to server...')
             await updateEvent(formData)
-        } catch (error) {
+        } catch (error: any) {
+            if (error?.message === 'NEXT_REDIRECT') throw error;
             console.error("Error updating event:", error)
             alert("Failed to update event. Please check the console for details.")
         } finally {

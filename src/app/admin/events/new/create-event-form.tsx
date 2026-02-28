@@ -47,7 +47,8 @@ export function CreateEventForm({ canPublishDirectly }: { canPublishDirectly: bo
             // Call Server Action
             setLoadingText('Uploading to Database & Drive...')
             await createEvent(formData)
-        } catch (error) {
+        } catch (error: any) {
+            if (error?.message === 'NEXT_REDIRECT') throw error;
             console.error("Error submitting form:", error)
             alert("Failed to submit event. Please check the console for details.")
         } finally {
