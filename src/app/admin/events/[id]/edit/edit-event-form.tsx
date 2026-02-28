@@ -8,8 +8,8 @@ import { Textarea } from '@/components/ui/textarea'
 import { EventFormBuilder } from '../../new/form-builder'
 import { AttendanceSessionsBuilder } from '../../new/attendance-sessions-builder'
 import Link from 'next/link'
-import { compressImage } from '@/lib/image-compression'
 import { updateEvent } from './actions'
+import { DriveImageUploader } from '@/components/ui/drive-image-uploader'
 
 export function EditEventForm({ event, profileRole }: { event: any, profileRole: string }) {
     const [isSubmitting, setIsSubmitting] = useState(false)
@@ -24,21 +24,8 @@ export function EditEventForm({ event, profileRole }: { event: any, profileRole:
         try {
             const formData = new FormData(e.currentTarget)
 
-            // Compress Banner if provided
-            const bannerFile = formData.get('banner') as File
-            if (bannerFile && bannerFile.size > 0) {
-                setLoadingText('Compressing Banner Image...')
-                const compressedBanner = await compressImage(bannerFile, { maxSizeMB: 0.1, maxWidthOrHeight: 1200 })
-                formData.set('banner', compressedBanner)
-            }
-
-            // Compress QR Code if provided
-            const qrFile = formData.get('paymentQr') as File
-            if (qrFile && qrFile.size > 0) {
-                setLoadingText('Compressing QR Code...')
-                const compressedQr = await compressImage(qrFile, { maxSizeMB: 0.1, maxWidthOrHeight: 800 })
-                formData.set('paymentQr', compressedQr)
-            }
+            // Note: Banner and QR Code are now handled asynchronously by DriveImageUploader
+            // and their URLs are automatically submitted as hidden fields 'bannerUrl' and 'paymentQrUrl'
 
             // Call Server Action
             setLoadingText('Uploading updates to server...')
@@ -94,10 +81,9 @@ export function EditEventForm({ event, profileRole }: { event: any, profileRole:
                 <Textarea id="description" name="description" defaultValue={event.description || ''} />
             </div>
 
-            <input type="hidden" name="existingBanner" value={event.banner_url || ''} />
             <div className="space-y-2">
-                <Label htmlFor="banner">Event Banner Image {event.banner_url && '(Uploaded)'}</Label>
-                <Input id="banner" name="banner" type="file" accept="image/*" required={!event.banner_url} />
+                <Label htmlFor="bannerUrl">Event Banner Image {event.banner_url && '(Uploaded)'}</Label>
+                <DriveImageUploader id="bannerUrl" name="bannerUrl" folderName="Banner" existingUrl={event.banner_url || ''} required={!event.banner_url} />
                 <p className="text-xs text-muted-foreground">{event.banner_url ? 'Upload a new banner to replace the existing one.' : 'Upload a banner image to be displayed at the top of the event page.'}</p>
             </div>
 
@@ -132,7 +118,7 @@ export function EditEventForm({ event, profileRole }: { event: any, profileRole:
                 </div>
             </div>
 
-            <input type="hidden" name="existingPaymentQr" value={event.payment_qr_url || ''} />
+
             <div className="grid grid-cols-2 gap-4">
                 <div className="space-y-2">
                     <Label htmlFor="paymentDeadline">Payment Deadline (Optional)</Label>
@@ -140,8 +126,8 @@ export function EditEventForm({ event, profileRole }: { event: any, profileRole:
                     <p className="text-xs text-muted-foreground">After this date, unpaid registrations will be expired.</p>
                 </div>
                 <div className="space-y-2">
-                    <Label htmlFor="paymentQr">Payment QR Code {event.payment_qr_url && '(Uploaded)'}</Label>
-                    <Input id="paymentQr" name="paymentQr" type="file" accept="image/*" required={!event.payment_qr_url} />
+                    <Label htmlFor="paymentQrUrl">Payment QR Code {event.payment_qr_url && '(Uploaded)'}</Label>
+                    <DriveImageUploader id="paymentQrUrl" name="paymentQrUrl" folderName="QR Code" existingUrl={event.payment_qr_url || ''} required={!event.payment_qr_url} />
                     <p className="text-xs text-muted-foreground">{event.payment_qr_url ? 'Upload a new QR code to replace the existing one.' : 'Upload the QR code that applicants should scan to pay the fee.'}</p>
                 </div>
             </div>

@@ -9,6 +9,7 @@ import { toast } from 'sonner'
 import { useRouter } from 'next/navigation'
 import { Loader2 } from 'lucide-react'
 import { getDriveImageUrl } from '@/lib/utils'
+import { DriveImageUploader } from '@/components/ui/drive-image-uploader'
 
 interface PaymentUploadProps {
     registrationId: string;
@@ -34,55 +35,16 @@ export default function PaymentUploadForm({ registrationId, amount, reference, p
         try {
             const formData = new FormData(event.currentTarget)
             const transactionRef = formData.get('transactionRef') as string
-            const proofFile = formData.get('proof') as File
+            const proofUrl = formData.get('proofUrl') as string
 
-            if (!proofFile || proofFile.size === 0) {
-                toast.error('Please select an image to upload.')
+            if (!proofUrl) {
+                toast.error('Please upload an image first.')
                 setLoading(false)
                 return
-            }
-
-            // 1. Convert to Base64
-            const base64Data = await toBase64(proofFile)
-
-            // Construct filename as ref-utr.extension
-            const ext = proofFile.name.split('.').pop()
-            const customFilename = `${reference}-${transactionRef}.${ext}`
-
-            // 2. Upload to Google Apps Script
-            const googleScriptUrl = process.env.NEXT_PUBLIC_GOOGLE_SCRIPT_URL
-
-            if (!googleScriptUrl) {
-                toast.error("Google Apps Script URL is not configured.")
-                setLoading(false)
-                return
-            }
-
-            toast.info("Uploading securely to Google Drive...")
-
-            const response = await fetch(googleScriptUrl, {
-                method: "POST",
-                body: JSON.stringify({
-                    base64: base64Data,
-                    filename: customFilename,
-                    mimeType: proofFile.type
-                })
-            })
-
-            const text = await response.text()
-            let resultData;
-            try {
-                resultData = JSON.parse(text)
-            } catch (e) {
-                throw new Error("Invalid response from Google Drive Integration")
-            }
-
-            if (!resultData.success) {
-                throw new Error(resultData.error || "Failed to upload to Google Drive")
             }
 
             // 3. Save link to Supabase
-            const dbResult = await saveGoogleDrivePayment(registrationId, amount.toString(), transactionRef, resultData.url)
+            const dbResult = await saveGoogleDrivePayment(registrationId, amount.toString(), transactionRef, proofUrl)
 
             if (dbResult.error) {
                 toast.error(dbResult.error)
@@ -114,8 +76,8 @@ export default function PaymentUploadForm({ registrationId, amount, reference, p
                 </div>
 
                 <div className="space-y-2">
-                    <Label htmlFor="proof">Upload Screenshot (Image/PDF)</Label>
-                    <Input id="proof" name="proof" type="file" required accept="image/*,.pdf" />
+                    <Label htmlFor="proofUrl">Upload Screenshot (Image/PDF)</Label>
+                    <DriveImageUploader id="proofUrl" name="proofUrl" folderName="Payment Proof" eventTitle="Manual Payment" required />
                     <p className="text-xs text-muted-foreground">Files will be securely stored in our Google Drive.</p>
                 </div>
 

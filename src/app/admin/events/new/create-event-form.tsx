@@ -8,8 +8,8 @@ import { Textarea } from '@/components/ui/textarea'
 import { EventFormBuilder } from './form-builder'
 import { AttendanceSessionsBuilder } from './attendance-sessions-builder'
 import Link from 'next/link'
-import { compressImage } from '@/lib/image-compression'
 import { createEvent } from '../actions'
+import { DriveImageUploader } from '@/components/ui/drive-image-uploader'
 
 export function CreateEventForm({ canPublishDirectly }: { canPublishDirectly: boolean }) {
     const [isSubmitting, setIsSubmitting] = useState(false)
@@ -28,21 +28,8 @@ export function CreateEventForm({ canPublishDirectly }: { canPublishDirectly: bo
             // Explicitly append the tracked action to ensure the server knows whether to publish or draft
             formData.append('action', submitAction)
 
-            // Compress Banner
-            const bannerFile = formData.get('banner') as File
-            if (bannerFile && bannerFile.size > 0) {
-                setLoadingText('Compressing Banner Image...')
-                const compressedBanner = await compressImage(bannerFile, { maxSizeMB: 0.1, maxWidthOrHeight: 1200 })
-                formData.set('banner', compressedBanner)
-            }
-
-            // Compress QR Code
-            const qrFile = formData.get('paymentQr') as File
-            if (qrFile && qrFile.size > 0) {
-                setLoadingText('Compressing QR Code...')
-                const compressedQr = await compressImage(qrFile, { maxSizeMB: 0.1, maxWidthOrHeight: 800 })
-                formData.set('paymentQr', compressedQr)
-            }
+            // Note: Banner and QR Code are now handled asynchronously by DriveImageUploader
+            // and their URLs are automatically submitted as hidden fields 'bannerUrl' and 'paymentQrUrl'
 
             // Call Server Action
             setLoadingText('Uploading to Database & Drive...')
@@ -96,8 +83,8 @@ export function CreateEventForm({ canPublishDirectly }: { canPublishDirectly: bo
             </div>
 
             <div className="space-y-2">
-                <Label htmlFor="banner">Event Banner Image</Label>
-                <Input id="banner" name="banner" type="file" accept="image/*" required />
+                <Label htmlFor="bannerUrl">Event Banner Image</Label>
+                <DriveImageUploader id="bannerUrl" name="bannerUrl" folderName="Banner" required />
                 <p className="text-xs text-muted-foreground">Upload a banner image to be displayed at the top of the event page.</p>
             </div>
 
@@ -139,8 +126,8 @@ export function CreateEventForm({ canPublishDirectly }: { canPublishDirectly: bo
                     <p className="text-xs text-muted-foreground">After this date, unpaid registrations will be expired.</p>
                 </div>
                 <div className="space-y-2">
-                    <Label htmlFor="paymentQr">Payment QR Code</Label>
-                    <Input id="paymentQr" name="paymentQr" type="file" accept="image/*" required />
+                    <Label htmlFor="paymentQrUrl">Payment QR Code</Label>
+                    <DriveImageUploader id="paymentQrUrl" name="paymentQrUrl" folderName="QR Code" required />
                     <p className="text-xs text-muted-foreground">Upload the QR code that applicants should scan to pay the fee.</p>
                 </div>
             </div>

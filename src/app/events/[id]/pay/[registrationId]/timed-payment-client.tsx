@@ -10,6 +10,7 @@ import { useRouter } from 'next/navigation'
 import { Loader2, AlertCircleIcon, ClockIcon } from 'lucide-react'
 import { compressImage } from '@/lib/image-compression'
 import { getDriveImageUrl } from '@/lib/utils'
+import { DriveImageUploader } from '@/components/ui/drive-image-uploader'
 
 interface TimedPaymentClientProps {
     registrationId: string;
@@ -60,77 +61,14 @@ export default function TimedPaymentClient({ registrationId, amount, paymentQrUr
         setLoading(true)
         setLoadingText('Preparing upload...')
         try {
-            let file = formData.get('proof') as File;
+            const driveUrl = formData.get('proofUrl') as string;
             const transactionRef = formData.get('transactionRef') as string;
 
-            if (!file || file.size === 0) {
-                toast.error('Please select a file to upload.');
+            if (!driveUrl) {
+                toast.error('Please upload a file first.');
                 setLoading(false);
                 return;
             }
-
-            // Compress image if applicable
-            if (file.type.startsWith('image/')) {
-                setLoadingText('Compressing image...')
-                file = await compressImage(file, { maxSizeMB: 0.1, maxWidthOrHeight: 800 });
-            }
-
-            if (!file || file.size === 0) {
-                toast.error('Please select a file to upload.');
-                setLoading(false);
-                return;
-            }
-
-            // 1. Convert File to Base64
-            setLoadingText('Converting to Base64...')
-            const base64Data = await new Promise<string>((resolve, reject) => {
-                const reader = new FileReader();
-                reader.readAsDataURL(file);
-                reader.onload = () => {
-                    const result = reader.result as string;
-                    const base64 = result.split(',')[1];
-                    resolve(base64);
-                };
-                reader.onerror = (error) => reject(error);
-            });
-
-            // 2. Upload to Google Drive via Apps Script
-            setLoadingText('Uploading to Google Drive...')
-            const scriptUrl = process.env.NEXT_PUBLIC_GOOGLE_SCRIPT_URL;
-            if (!scriptUrl) {
-                throw new Error("Missing NEXT_PUBLIC_GOOGLE_SCRIPT_URL environment variable.");
-            }
-
-            const uploadPayload = {
-                base64Data: base64Data,
-                filename: file.name,
-                mimeType: file.type,
-                eventTitle: eventTitle // Inform the script of the event name
-            };
-
-            const uploadResponse = await fetch(scriptUrl, {
-                method: 'POST',
-                headers: { 'Content-Type': 'text/plain' },
-                body: JSON.stringify(uploadPayload)
-            });
-
-            const rawText = await uploadResponse.text();
-            let uploadResult;
-            try {
-                uploadResult = JSON.parse(rawText);
-            } catch (e) {
-                toast.error("Upload failed: Invalid response from server.");
-                setLoading(false);
-                return;
-            }
-
-            if (!uploadResult.success) {
-                toast.error('Failed to upload file to Drive: ' + uploadResult.error);
-                setLoading(false);
-                return;
-            }
-
-            const driveUrl = uploadResult.fileId ? `https://drive.google.com/uc?export=view&id=${uploadResult.fileId}` : uploadResult.url;
 
             // 3. Save Payment Record in Supabase
             setLoadingText('Saving database record...')
@@ -201,8 +139,8 @@ export default function TimedPaymentClient({ registrationId, amount, paymentQrUr
                     </div>
 
                     <div className="space-y-2">
-                        <Label htmlFor="proof">Upload Payment Screenshot</Label>
-                        <Input id="proof" name="proof" type="file" required accept="image/*,.pdf" className="bg-white dark:bg-slate-950" />
+                        <Label htmlFor="proofUrl">Upload Payment Screenshot</Label>
+                        <DriveImageUploader id="proofUrl" name="proofUrl" folderName="Payment Proof" eventTitle={eventTitle} required />
                         <p className="text-xs text-slate-500">Must clearly show the UTR number and Amount.</p>
                     </div>
 

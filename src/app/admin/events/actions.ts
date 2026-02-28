@@ -47,91 +47,12 @@ export async function createEvent(formData: FormData) {
     const minTeamSize = formData.get('minTeamSize') ? parseInt(formData.get('minTeamSize') as string) : 1
     const maxTeamSize = formData.get('maxTeamSize') ? parseInt(formData.get('maxTeamSize') as string) : 1
 
-    const paymentQr = formData.get('paymentQr') as File | null
-    let paymentQrUrl = null
-
-    if (!paymentQr || paymentQr.size === 0) {
+    const paymentQrUrl = formData.get('paymentQrUrl') as string | null
+    if (!paymentQrUrl) {
         return { error: 'Payment QR Code is required to create an event.' }
     }
 
-    try {
-        const arrayBuffer = await paymentQr.arrayBuffer();
-        const buffer = Buffer.from(arrayBuffer);
-        const base64Data = buffer.toString('base64');
-
-        const scriptUrl = process.env.NEXT_PUBLIC_GOOGLE_SCRIPT_URL;
-        if (!scriptUrl) {
-            console.error("Missing NEXT_PUBLIC_GOOGLE_SCRIPT_URL environment variable.");
-            return { error: 'Server configuration error: Google Script URL is missing.' };
-        }
-
-        const uploadPayload = {
-            base64Data: base64Data,
-            filename: paymentQr.name,
-            mimeType: paymentQr.type,
-            eventTitle: title, // Tell script which event this is for 
-            targetFolder: 'QR Code' // Put it in the "QR Code" subfolder
-        };
-
-        const uploadResponse = await fetch(scriptUrl, {
-            method: 'POST',
-            headers: { 'Content-Type': 'text/plain' },
-            body: JSON.stringify(uploadPayload)
-        });
-
-        const rawText = await uploadResponse.text();
-        const uploadResult = JSON.parse(rawText);
-
-        if (!uploadResult.success) {
-            console.error("Google Script Upload Error:", uploadResult.error);
-            return { error: 'Failed to upload QR code to Google Drive.' };
-        }
-
-        paymentQrUrl = uploadResult.fileId ? `https://drive.google.com/uc?export=view&id=${uploadResult.fileId}` : uploadResult.url;
-    } catch (error) {
-        console.error("Failed to upload QR Code:", error);
-        return { error: 'Server error while uploading QR code.' };
-    }
-
-    // New Banner Upload Logic
-    const banner = formData.get('banner') as File | null
-    let bannerUrl = null
-
-    if (banner && banner.size > 0) {
-        try {
-            const arrayBuffer = await banner.arrayBuffer();
-            const buffer = Buffer.from(arrayBuffer);
-            const base64Data = buffer.toString('base64');
-
-            const scriptUrl = process.env.NEXT_PUBLIC_GOOGLE_SCRIPT_URL;
-            if (scriptUrl) {
-                const uploadPayload = {
-                    base64Data: base64Data,
-                    filename: banner.name,
-                    mimeType: banner.type,
-                    eventTitle: title,
-                    targetFolder: 'Banner' // Put it in the "Banner" subfolder
-                };
-
-                const uploadResponse = await fetch(scriptUrl, {
-                    method: 'POST',
-                    headers: { 'Content-Type': 'text/plain' },
-                    body: JSON.stringify(uploadPayload)
-                });
-
-                const rawText = await uploadResponse.text();
-                const uploadResult = JSON.parse(rawText);
-
-                if (uploadResult.success) {
-                    bannerUrl = uploadResult.fileId ? `https://drive.google.com/uc?export=view&id=${uploadResult.fileId}` : uploadResult.url;
-                } else {
-                    console.error("Google Script Banner Upload Error:", uploadResult.error);
-                }
-            }
-        } catch (error) {
-            console.error("Failed to upload Banner:", error);
-        }
-    }
+    const bannerUrl = formData.get('bannerUrl') as string | null
 
     let disabledDefaultFields = []
     let formSchema = []
