@@ -53,7 +53,7 @@ export default async function AdminLayout({
                         </>
                     )}
 
-                    {(['super_admin', 'admin', 'content_admin', 'event_admin'].includes(profile.role) || profile.role !== '') && (
+                    {(['super_admin', 'admin', 'content_admin', 'event_admin'].includes(profile.role) ) && (
                         <>
                             <p className="text-xs font-semibold text-muted-foreground uppercase tracking-wider mt-6 mb-2 px-3">Tools</p>
                             <Button variant="ghost" asChild className="justify-start text-muted-foreground hover:bg-slate-200/50 hover:text-slate-900 dark:hover:bg-slate-800 dark:hover:text-slate-100">
