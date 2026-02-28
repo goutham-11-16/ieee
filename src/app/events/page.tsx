@@ -4,6 +4,9 @@ import { Button } from '@/components/ui/button'
 import { createClient } from '@/lib/supabase/server'
 import { CalendarIcon, MapPinIcon, ArrowRight, Ghost } from 'lucide-react'
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs'
+import { formatDateIST, formatDateTimeIST } from '@/lib/utils'
+
+export const dynamic = 'force-dynamic'
 
 export default async function EventsPage() {
     const supabase = await createClient()
@@ -96,7 +99,7 @@ function EventGrid({ events, emptyMessage }: { events: any[], emptyMessage: stri
                             />
                             <div className="absolute inset-0 bg-gradient-to-t from-black/60 to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-300" />
                             <div className="absolute top-4 right-4 bg-white/95 dark:bg-black/80 px-3 py-1 rounded-full text-xs font-bold shadow-md backdrop-blur-sm z-10">
-                                {new Date(event.date).toLocaleDateString(undefined, { month: 'short', day: 'numeric' })}
+                                {formatDateIST(event.date, { month: 'short', day: 'numeric' })}
                             </div>
                             <div className={`absolute top-4 left-4 px-3 py-1 rounded-full text-xs font-bold border shadow-sm backdrop-blur-sm z-10 ${badgeClass}`}>
                                 {badgeText}
@@ -106,7 +109,7 @@ function EventGrid({ events, emptyMessage }: { events: any[], emptyMessage: stri
                             <CardTitle className="line-clamp-2 text-xl group-hover:text-primary transition-colors">{event.title}</CardTitle>
                             <CardDescription className="flex items-center gap-2 mt-2">
                                 <CalendarIcon className="w-4 h-4 text-blue-500" />
-                                {new Date(event.date).toLocaleString(undefined, { dateStyle: 'medium', timeStyle: 'short' })}
+                                {formatDateTimeIST(event.date)}
                             </CardDescription>
                             <CardDescription className="flex items-center gap-2">
                                 <MapPinIcon className="w-4 h-4 text-red-500" />

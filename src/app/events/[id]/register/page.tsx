@@ -3,6 +3,7 @@ import { notFound } from 'next/navigation'
 import GuestRegistrationForm from '../guest-registration-form'
 import Link from 'next/link'
 import { ArrowLeftIcon } from 'lucide-react'
+import { formatDateTimeIST } from '@/lib/utils'
 
 export default async function RegisterPage(props: { params: Promise<{ id: string }> }) {
     const params = await props.params
@@ -28,7 +29,7 @@ export default async function RegisterPage(props: { params: Promise<{ id: string
         return (
             <div className="container mx-auto py-24 px-4 text-center">
                 <h1 className="text-3xl font-bold text-amber-600 mb-4">Registration Not Yet Open</h1>
-                <p className="text-muted-foreground mb-8">Registration for {event.title} will open on {regStart?.toLocaleString()}.</p>
+                <p className="text-muted-foreground mb-8">Registration for {event.title} will open on {regStart ? formatDateTimeIST(regStart) : 'N/A'}.</p>
                 <Link href={`/events/${event.id}`} className="text-blue-600 hover:underline inline-flex items-center">
                     <ArrowLeftIcon className="w-4 h-4 mr-2" /> Back to Event
                 </Link>

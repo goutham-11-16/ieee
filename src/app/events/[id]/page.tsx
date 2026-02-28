@@ -3,7 +3,9 @@ import { Button } from '@/components/ui/button'
 import { notFound } from 'next/navigation'
 import Link from 'next/link'
 import { CalendarIcon, MapPinIcon, ClockIcon, TimerIcon, CreditCardIcon } from 'lucide-react'
-import { getDriveImageUrl } from '@/lib/utils'
+import { getDriveImageUrl, formatDateTimeIST } from '@/lib/utils'
+
+export const dynamic = 'force-dynamic'
 
 export default async function EventDetailsPage(props: { params: Promise<{ id: string }> }) {
     const params = await props.params
@@ -106,7 +108,7 @@ export default async function EventDetailsPage(props: { params: Promise<{ id: st
                             <div>
                                 <p className="text-sm font-semibold text-slate-500 dark:text-slate-400 uppercase tracking-wider mb-1">Event Date</p>
                                 <p className="font-medium text-slate-900 dark:text-slate-200">
-                                    {new Date(event.date).toLocaleString(undefined, { weekday: 'short', month: 'short', day: 'numeric', year: 'numeric', hour: 'numeric', minute: '2-digit' })}
+                                    {formatDateTimeIST(event.date)}
                                 </p>
                             </div>
                         </div>
@@ -129,7 +131,7 @@ export default async function EventDetailsPage(props: { params: Promise<{ id: st
                             <div>
                                 <p className="text-sm font-semibold text-slate-500 dark:text-slate-400 uppercase tracking-wider mb-1">Registration Opens</p>
                                 <p className="font-medium text-slate-900 dark:text-slate-200">
-                                    {event.registration_start ? new Date(event.registration_start).toLocaleString(undefined, { month: 'short', day: 'numeric', hour: 'numeric', minute: '2-digit' }) : 'Now'}
+                                    {event.registration_start ? formatDateTimeIST(event.registration_start) : 'Now'}
                                 </p>
                             </div>
                         </div>
@@ -140,23 +142,11 @@ export default async function EventDetailsPage(props: { params: Promise<{ id: st
                             <div>
                                 <p className="text-sm font-semibold text-slate-500 dark:text-slate-400 uppercase tracking-wider mb-1">Registration Closes</p>
                                 <p className={`font-medium ${isClosingSoon ? 'text-orange-600 dark:text-orange-400 font-bold' : 'text-slate-900 dark:text-slate-200'}`}>
-                                    {event.registration_end ? new Date(event.registration_end).toLocaleString(undefined, { month: 'short', day: 'numeric', hour: 'numeric', minute: '2-digit' }) : 'Before Event starts'}
+                                    {event.registration_end ? formatDateTimeIST(event.registration_end) : 'Before Event starts'}
                                 </p>
                             </div>
                         </div>
-                        {event.payment_deadline && (
-                            <div className="flex items-start gap-4">
-                                <div className="p-3 bg-amber-100 dark:bg-amber-900/30 text-amber-600 dark:text-amber-400 rounded-xl shrink-0">
-                                    <CreditCardIcon className="w-6 h-6" />
-                                </div>
-                                <div>
-                                    <p className="text-sm font-semibold text-slate-500 dark:text-slate-400 uppercase tracking-wider mb-1">Payment Deadline</p>
-                                    <p className="font-bold text-amber-700 dark:text-amber-500">
-                                        {new Date(event.payment_deadline).toLocaleString(undefined, { month: 'short', day: 'numeric', hour: 'numeric', minute: '2-digit' })}
-                                    </p>
-                                </div>
-                            </div>
-                        )}
+
                     </div>
                 </div>
 

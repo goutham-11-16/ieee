@@ -22,3 +22,23 @@ export function getDriveImageUrl(url: string | null | undefined): string | undef
   }
   return url;
 }
+
+export function formatDateIST(date: string | Date, options?: Intl.DateTimeFormatOptions): string {
+  if (!date) return 'N/A';
+  const d = typeof date === 'string' ? new Date(date) : date;
+  return d.toLocaleDateString('en-IN', {
+    timeZone: 'Asia/Kolkata',
+    ...options
+  });
+}
+
+export function formatDateTimeIST(date: string | Date, options?: Intl.DateTimeFormatOptions): string {
+  if (!date) return 'N/A';
+  const d = typeof date === 'string' ? new Date(date) : date;
+  return d.toLocaleString('en-IN', {
+    timeZone: 'Asia/Kolkata',
+    dateStyle: 'medium',
+    timeStyle: 'short',
+    ...options
+  });
+}
