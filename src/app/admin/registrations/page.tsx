@@ -4,6 +4,7 @@ import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@
 import { Badge } from '@/components/ui/badge'
 import { DownloadIcon } from 'lucide-react'
 import Link from 'next/link'
+import { formatDateTimeIST } from '@/lib/utils'
 
 export default async function AdminRegistrationsPage() {
     const supabase = await createClient()
@@ -103,7 +104,7 @@ export default async function AdminRegistrationsPage() {
                                             )}
                                         </div>
                                     </TableCell>
-                                    <TableCell>{new Date(reg.created_at).toLocaleDateString()}</TableCell>
+                                    <TableCell>{formatDateTimeIST(reg.created_at)}</TableCell>
                                     <TableCell>
                                         <Button variant="ghost" size="sm" asChild>
                                             <Link href={`/admin/registrations/${reg.id}`}>Manage</Link>

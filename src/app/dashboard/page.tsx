@@ -5,6 +5,7 @@ import { Badge } from '@/components/ui/badge'
 import { Button } from '@/components/ui/button'
 import { CalendarIcon, MapPinIcon, DownloadIcon, UploadIcon, TicketIcon, Ghost, SearchX } from 'lucide-react'
 import Link from 'next/link'
+import { formatDateTimeIST } from '@/lib/utils'
 
 export default async function DashboardPage() {
     const supabase = await createClient()
@@ -75,7 +76,7 @@ export default async function DashboardPage() {
                                         <CardDescription className="flex items-center gap-4">
                                             <span className="flex items-center gap-1">
                                                 <CalendarIcon className="w-4 h-4" />
-                                                {eventDate.toLocaleDateString()}
+                                                {formatDateTimeIST(reg.event.date)}
                                             </span>
                                             <span className="flex items-center gap-1">
                                                 <MapPinIcon className="w-4 h-4" />
@@ -107,7 +108,7 @@ export default async function DashboardPage() {
                                                 </div>
                                                 {reg.event.registration_end && (
                                                     <div className="col-span-2 text-amber-600 font-medium">
-                                                        Deadline: {new Date(reg.event.registration_end).toLocaleDateString()}
+                                                        Deadline: {formatDateTimeIST(reg.event.registration_end)}
                                                     </div>
                                                 )}
                                             </div>
