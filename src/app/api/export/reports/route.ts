@@ -54,8 +54,15 @@ export async function GET(request: NextRequest) {
 
         head = [['Name', 'Email', 'Phone', 'Reg No', 'Role', 'Status']]
         const rawBody: any[][] = []
+        const nowTime = new Date().getTime()
+
 
             ; (data || []).forEach((r: any) => {
+                if (r.status === 'pending_payment' && r.expires_at) {
+                    const expTime = new Date(r.expires_at).getTime()
+                    if (nowTime > expTime) return
+                }
+
                 const leaderName = r.guest_name || r.user?.full_name || 'Guest'
                 const leaderEmail = r.guest_email || r.user?.email || 'N/A'
                 const phone = r.guest_phone || 'N/A'

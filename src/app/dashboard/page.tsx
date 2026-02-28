@@ -19,6 +19,7 @@ export default async function DashboardPage() {
         .select(`
             id,
             status,
+            expires_at,
             created_at,
             ticket_qr_uuid,
             event:events (
@@ -50,6 +51,12 @@ export default async function DashboardPage() {
 
             <div className="grid gap-6">
                 {registrations?.map((reg: any) => {
+                    const nowTime = new Date().getTime()
+                    if (reg.status === 'pending_payment' && reg.expires_at) {
+                        const expTime = new Date(reg.expires_at).getTime()
+                        if (nowTime > expTime) reg.status = 'expired'
+                    }
+
                     const payment = reg.payments && reg.payments.length > 0
                         ? [...reg.payments].sort((a: any, b: any) => new Date(b.created_at).getTime() - new Date(a.created_at).getTime())[0]
                         : undefined;
