@@ -19,14 +19,15 @@ export async function markRegistrationAsPaid(registrationId: string) {
         .select(`
             *,
             user:profiles!user_id(full_name),
-            event:events(id, title, fees)
+            event:events(id, title, fees, is_fee_per_person)
         `)
         .eq('id', registrationId)
         .single()
 
     if (regError || !reg) return { error: 'Registration not found' }
-
-    const amount = reg.event?.fees || 0
+    const event = Array.isArray(reg.event) ? reg.event[0] : reg.event
+    const teamCount = Array.isArray(reg.team_members) ? reg.team_members.length : 0
+    const amount = event?.is_fee_per_person ? (event.fees * (1 + teamCount)) : (event?.fees || 0)
     const transactionRef = 'MANUAL-' + crypto.randomBytes(4).toString('hex').toUpperCase()
 
     // 2. Create payment record automatically as 'verified'

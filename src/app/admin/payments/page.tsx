@@ -24,7 +24,8 @@ export default async function AdminPaymentsPage(props: { searchParams: Promise<{
                 guest_name,
                 guest_email,
                 status,
-                event:events(id, title, fees),
+                team_members,
+                event:events(id, title, fees, is_fee_per_person),
                 payments(id, status, receipt_url),
                 user:profiles!user_id(full_name, email)
             `)
@@ -96,7 +97,14 @@ export default async function AdminPaymentsPage(props: { searchParams: Promise<{
                             </div>
                             <div>
                                 <p className="text-muted-foreground mb-1">Amount Due:</p>
-                                <p className="font-bold text-2xl text-blue-600">₹{eventData?.fees}</p>
+                                <p className="font-bold text-2xl text-blue-600">
+                                    ₹{(eventData?.fees * (eventData?.is_fee_per_person ? (1 + (registration.team_members?.length || 0)) : 1)).toFixed(2)}
+                                </p>
+                                {eventData?.is_fee_per_person && (registration.team_members?.length || 0) > 0 && (
+                                    <p className="text-xs text-muted-foreground mt-1">
+                                        (₹{eventData.fees} × {1 + registration.team_members.length} members)
+                                    </p>
+                                )}
                             </div>
                             <div>
                                 <p className="text-muted-foreground mb-1">Registration Status:</p>
@@ -127,7 +135,7 @@ export default async function AdminPaymentsPage(props: { searchParams: Promise<{
                                     <div className="flex flex-col gap-4">
                                         <div className="bg-amber-50 border border-amber-200 p-4 rounded-lg text-amber-800">
                                             <p className="font-semibold mb-1">Manual Verification Required</p>
-                                            <p className="text-sm">Verify that you have received the correct payment of exactly <b>₹{eventData?.fees}</b> from the registrant before clicking confirm.</p>
+                                            <p className="text-sm">Verify that you have received the correct payment of exactly <b>₹{(eventData?.fees * (eventData?.is_fee_per_person ? (1 + (registration.team_members?.length || 0)) : 1)).toFixed(2)}</b> from the registrant before clicking confirm.</p>
                                         </div>
                                         <Button className="w-full h-auto py-4 text-base md:text-lg font-bold shadow-md whitespace-normal" size="lg" disabled={eventData?.fees <= 0}>
                                             <CheckCircleIcon className="w-6 h-6 mr-2 shrink-0" />

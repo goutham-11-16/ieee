@@ -24,8 +24,9 @@ export default async function PaymentReviewPage(props: { params: Promise<{ id: s
                 status,
                 guest_name,
                 guest_email,
+                team_members,
                 user:profiles!registrations_user_id_fkey(full_name, email),
-                event:events(id, title, fees, date)
+                event:events(id, title, fees, is_fee_per_person, date)
             )
         `)
         .eq('id', params.id)
@@ -152,7 +153,13 @@ export default async function PaymentReviewPage(props: { params: Promise<{ id: s
                                 <span>{(Array.isArray(payment.registration.event) ? payment.registration.event[0]?.title : payment.registration.event?.title) || "Unknown Event"}</span>
 
                                 <span className="text-muted-foreground">Event Fee:</span>
-                                <span>₹{(Array.isArray(payment.registration.event) ? payment.registration.event[0]?.fees : payment.registration.event?.fees) || 0}</span>
+                                <span>₹{(Array.isArray(payment.registration.event) ? payment.registration.event[0]?.fees : payment.registration.event?.fees) || 0} {(Array.isArray(payment.registration.event) ? payment.registration.event[0]?.is_fee_per_person : payment.registration.event?.is_fee_per_person) ? '(per person)' : ''}</span>
+
+                                <span className="text-muted-foreground">Expected Total:</span>
+                                <span className="font-bold text-blue-600">
+                                    ₹{(((Array.isArray(payment.registration.event) ? payment.registration.event[0]?.fees : payment.registration.event?.fees) || 0) *
+                                        ((Array.isArray(payment.registration.event) ? payment.registration.event[0]?.is_fee_per_person : payment.registration.event?.is_fee_per_person) ? (1 + (payment.registration.team_members?.length || 0)) : 1)).toFixed(2)}
+                                </span>
                             </div>
                         </CardContent>
                     </Card>
