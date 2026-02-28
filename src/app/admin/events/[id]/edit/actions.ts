@@ -9,12 +9,12 @@ export async function updateEvent(formData: FormData) {
     const supabase = await createClient()
     const { data: { user } } = await supabase.auth.getUser()
 
-    if (!user) return { error: 'Unauthorized' }
+    if (!user) return { success: false, error: 'Unauthorized' }
 
     const { data: profile } = await supabase.from('profiles').select('role').eq('id', user.id).single()
     const allowedRoles = ['admin', 'super_admin', 'event_admin']
     if (!profile || !allowedRoles.includes(profile.role)) {
-        return { error: 'Insufficient permissions to edit events.' }
+        return { success: false, error: 'Insufficient permissions to edit events.' }
     }
 
     const eventId = formData.get('eventId') as string
@@ -45,7 +45,7 @@ export async function updateEvent(formData: FormData) {
 
     const paymentQrUrl = formData.get('paymentQrUrl') as string | null
     if (!paymentQrUrl) {
-        return { error: 'A Payment QR Code is required. Please upload one.' }
+        return { success: false, error: 'A Payment QR Code is required. Please upload one.' }
     }
 
     const bannerUrl = formData.get('bannerUrl') as string | null
@@ -99,7 +99,7 @@ export async function updateEvent(formData: FormData) {
             .update(eventData)
             .eq('id', eventId)
 
-        if (error) return { error: error.message }
+        if (error) return { success: false, error: error.message }
         await logAction('UPDATE_EVENT', 'events', eventId, eventData)
         revalidatePath(`/admin/events/${eventId}`)
         return { success: true }
@@ -112,7 +112,7 @@ export async function updateEvent(formData: FormData) {
             eventData
         )
 
-        if (result.error) return result
+        if (result.error) return { success: false, error: result.error }
         await logAction('REQUEST_UPDATE_EVENT', 'events', eventId, { title })
         revalidatePath(`/admin/events/${eventId}`)
         return { success: true }

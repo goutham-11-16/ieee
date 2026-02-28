@@ -80,7 +80,7 @@ export default function PaymentUploadForm({ registrationId, amount, paymentQrUrl
                     <DriveImageUploader id="proofUrl" name="proofUrl" folderName="Payment Proof" eventTitle="Manual Payment" required />
                 </div>
 
-                <Button type="submit" className="w-full bg-blue-600 hover:bg-blue-700" disabled={loading}>
+                <Button type="submit" className="w-full" disabled={loading}>
                     {loading && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}
                     {loading ? (loadingText || 'Processing Upload...') : 'Submit Payment for Verification'}
                 </Button>

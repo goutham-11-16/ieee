@@ -90,105 +90,107 @@ export default async function EventDetailsPage(props: { params: Promise<{ id: st
                             </div>
                             <h1 className="text-4xl md:text-5xl font-extrabold tracking-tight text-slate-900 dark:text-white">{event.title}</h1>
                         </div>
-                        <div className="shrink-0 w-full md:w-auto flex flex-col items-center md:items-end gap-2">
-                            {isSoldOut ? (
-                                <Button disabled variant="destructive" className="w-full md:w-auto px-8">
-                                    Sold Out
-                                </Button>
-                            ) : !isClosingSoon && regEnd < now ? (
-                                <Button disabled variant="destructive" className="w-full md:w-auto px-8">
-                                    Registration Closed
-                                </Button>
-                            ) : (
-                                <Button asChild size="lg" className="w-full md:w-auto px-8">
-                                    <Link href={`/events/${event.id}/register`}>Register Now</Link>
-                                </Button>
-                            )}
+                    </div>
+                </div>
 
-                            {event.max_capacity && !isSoldOut && regEnd >= now && (
-                                <p className="text-sm font-semibold text-orange-600 dark:text-orange-400">
-                                    {remainingSeats === 1 ? 'Only 1 seat remaining!' : `Only ${remainingSeats} seats remaining!`}
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-6 mb-10 bg-slate-50 dark:bg-slate-900/50 p-6 rounded-2xl border border-slate-100 dark:border-slate-800/50">
+                    <div className="space-y-6">
+                        <div className="flex items-start gap-4">
+                            <div className="p-3 bg-blue-100 dark:bg-blue-900/30 text-blue-600 dark:text-blue-400 rounded-xl shrink-0">
+                                <CalendarIcon className="w-6 h-6" />
+                            </div>
+                            <div>
+                                <p className="text-sm font-semibold text-slate-500 dark:text-slate-400 uppercase tracking-wider mb-1">Event Date</p>
+                                <p className="font-medium text-slate-900 dark:text-slate-200">
+                                    {new Date(event.date).toLocaleString(undefined, { weekday: 'short', month: 'short', day: 'numeric', year: 'numeric', hour: 'numeric', minute: '2-digit' })}
                                 </p>
-                            )}
-                            {isSoldOut && (
-                                <p className="text-sm font-semibold text-slate-500">
-                                    Capacity of {event.max_capacity} reached
+                            </div>
+                        </div>
+                        <div className="flex items-start gap-4">
+                            <div className="p-3 bg-rose-100 dark:bg-rose-900/30 text-rose-600 dark:text-rose-400 rounded-xl shrink-0">
+                                <MapPinIcon className="w-6 h-6" />
+                            </div>
+                            <div>
+                                <p className="text-sm font-semibold text-slate-500 dark:text-slate-400 uppercase tracking-wider mb-1">Location</p>
+                                <p className="font-medium text-slate-900 dark:text-slate-200">{event.location || 'Location TBA'}</p>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div className="space-y-6">
+                        <div className="flex items-start gap-4">
+                            <div className="p-3 bg-emerald-100 dark:bg-emerald-900/30 text-emerald-600 dark:text-emerald-400 rounded-xl shrink-0">
+                                <ClockIcon className="w-6 h-6" />
+                            </div>
+                            <div>
+                                <p className="text-sm font-semibold text-slate-500 dark:text-slate-400 uppercase tracking-wider mb-1">Registration Opens</p>
+                                <p className="font-medium text-slate-900 dark:text-slate-200">
+                                    {event.registration_start ? new Date(event.registration_start).toLocaleString(undefined, { month: 'short', day: 'numeric', hour: 'numeric', minute: '2-digit' }) : 'Now'}
                                 </p>
-                            )}
+                            </div>
                         </div>
-                    </div>
-
-                    <div className="grid grid-cols-1 md:grid-cols-2 gap-6 mb-10 bg-slate-50 dark:bg-slate-900/50 p-6 rounded-2xl border border-slate-100 dark:border-slate-800/50">
-                        <div className="space-y-6">
+                        <div className="flex items-start gap-4">
+                            <div className="p-3 bg-orange-100 dark:bg-orange-900/30 text-orange-600 dark:text-orange-400 rounded-xl shrink-0">
+                                <TimerIcon className="w-6 h-6" />
+                            </div>
+                            <div>
+                                <p className="text-sm font-semibold text-slate-500 dark:text-slate-400 uppercase tracking-wider mb-1">Registration Closes</p>
+                                <p className={`font-medium ${isClosingSoon ? 'text-orange-600 dark:text-orange-400 font-bold' : 'text-slate-900 dark:text-slate-200'}`}>
+                                    {event.registration_end ? new Date(event.registration_end).toLocaleString(undefined, { month: 'short', day: 'numeric', hour: 'numeric', minute: '2-digit' }) : 'Before Event starts'}
+                                </p>
+                            </div>
+                        </div>
+                        {event.payment_deadline && (
                             <div className="flex items-start gap-4">
-                                <div className="p-3 bg-blue-100 dark:bg-blue-900/30 text-blue-600 dark:text-blue-400 rounded-xl shrink-0">
-                                    <CalendarIcon className="w-6 h-6" />
+                                <div className="p-3 bg-amber-100 dark:bg-amber-900/30 text-amber-600 dark:text-amber-400 rounded-xl shrink-0">
+                                    <CreditCardIcon className="w-6 h-6" />
                                 </div>
                                 <div>
-                                    <p className="text-sm font-semibold text-slate-500 dark:text-slate-400 uppercase tracking-wider mb-1">Event Date</p>
-                                    <p className="font-medium text-slate-900 dark:text-slate-200">
-                                        {new Date(event.date).toLocaleString(undefined, { weekday: 'short', month: 'short', day: 'numeric', year: 'numeric', hour: 'numeric', minute: '2-digit' })}
+                                    <p className="text-sm font-semibold text-slate-500 dark:text-slate-400 uppercase tracking-wider mb-1">Payment Deadline</p>
+                                    <p className="font-bold text-amber-700 dark:text-amber-500">
+                                        {new Date(event.payment_deadline).toLocaleString(undefined, { month: 'short', day: 'numeric', hour: 'numeric', minute: '2-digit' })}
                                     </p>
                                 </div>
                             </div>
-                            <div className="flex items-start gap-4">
-                                <div className="p-3 bg-rose-100 dark:bg-rose-900/30 text-rose-600 dark:text-rose-400 rounded-xl shrink-0">
-                                    <MapPinIcon className="w-6 h-6" />
-                                </div>
-                                <div>
-                                    <p className="text-sm font-semibold text-slate-500 dark:text-slate-400 uppercase tracking-wider mb-1">Location</p>
-                                    <p className="font-medium text-slate-900 dark:text-slate-200">{event.location || 'Location TBA'}</p>
-                                </div>
-                            </div>
-                        </div>
-
-                        <div className="space-y-6">
-                            <div className="flex items-start gap-4">
-                                <div className="p-3 bg-emerald-100 dark:bg-emerald-900/30 text-emerald-600 dark:text-emerald-400 rounded-xl shrink-0">
-                                    <ClockIcon className="w-6 h-6" />
-                                </div>
-                                <div>
-                                    <p className="text-sm font-semibold text-slate-500 dark:text-slate-400 uppercase tracking-wider mb-1">Registration Opens</p>
-                                    <p className="font-medium text-slate-900 dark:text-slate-200">
-                                        {event.registration_start ? new Date(event.registration_start).toLocaleString(undefined, { month: 'short', day: 'numeric', hour: 'numeric', minute: '2-digit' }) : 'Now'}
-                                    </p>
-                                </div>
-                            </div>
-                            <div className="flex items-start gap-4">
-                                <div className="p-3 bg-orange-100 dark:bg-orange-900/30 text-orange-600 dark:text-orange-400 rounded-xl shrink-0">
-                                    <TimerIcon className="w-6 h-6" />
-                                </div>
-                                <div>
-                                    <p className="text-sm font-semibold text-slate-500 dark:text-slate-400 uppercase tracking-wider mb-1">Registration Closes</p>
-                                    <p className={`font-medium ${isClosingSoon ? 'text-orange-600 dark:text-orange-400 font-bold' : 'text-slate-900 dark:text-slate-200'}`}>
-                                        {event.registration_end ? new Date(event.registration_end).toLocaleString(undefined, { month: 'short', day: 'numeric', hour: 'numeric', minute: '2-digit' }) : 'Before Event starts'}
-                                    </p>
-                                </div>
-                            </div>
-                            {event.payment_deadline && (
-                                <div className="flex items-start gap-4">
-                                    <div className="p-3 bg-amber-100 dark:bg-amber-900/30 text-amber-600 dark:text-amber-400 rounded-xl shrink-0">
-                                        <CreditCardIcon className="w-6 h-6" />
-                                    </div>
-                                    <div>
-                                        <p className="text-sm font-semibold text-slate-500 dark:text-slate-400 uppercase tracking-wider mb-1">Payment Deadline</p>
-                                        <p className="font-bold text-amber-700 dark:text-amber-500">
-                                            {new Date(event.payment_deadline).toLocaleString(undefined, { month: 'short', day: 'numeric', hour: 'numeric', minute: '2-digit' })}
-                                        </p>
-                                    </div>
-                                </div>
-                            )}
-                        </div>
+                        )}
                     </div>
+                </div>
 
-                    <div className="prose dark:prose-invert max-w-none mb-8">
-                        <h3 className="text-2xl font-semibold mb-4">About this Event</h3>
-                        <p className="whitespace-pre-wrap">{event.description}</p>
-                    </div>
+            </div>
 
+            {/* Sticky Action Bar */}
+            <div className="sticky bottom-0 left-0 w-full bg-white/95 dark:bg-slate-950/95 backdrop-blur-md border-t border-slate-200 dark:border-slate-800 p-4 shadow-[0_-4px_6px_-1px_rgba(0,0,0,0.05)] z-40 flex flex-col sm:flex-row items-center justify-between gap-4">
+                <div className="hidden sm:block">
+                    <p className="font-bold text-lg">{event.title}</p>
+                    {event.max_capacity && !isSoldOut && regEnd >= now && (
+                        <p className="text-sm font-semibold text-orange-600 dark:text-orange-400">
+                            {remainingSeats === 1 ? 'Hurry, 1 seat remaining!' : `Only ${remainingSeats} seats remaining!`}
+                        </p>
+                    )}
+                    {isSoldOut && (
+                        <p className="text-sm font-semibold text-slate-500">
+                            Capacity of {event.max_capacity} reached
+                        </p>
+                    )}
+                </div>
 
+                <div className="w-full sm:w-auto flex-shrink-0">
+                    {isSoldOut ? (
+                        <Button disabled variant="destructive" size="lg" className="w-full sm:w-auto px-8 rounded-full shadow-md">
+                            Sold Out
+                        </Button>
+                    ) : !isClosingSoon && regEnd < now ? (
+                        <Button disabled variant="destructive" size="lg" className="w-full sm:w-auto px-8 rounded-full shadow-md">
+                            Registration Closed
+                        </Button>
+                    ) : (
+                        <Button asChild size="lg" className="w-full sm:w-auto px-10 rounded-full shadow-lg hover:shadow-xl hover:-translate-y-0.5 transition-all duration-300 bg-primary text-primary-foreground">
+                            <Link href={`/events/${event.id}/register`}>Register Now</Link>
+                        </Button>
+                    )}
                 </div>
             </div>
+
         </div>
     )
 }

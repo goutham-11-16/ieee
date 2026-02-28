@@ -51,6 +51,27 @@
   --color-brand-purple: #8b5cf6;
   --color-brand-emerald: #10b981;
 
+  /* Status Colors */
+  --color-status-approved-bg: theme('colors.green.100');
+  --color-status-approved-text: theme('colors.green.800');
+  --color-status-approved-border: theme('colors.green.200');
+
+  --color-status-pending-bg: theme('colors.amber.100');
+  --color-status-pending-text: theme('colors.amber.800');
+  --color-status-pending-border: theme('colors.amber.200');
+
+  --color-status-rejected-bg: theme('colors.red.100');
+  --color-status-rejected-text: theme('colors.red.800');
+  --color-status-rejected-border: theme('colors.red.200');
+
+  --color-status-draft-bg: theme('colors.slate.100');
+  --color-status-draft-text: theme('colors.slate.800');
+  --color-status-draft-border: theme('colors.slate.200');
+
+  --color-status-live-bg: theme('colors.blue.100');
+  --color-status-live-text: theme('colors.blue.800');
+  --color-status-live-border: theme('colors.blue.200');
+
   /* Aurora Animations */
   --animate-aurora: aurora 60s linear infinite;
 
@@ -146,6 +167,10 @@
 @layer base {
   * {
     @apply border-border outline-ring/50;
+  }
+
+  html {
+    scroll-behavior: smooth;
   }
 
   body {

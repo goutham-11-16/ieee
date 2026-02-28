@@ -70,7 +70,7 @@ export default async function AdminLayout({
                         </Button>
                     )}
                     <div className="pt-4 mt-auto border-t border-slate-700">
-                        <Button variant="ghost" asChild className="justify-start text-gray-400 hover:text-white hover:bg-slate-800">
+                        <Button variant="ghost" asChild className="justify-start text-muted-foreground hover:text-white hover:bg-slate-800">
                             <Link href="/">Back to Site</Link>
                         </Button>
                     </div>

@@ -81,7 +81,7 @@ export default function PaymentUploadForm({ registrationId, amount, reference, p
                     <p className="text-xs text-muted-foreground">Files will be securely stored in our Google Drive.</p>
                 </div>
 
-                <Button type="submit" className="w-full bg-blue-600 hover:bg-blue-700" disabled={loading}>
+                <Button type="submit" className="w-full" disabled={loading}>
                     {loading && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}
                     {loading ? 'Processing Upload...' : 'Submit Payment for Verification'}
                 </Button>

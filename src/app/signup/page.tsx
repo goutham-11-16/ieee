@@ -49,7 +49,7 @@ export default function SignupPage() {
                                 </>
                             ) : "Create Account"}
                         </Button>
-                        <div className="text-sm text-center text-gray-500">
+                        <div className="text-sm text-center text-muted-foreground">
                             Already have an account?{' '}
                             <Link href="/login" className="text-blue-600 hover:underline">
                                 Login

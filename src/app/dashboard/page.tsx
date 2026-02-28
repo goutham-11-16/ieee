@@ -3,7 +3,7 @@ import { redirect } from 'next/navigation'
 import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from '@/components/ui/card'
 import { Badge } from '@/components/ui/badge'
 import { Button } from '@/components/ui/button'
-import { CalendarIcon, MapPinIcon, DownloadIcon, UploadIcon, TicketIcon } from 'lucide-react'
+import { CalendarIcon, MapPinIcon, DownloadIcon, UploadIcon, TicketIcon, Ghost, SearchX } from 'lucide-react'
 import Link from 'next/link'
 
 export default async function DashboardPage() {
@@ -152,7 +152,7 @@ export default async function DashboardPage() {
                                     const cert = certificates?.find((c: any) => c.registration_id === reg.id)
                                     if (cert) {
                                         return (
-                                            <Button variant="default" size="sm" className="bg-blue-600 hover:bg-blue-700" asChild>
+                                            <Button variant="default" size="sm" asChild>
                                                 <a href={supabase.storage.from('certificates').getPublicUrl(cert.file_url).data.publicUrl} target="_blank">
                                                     <DownloadIcon className="mr-2 h-4 w-4" /> Certificate
                                                 </a>
@@ -175,13 +175,17 @@ export default async function DashboardPage() {
                 })}
 
                 {(!registrations || registrations.length === 0) && (
-                    <div className="text-center py-12 text-muted-foreground">
-                        You haven't registered for any events yet.
-                        <div className="mt-4">
-                            <Button asChild>
-                                <Link href="/events">Browse Events</Link>
-                            </Button>
+                    <div className="flex flex-col items-center justify-center text-center py-20 bg-slate-50/50 dark:bg-slate-900/50 rounded-2xl border border-dashed shadow-inner mt-4">
+                        <div className="bg-white dark:bg-slate-800 p-4 rounded-full shadow-sm mb-6">
+                            <SearchX className="w-12 h-12 text-slate-400 dark:text-slate-500" />
                         </div>
+                        <h3 className="text-2xl font-bold text-slate-800 dark:text-slate-200 mb-2">No Registrations Yet</h3>
+                        <p className="text-muted-foreground max-w-sm mb-8">
+                            You haven't registered for any upcoming events. Discover what's happening and secure your spot today!
+                        </p>
+                        <Button asChild size="lg" className="rounded-full shadow-md hover:shadow-lg transition-all hover:-translate-y-1">
+                            <Link href="/events">Explore Events</Link>
+                        </Button>
                     </div>
                 )}
             </div>

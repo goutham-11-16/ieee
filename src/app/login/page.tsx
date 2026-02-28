@@ -45,7 +45,7 @@ export default function LoginPage() {
                                 </>
                             ) : "Login"}
                         </Button>
-                        <div className="text-sm text-center text-gray-500">
+                        <div className="text-sm text-center text-muted-foreground">
                             Don't have an account? Please contact your administrator.
                         </div>
                     </CardFooter>

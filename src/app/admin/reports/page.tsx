@@ -43,7 +43,7 @@ export default async function AdminReportsPage() {
                                         <DownloadIcon className="mr-2 h-4 w-4" /> Attendance List
                                     </a>
                                 </Button>
-                                <Button variant="default" asChild className="w-full justify-start h-12 bg-blue-600 hover:bg-blue-700 text-white">
+                                <Button variant="default" asChild className="w-full justify-start h-12">
                                     <a href={`/api/export/reports?eventId=${event.id}&type=certificates`} target="_blank">
                                         <DownloadIcon className="mr-2 h-4 w-4" /> Certificate List
                                     </a>

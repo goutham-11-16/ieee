@@ -334,42 +334,60 @@ export default async function StatusDashboardPage(props: {
                         </div>
                     </div>
                 </CardContent>
-                <CardFooter className="bg-slate-100 dark:bg-slate-900/80 flex justify-end gap-4 flex-wrap p-6 border-t">
-
-
-                    {certificates && certificates.map((cert) => (
-                        <Button key={cert.unique_code} variant="destructive" size="lg" className="w-full sm:w-auto bg-purple-600 hover:bg-purple-700 shadow-sm" asChild>
-                            <a href={supabase.storage.from('certificates').getPublicUrl(cert.file_url).data.publicUrl} target="_blank">
-                                <DownloadIcon className="mr-2 h-4 w-4" /> Download Certificate ({cert.participant_name || 'Participant'})
-                            </a>
-                        </Button>
-                    ))}
-
-                    {(reg.status === 'approved' && (!isPaymentRequired || isVerified)) && (
-                        <>
-                            {reg.event.whatsapp_link && (
-                                <Button size="lg" className="w-full sm:w-auto bg-green-500 hover:bg-green-600 text-white shadow-md transform transition-transform hover:-translate-y-1" asChild>
-                                    <a href={reg.event.whatsapp_link} target="_blank" rel="noopener noreferrer">
-                                        Join WhatsApp Group
-                                    </a>
-                                </Button>
-                            )}
-                            {reg.event.instagram_link && (
-                                <Button size="lg" className="w-full sm:w-auto bg-pink-600 hover:bg-pink-700 text-white shadow-md transform transition-transform hover:-translate-y-1" asChild>
-                                    <a href={reg.event.instagram_link} target="_blank" rel="noopener noreferrer">
-                                        Follow on Instagram
-                                    </a>
-                                </Button>
-                            )}
-                            <Button size="lg" className="w-full sm:w-auto bg-emerald-600 hover:bg-emerald-700 shadow-md transform transition-transform hover:-translate-y-1" asChild>
-                                <Link href={`/tickets/${reg.id}`}>
-                                    <TicketIcon className="mr-2 h-5 w-5" /> View Digital Ticket
-                                </Link>
-                            </Button>
-                        </>
-                    )}
-                </CardFooter>
             </Card>
+
+            {/* Sticky Action Footer */}
+            <div className="fixed bottom-0 left-0 right-0 w-full bg-white/95 dark:bg-slate-950/95 backdrop-blur-md border-t border-slate-200 dark:border-slate-800 p-4 shadow-[0_-4px_6px_-1px_rgba(0,0,0,0.05)] z-40">
+                <div className="container mx-auto max-w-4xl flex items-center justify-between gap-4 flex-wrap sm:flex-nowrap">
+                    <div className="hidden md:block flex-1 min-w-0">
+                        <p className="text-sm font-semibold truncate">Ref: {reg.reference_number}</p>
+                        <p className="text-xs text-muted-foreground truncate">{reg.event.title}</p>
+                    </div>
+
+                    <div className="w-full md:w-auto flex items-center justify-end gap-3 flex-wrap sm:flex-nowrap shrink-0">
+                        {certificates && certificates.map((cert) => (
+                            <Button key={cert.unique_code} variant="destructive" size="default" className="w-full sm:w-auto bg-purple-600 hover:bg-purple-700 shadow-sm" asChild>
+                                <a href={supabase.storage.from('certificates').getPublicUrl(cert.file_url).data.publicUrl} target="_blank">
+                                    <DownloadIcon className="mr-2 h-4 w-4" /> Download Certificate ({cert.participant_name || 'Participant'})
+                                </a>
+                            </Button>
+                        ))}
+
+                        {(reg.status === 'approved' && (!isPaymentRequired || isVerified)) && (
+                            <>
+                                {reg.event.whatsapp_link && (
+                                    <Button size="default" className="w-full sm:w-auto bg-green-500 hover:bg-green-600 text-white shadow-md transform transition-transform hover:-translate-y-0.5" asChild>
+                                        <a href={reg.event.whatsapp_link} target="_blank" rel="noopener noreferrer">
+                                            Join WhatsApp Group
+                                        </a>
+                                    </Button>
+                                )}
+                                {reg.event.instagram_link && (
+                                    <Button size="default" className="w-full sm:w-auto bg-pink-600 hover:bg-pink-700 text-white shadow-md transform transition-transform hover:-translate-y-0.5" asChild>
+                                        <a href={reg.event.instagram_link} target="_blank" rel="noopener noreferrer">
+                                            Follow on Instagram
+                                        </a>
+                                    </Button>
+                                )}
+                                <Button size="default" className="w-full sm:w-auto bg-emerald-600 hover:bg-emerald-700 shadow-md transform transition-transform hover:-translate-y-0.5" asChild>
+                                    <Link href={`/tickets/${reg.id}`}>
+                                        <TicketIcon className="mr-2 h-5 w-5" /> View Digital Ticket
+                                    </Link>
+                                </Button>
+                            </>
+                        )}
+
+                        {!(reg.status === 'approved' && (!isPaymentRequired || isVerified)) && (!certificates || certificates.length === 0) && (
+                            <div className="w-full text-center md:text-right text-sm text-muted-foreground italic">
+                                Action locked until approval
+                            </div>
+                        )}
+                    </div>
+                </div>
+            </div>
+
+            {/* Bottom spacer to prevent content hiding behind sticky nav */}
+            <div className="h-24"></div>
         </div>
     )
 }

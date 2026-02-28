@@ -56,7 +56,7 @@ export default function StatusCheckerClient({ events }: { events: any[] }) {
             <Card className="w-full max-w-md shadow-lg border-2">
                 <CardHeader className="text-center space-y-2">
                     <CardTitle className="text-3xl font-bold">Status Checker</CardTitle>
-                    <CardDescription className="text-base text-gray-600 dark:text-gray-400">
+                    <CardDescription className="text-base text-muted-foreground">
                         Check your registration status, upload payment proof, and download certificates.
                     </CardDescription>
                 </CardHeader>
@@ -72,7 +72,7 @@ export default function StatusCheckerClient({ events }: { events: any[] }) {
                                 <div className="space-y-2">
                                     <Label htmlFor="reference" className="sr-only">Reference Number</Label>
                                     <div className="relative">
-                                        <SearchIcon className="absolute left-3 top-3 h-5 w-5 text-gray-400" />
+                                        <SearchIcon className="absolute left-3 top-3 h-5 w-5 text-muted-foreground" />
                                         <Input
                                             id="reference"
                                             type="text"
@@ -100,7 +100,7 @@ export default function StatusCheckerClient({ events }: { events: any[] }) {
                                 <div className="space-y-2">
                                     <Label htmlFor="eventSelect">Select Event</Label>
                                     <div className="relative">
-                                        <CalendarIcon className="absolute left-3 top-3 h-5 w-5 text-gray-400" />
+                                        <CalendarIcon className="absolute left-3 top-3 h-5 w-5 text-muted-foreground" />
                                         <select
                                             id="eventSelect"
                                             className="w-full pl-10 h-12 rounded-md border border-input bg-background px-3 py-2 text-sm ring-offset-background placeholder:text-muted-foreground focus:outline-none focus:ring-2 focus:ring-ring focus:ring-offset-2"
@@ -121,7 +121,7 @@ export default function StatusCheckerClient({ events }: { events: any[] }) {
                                 <div className="space-y-2">
                                     <Label htmlFor="phoneNumber">Phone Number</Label>
                                     <div className="relative">
-                                        <PhoneIcon className="absolute left-3 top-3 h-5 w-5 text-gray-400" />
+                                        <PhoneIcon className="absolute left-3 top-3 h-5 w-5 text-muted-foreground" />
                                         <Input
                                             id="phoneNumber"
                                             type="tel"

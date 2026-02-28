@@ -67,7 +67,7 @@ export default async function PaymentPage(props: { params: Promise<{ id: string 
             <div className="container mx-auto py-20 px-4 text-center">
                 <h1 className="text-3xl font-bold text-red-600 mb-4">Payment Deadline Missed</h1>
                 <p className="text-muted-foreground">The payment window for this event closed on {deadline.toLocaleString()}.</p>
-                <p className="text-sm mt-4 text-gray-500">If you believe this is an error, please contact the event admin.</p>
+                <p className="text-sm mt-4 text-muted-foreground">If you believe this is an error, please contact the event admin.</p>
             </div>
         )
     }

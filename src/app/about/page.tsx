@@ -34,7 +34,7 @@ export default function AboutPage() {
                             <CardTitle className="text-blue-500">Systems</CardTitle>
                         </CardHeader>
                         <CardContent>
-                            <p className="text-sm text-gray-600 dark:text-gray-300">
+                            <p className="text-sm text-muted-foreground">
                                 Focusing on systems engineering, large-scale systems, and the integration of complex technologies.
                             </p>
                         </CardContent>
@@ -44,7 +44,7 @@ export default function AboutPage() {
                             <CardTitle className="text-purple-500">Human-Machine</CardTitle>
                         </CardHeader>
                         <CardContent>
-                            <p className="text-sm text-gray-600 dark:text-gray-300">
+                            <p className="text-sm text-muted-foreground">
                                 Emphasizing human factors, ergonomics, and cognitive engineering to improve interaction between humans and technology.
                             </p>
                         </CardContent>
@@ -54,7 +54,7 @@ export default function AboutPage() {
                             <CardTitle className="text-emerald-500">Cybernetics</CardTitle>
                         </CardHeader>
                         <CardContent>
-                            <p className="text-sm text-gray-600 dark:text-gray-300">
+                            <p className="text-sm text-muted-foreground">
                                 Exploring communication and control in machines and living organisms, covering AI, machine learning, and robotics.
                             </p>
                         </CardContent>

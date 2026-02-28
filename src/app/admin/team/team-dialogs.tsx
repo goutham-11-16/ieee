@@ -40,7 +40,7 @@ export default function TeamDialogs({ member }: { member?: any }) {
                         <PlusIcon className="w-4 h-4 mr-2" /> Add Member
                     </Button>
                 </DialogTrigger>
-                <DialogContent className="max-w-2xl max-h-[90vh] overflow-y-auto">
+                <DialogContent className="max-w-2xl max-h-[90vh] overflow-y-auto" aria-describedby={undefined}>
                     <DialogHeader>
                         <DialogTitle>Add New Team Member</DialogTitle>
                     </DialogHeader>
@@ -59,7 +59,7 @@ export default function TeamDialogs({ member }: { member?: any }) {
                         <EditIcon className="w-4 h-4 mr-2" /> Edit
                     </Button>
                 </DialogTrigger>
-                <DialogContent className="max-w-2xl max-h-[90vh] overflow-y-auto">
+                <DialogContent className="max-w-2xl max-h-[90vh] overflow-y-auto" aria-describedby={undefined}>
                     <DialogHeader>
                         <DialogTitle>Edit {member.name}</DialogTitle>
                     </DialogHeader>

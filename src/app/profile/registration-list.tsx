@@ -33,7 +33,7 @@ export default function RegistrationList({ registrations }: { registrations: Reg
                     <CardContent className="p-4 flex flex-col md:flex-row justify-between items-start md:items-center gap-4">
                         <div>
                             <h3 className="font-semibold text-lg">{reg.event.title}</h3>
-                            <p className="text-sm text-gray-500">
+                            <p className="text-sm text-muted-foreground">
                                 {new Date(reg.event.date).toLocaleDateString()} • {reg.event.location}
                             </p>
                             <div className="mt-2 flex gap-2">
@@ -57,7 +57,7 @@ export default function RegistrationList({ registrations }: { registrations: Reg
                                 <DialogTrigger asChild>
                                     <Button variant="outline" className="ml-2">View Ticket</Button>
                                 </DialogTrigger>
-                                <DialogContent className="sm:max-w-sm">
+                                <DialogContent className="sm:max-w-sm" aria-describedby={undefined}>
                                     <DialogHeader>
                                         <DialogTitle>Your Ticket</DialogTitle>
                                     </DialogHeader>
