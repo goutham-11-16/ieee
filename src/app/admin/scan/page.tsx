@@ -224,8 +224,24 @@ export default function ScannerPage() {
                                 {scanResult.message}
                             </div>
                             {scanResult.attendeeName && (
-                                <div className="text-xl font-bold p-3 bg-white dark:bg-black/40 rounded shadow-sm border border-black/5 dark:border-white/10">
-                                    {scanResult.attendeeName}
+                                <div className="space-y-3">
+                                    <div className="text-xl font-bold p-3 bg-white dark:bg-black/40 rounded shadow-sm border border-black/5 dark:border-white/10 flex flex-col items-center">
+                                        <span className="text-[10px] uppercase text-muted-foreground mb-1 tracking-widest">Primary Attendee</span>
+                                        {scanResult.attendeeName}
+                                    </div>
+
+                                    {scanResult.teamMembers && scanResult.teamMembers.length > 0 && (
+                                        <div className="pt-2">
+                                            <p className="text-[10px] uppercase text-muted-foreground mb-2 tracking-widest">Team Members</p>
+                                            <div className="flex flex-wrap justify-center gap-2">
+                                                {scanResult.teamMembers.map((member: any, i: number) => (
+                                                    <div key={i} className="text-sm px-3 py-1.5 bg-slate-100 dark:bg-slate-800 rounded-full border border-slate-200 dark:border-slate-700 font-medium">
+                                                        {member.guestName}
+                                                    </div>
+                                                ))}
+                                            </div>
+                                        </div>
+                                    )}
                                 </div>
                             )}
 

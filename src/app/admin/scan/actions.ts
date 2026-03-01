@@ -8,6 +8,7 @@ export type ScanResult = {
     success: boolean;
     message: string;
     attendeeName?: string;
+    teamMembers?: any[];
     errorType?: 'INVALID' | 'DUPLICATE' | 'WRONG_EVENT' | 'NOT_APPROVED';
     missedSessions?: string[];
     registrationId?: string;
@@ -44,6 +45,7 @@ export async function verifyTicket(qrDataString: string, targetEventId: string, 
             id,
             status,
             ticket_qr_uuid,
+            team_members,
             user:profiles!user_id(full_name, email),
             event:events(date, end_date)
         `)
@@ -161,6 +163,7 @@ export async function verifyTicket(qrDataString: string, targetEventId: string, 
         success: true,
         message: 'Verified!',
         attendeeName: reg.user.full_name,
+        teamMembers: registration.team_members || [],
         missedSessions: missedSessions.length > 0 ? missedSessions : undefined,
         registrationId: registration.id // Added so UI can trigger retroactive marking
     }
