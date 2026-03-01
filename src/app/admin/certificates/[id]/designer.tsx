@@ -8,8 +8,8 @@ import { Label } from '@/components/ui/label'
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select'
 import { createClient } from '@/lib/supabase/client'
 import { toast } from 'sonner'
-import { saveTemplate, requestTemplateLock } from '../actions'
-import { Loader2, PlusIcon, Trash2Icon, UploadCloudIcon, LockIcon, SaveIcon } from 'lucide-react'
+import { saveTemplate, requestTemplateLock, generateCertificates } from '../actions'
+import { Loader2, PlusIcon, Trash2Icon, UploadCloudIcon, LockIcon, SaveIcon, Wand2Icon } from 'lucide-react'
 
 type ConfigElement = {
     id: string
@@ -130,6 +130,23 @@ export default function CertificateDesigner({ eventId, existingTemplate }: { eve
             toast.error(res.error)
         }
         setIsLocking(false)
+    }
+
+    const handleGenerate = async () => {
+        if (!confirm('Generate certificates for all attended participants?')) return
+        setIsSaving(true) // Reuse saving state for simplicity of loading overlay
+        try {
+            const result = await generateCertificates(eventId)
+            if (result?.error || !result?.success) {
+                toast.error(result?.error || 'Failed to generate')
+            } else {
+                toast.success(`Generated ${result.count} certificates! ${(result.exceptions ?? 0) > 0 ? `(${result.exceptions} exceptions)` : ''}`)
+            }
+        } catch (e) {
+            toast.error('Failed to generate certificates')
+        } finally {
+            setIsSaving(false)
+        }
     }
 
     return (
@@ -264,9 +281,14 @@ export default function CertificateDesigner({ eventId, existingTemplate }: { eve
                         {isSaving ? <Loader2 className="w-4 h-4 mr-2 animate-spin" /> : <SaveIcon className="w-4 h-4 mr-2" />} Save Progress
                     </Button>
                     {isLocked ? (
-                        <Button disabled variant="outline" className="flex-1 border-green-500 text-green-600 opacity-100">
-                            <LockIcon className="w-4 h-4 mr-2" /> Locked
-                        </Button>
+                        <>
+                            <Button disabled variant="outline" className="flex-1 border-green-500 text-green-600 opacity-100">
+                                <LockIcon className="w-4 h-4 mr-2" /> Locked
+                            </Button>
+                            <Button onClick={handleGenerate} disabled={isSaving} className="flex-1 bg-purple-600 hover:bg-purple-700 text-white">
+                                {isSaving ? <Loader2 className="w-4 h-4 mr-2 animate-spin" /> : <Wand2Icon className="w-4 h-4 mr-2" />} Generate
+                            </Button>
+                        </>
                     ) : (
                         <Button onClick={handleLock} disabled={isLocking || !backgroundUrl || config.length === 0} variant="outline" className="flex-1 border-emerald-600 text-emerald-600 hover:bg-emerald-50">
                             {isLocking ? <Loader2 className="w-4 h-4 mr-2 animate-spin" /> : <LockIcon className="w-4 h-4 mr-2" />} Request Lock
