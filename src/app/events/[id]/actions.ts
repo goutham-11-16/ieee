@@ -4,23 +4,11 @@ import { createClient } from '@/lib/supabase/server'
 import { createAdminClient } from '@/lib/supabase/admin'
 import { revalidatePath } from 'next/cache'
 import { logAction } from '@/lib/actions/audit'
+import { v4 as uuidv4 } from 'uuid'
 
 function generateReference() {
     const randomHex = Array.from({ length: 4 }, () => Math.floor(Math.random() * 256).toString(16).padStart(2, '0')).join('').toUpperCase()
     return 'KARE-' + randomHex
-}
-
-// Function to safely generate a UUID using crypto.randomUUID()
-function getUUID() {
-    try {
-        return crypto.randomUUID()
-    } catch (e) {
-        // Fallback for older node versions if needed, though Next.js 15+ should have it
-        return 'xxxxxxxx-xxxx-4xxx-yxxx-xxxxxxxxxxxx'.replace(/[xy]/g, function (c) {
-            var r = Math.random() * 16 | 0, v = c == 'x' ? r : (r & 0x3 | 0x8);
-            return v.toString(16);
-        });
-    }
 }
 
 export async function registerForEvent(eventId: string) {
@@ -79,7 +67,7 @@ export async function registerForEvent(eventId: string) {
             user_id: user.id,
             event_id: eventId,
             status,
-            ticket_qr_uuid: getUUID()
+            ticket_qr_uuid: uuidv4()
         })
         .select()
         .single()
@@ -211,7 +199,7 @@ export async function registerGuest(formData: FormData) {
     if (event.fees > 0) {
         status = 'pending_payment'
         expiresAt = new Date(Date.now() + 5 * 60000).toISOString() // 5 minutes
-        referenceNumber = `TEMP-${getUUID().slice(0, 8).toUpperCase()}`
+        referenceNumber = `TEMP-${uuidv4().slice(0, 8).toUpperCase()}`
     } else {
         referenceNumber = generateReference()
     }
@@ -226,7 +214,7 @@ export async function registerGuest(formData: FormData) {
             guest_phone: guestPhone,
             guest_institution: guestInstitution,
             reference_number: referenceNumber,
-            ticket_qr_uuid: getUUID(),
+            ticket_qr_uuid: uuidv4(),
             status,
             expires_at: expiresAt,
             custom_responses: customResponses,
