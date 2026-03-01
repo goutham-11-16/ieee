@@ -283,7 +283,7 @@ export default async function StatusDashboardPage(props: {
                                                     <div className="flex justify-between items-center mt-1">
                                                         <span className="text-sm font-medium text-muted-foreground">Status</span>
                                                         {sessionRecord?.check_in_time ? (
-                                                            <Badge variant="success">Present - {new Date(sessionRecord.check_in_time).toLocaleTimeString()}</Badge>
+                                                            <Badge variant="success">Present - {new Date(sessionRecord.check_in_time).toLocaleTimeString('en-IN', { timeZone: 'Asia/Kolkata', hour: '2-digit', minute: '2-digit', hour12: true })}</Badge>
                                                         ) : (
                                                             <Badge variant="outline">Absent / Awaiting</Badge>
                                                         )}
@@ -296,7 +296,7 @@ export default async function StatusDashboardPage(props: {
                                             <div className="flex items-center justify-between bg-slate-50 dark:bg-slate-900 border p-3 rounded-lg">
                                                 <span className="font-medium">Check-In</span>
                                                 {checkedIn ? (
-                                                    <Badge variant="success">{new Date(checkedIn).toLocaleTimeString()}</Badge>
+                                                    <Badge variant="success">{new Date(checkedIn).toLocaleTimeString('en-IN', { timeZone: 'Asia/Kolkata', hour: '2-digit', minute: '2-digit', hour12: true })}</Badge>
                                                 ) : (
                                                     <Badge variant="outline">Awaiting Scan</Badge>
                                                 )}
@@ -304,7 +304,7 @@ export default async function StatusDashboardPage(props: {
                                             <div className="flex items-center justify-between bg-slate-50 dark:bg-slate-900 border p-3 rounded-lg">
                                                 <span className="font-medium">Check-Out</span>
                                                 {checkedOut ? (
-                                                    <Badge variant="secondary">{new Date(checkedOut).toLocaleTimeString()}</Badge>
+                                                    <Badge variant="secondary">{new Date(checkedOut).toLocaleTimeString('en-IN', { timeZone: 'Asia/Kolkata', hour: '2-digit', minute: '2-digit', hour12: true })}</Badge>
                                                 ) : (
                                                     <Badge variant="outline">--:--</Badge>
                                                 )}

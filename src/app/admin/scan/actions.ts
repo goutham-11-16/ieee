@@ -76,8 +76,10 @@ export async function verifyTicket(qrDataString: string, targetEventId: string, 
         // Default to a 12 hour window if end_date doesn't exist just in case
         const eventEnd = eventData.end_date ? new Date(eventData.end_date) : new Date(eventStart.getTime() + 12 * 60 * 60 * 1000);
 
-        if (now < eventStart) {
-            return { success: false, message: `Too early. Event starts at ${eventStart.toLocaleTimeString()}`, errorType: 'INVALID' }
+        const scanStartWindow = new Date(eventStart.getTime() - 60 * 60 * 1000); // 1 hour buffer before event starts
+
+        if (now < scanStartWindow) {
+            return { success: false, message: `Too early. Scanning opens 1 hour before event at ${scanStartWindow.toLocaleTimeString('en-IN', { timeZone: 'Asia/Kolkata', hour: '2-digit', minute: '2-digit', hour12: true })}`, errorType: 'INVALID' }
         }
 
         if (now > eventEnd) {
@@ -107,7 +109,7 @@ export async function verifyTicket(qrDataString: string, targetEventId: string, 
     if (currentScan) {
         return {
             success: false,
-            message: `Already scanned at ${new Date(currentScan.check_in_time).toLocaleTimeString()}`,
+            message: `Already scanned at ${new Date(currentScan.check_in_time).toLocaleTimeString('en-IN', { timeZone: 'Asia/Kolkata', hour: '2-digit', minute: '2-digit', hour12: true })}`,
             attendeeName: registration.guest_name || userProfile?.full_name || 'Guest',
             errorType: 'DUPLICATE'
         }

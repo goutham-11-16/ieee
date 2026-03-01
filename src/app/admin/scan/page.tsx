@@ -181,6 +181,17 @@ export default function ScannerPage() {
                         </SelectContent>
                     </Select>
                 )}
+
+                {selectedEvent && (
+                    <div className="bg-blue-50 dark:bg-blue-900/20 p-4 rounded-lg border border-blue-200 dark:border-blue-800 text-sm overflow-hidden">
+                        <h3 className="font-semibold text-blue-800 dark:text-blue-300 mb-2">Scanning Rules</h3>
+                        <ul className="list-disc pl-5 space-y-1 text-blue-700 dark:text-blue-400">
+                            <li>You can start scanning tickets <strong>1 hour before</strong> the event's listed start time.</li>
+                            <li>A single QR code can be scanned <strong>once per distinct session</strong> (e.g., once for Morning, once for Afternoon).</li>
+                            <li>Ensure the correct session is selected in the dropdown above before scanning.</li>
+                        </ul>
+                    </div>
+                )}
             </div>
 
             {!selectedEventId && (
