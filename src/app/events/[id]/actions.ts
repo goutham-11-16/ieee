@@ -170,6 +170,21 @@ export async function registerGuest(formData: FormData) {
         }
     }
 
+    if (guestEmail) {
+        // Proactively delete any expired registrations with this email to allow re-entry
+        await supabase.from('registrations').delete().eq('event_id', eventId).eq('guest_email', guestEmail).eq('status', 'expired')
+
+        const { data: emailReg } = await supabase
+            .from('registrations')
+            .select('id')
+            .eq('event_id', eventId)
+            .eq('guest_email', guestEmail)
+            .limit(1)
+        if (emailReg && emailReg.length > 0) {
+            return { error: 'This Email Address is already registered for this event with an active session.' }
+        }
+    }
+
     const now = new Date()
     const openDate = event.registration_start ? new Date(event.registration_start) : null
     const closeDate = event.registration_end ? new Date(event.registration_end) : new Date(event.date)
