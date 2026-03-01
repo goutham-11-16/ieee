@@ -56,13 +56,15 @@ export async function verifyPayment(paymentId: string, registrationId: string) {
         const font = await pdfDoc.embedFont(StandardFonts.Helvetica)
         const fontBold = await pdfDoc.embedFont(StandardFonts.HelveticaBold)
 
-        const sanitize = (t: string) => t ? t.replace(/₹/g, 'Rs.').replace(/[^\x00-\x7F]/g, '').trim() : '';
+        const sanitize = (t: string) => t ? String(t).replace(/₹/g, 'Rs.').replace(/[^\x00-\x7F]/g, '').trim() : '';
 
         page.drawText('PAYMENT RECEIPT', { x: 50, y: height - 80, size: 24, font: fontBold, color: rgb(0, 0, 0) })
 
         const drawField = (label: string, value: string, y: number) => {
+            const cleanValue = sanitize(value);
+            console.log(`PDF Drawing: [${label}] -> [${cleanValue}]`);
             page.drawText(label, { x: 50, y, size: 12, font: fontBold })
-            page.drawText(sanitize(value), { x: 150, y, size: 12, font })
+            page.drawText(cleanValue, { x: 150, y, size: 12, font })
         }
 
         drawField('Receipt ID:', paymentId.slice(0, 8).toUpperCase(), height - 120)
