@@ -1,0 +1,10 @@
+﻿src/app/admin/events/[id]/page.tsx(138,97): error TS2769: No overload matches this call.
+  Overload 1 of 2, '(locales?: LocalesArgument, options?: NumberFormatOptions | undefined): string', gave the following error.
+    Object literal may only specify known properties, and 'timeZone' does not exist in type 'NumberFormatOptions'.
+  Overload 2 of 2, '(locales?: string | string[] | undefined, options?: NumberFormatOptions | undefined): string', gave the following error.
+    Object literal may only specify known properties, and 'timeZone' does not exist in type 'NumberFormatOptions'.
+src/app/admin/payments/pending-payments-list.tsx(121,86): error TS2769: No overload matches this call.
+  Overload 1 of 2, '(locales?: LocalesArgument, options?: NumberFormatOptions | undefined): string', gave the following error.
+    Object literal may only specify known properties, and 'timeZone' does not exist in type 'NumberFormatOptions'.
+  Overload 2 of 2, '(locales?: string | string[] | undefined, options?: NumberFormatOptions | undefined): string', gave the following error.
+    Object literal may only specify known properties, and 'timeZone' does not exist in type 'NumberFormatOptions'.

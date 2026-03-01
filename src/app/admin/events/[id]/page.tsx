@@ -135,7 +135,7 @@ export default async function AdminEventDashboard(props: { params: Promise<{ id:
                         <CardTitle className="text-sm font-medium text-muted-foreground">Actual Revenue</CardTitle>
                     </CardHeader>
                     <CardContent>
-                        <div className="text-2xl font-bold">₹{revenue.toLocaleString('en-IN', { timeZone: 'Asia/Kolkata' })}</div>
+                        <div className="text-2xl font-bold">₹{revenue.toLocaleString('en-IN')}</div>
                         <p className="text-xs text-muted-foreground">Approved only</p>
                     </CardContent>
                 </Card>

@@ -118,7 +118,7 @@ export default function PendingPaymentsList({ initialPayments }: { initialPaymen
                                                 </Badge>
                                             </td>
                                             <td className="px-6 py-4 text-right font-semibold">
-                                                ₹{p.amount.toLocaleString('en-IN', { timeZone: 'Asia/Kolkata' })}
+                                                ₹{p.amount.toLocaleString('en-IN')}
                                             </td>
                                             <td className="px-6 py-4 text-right">
                                                 <Button size="sm" variant="ghost" className="text-blue-600 hover:text-blue-700 hover:bg-blue-50" asChild>
