@@ -125,6 +125,7 @@ export default function LoginPage() {
                                                 required
                                                 className="pl-11 h-12 bg-slate-50/50 dark:bg-slate-800/50 border-slate-200 dark:border-slate-800 focus:ring-4 focus:ring-blue-500/10 focus:border-blue-600 transition-all rounded-xl"
                                                 disabled={isPending}
+                                                suppressHydrationWarning
                                             />
                                         </div>
                                     </div>
@@ -151,6 +152,7 @@ export default function LoginPage() {
                                                 required
                                                 className="pl-11 pr-11 h-12 bg-slate-50/50 dark:bg-slate-800/50 border-slate-200 dark:border-slate-800 focus:ring-4 focus:ring-blue-500/10 focus:border-blue-600 transition-all rounded-xl"
                                                 disabled={isPending}
+                                                suppressHydrationWarning
                                             />
                                             <div className="absolute right-3 top-1/2 -translate-y-1/2 text-slate-400">
                                                 {showPassword ? <EyeOff className="w-4 h-4 cursor-pointer" onClick={() => setShowPassword(false)} /> : <Eye className="w-4 h-4 cursor-pointer" onClick={() => setShowPassword(true)} />}
@@ -165,6 +167,7 @@ export default function LoginPage() {
                                     className="w-full h-12 rounded-xl bg-blue-600 hover:bg-blue-700 text-white font-bold text-base shadow-xl shadow-blue-600/20 active:scale-[0.98] transition-all group"
                                     type="submit"
                                     disabled={isPending}
+                                    suppressHydrationWarning
                                 >
                                     {isPending ? (
                                         <div className="flex items-center gap-2">

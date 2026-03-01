@@ -20,7 +20,7 @@ export default async function RootLayout({
   const profile = await getCurrentProfile();
 
   return (
-    <html lang="en">
+    <html lang="en" suppressHydrationWarning>
       <body className={cn("font-sans min-h-screen bg-background antialiased")} suppressHydrationWarning>
         <NextTopLoader
           color="#2563eb"
