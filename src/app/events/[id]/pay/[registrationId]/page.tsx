@@ -1,13 +1,13 @@
-import { createClient } from '@/lib/supabase/server'
+import { createAdminClient } from '@/lib/supabase/admin'
 import { notFound, redirect } from 'next/navigation'
 import TimedPaymentClient from './timed-payment-client'
 
 export default async function TimedPaymentPage(props: { params: Promise<{ id: string, registrationId: string }> }) {
     const params = await props.params
-    const supabase = await createClient()
+    const supabase = createAdminClient()
 
     // 1. Fetch Registration
-    const { data: registration } = await supabase
+    const { data: registration, error: fetchError } = await supabase
         .from('registrations')
         .select(`
             *,
@@ -15,13 +15,26 @@ export default async function TimedPaymentPage(props: { params: Promise<{ id: st
         `)
         .eq('id', params.registrationId)
         .eq('event_id', params.id)
-        .single()
+        .maybeSingle()
 
     if (!registration) {
+        console.error("Payment page: Registration not found", params.registrationId)
         notFound()
     }
 
-    const event = (registration as any).event
+    // Defensive check for event join
+    const eventRaw = (registration as any).event
+    const event = Array.isArray(eventRaw) ? eventRaw[0] : eventRaw
+
+    if (!event) {
+        console.error("Payment page: Event data missing from jump", registration.event_id)
+        return (
+            <div className="container py-20 text-center">
+                <h1 className="text-2xl font-bold text-red-600">Event Details Missing</h1>
+                <p className="mt-4 text-muted-foreground">We could not load the event details. Please try again or contact support.</p>
+            </div>
+        )
+    }
 
     // 2. State Validations
     if (registration.status === 'expired') {

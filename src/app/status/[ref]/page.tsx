@@ -1,4 +1,4 @@
-import { createClient } from '@/lib/supabase/server'
+import { createAdminClient } from '@/lib/supabase/admin'
 import { notFound, redirect } from 'next/navigation'
 import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from '@/components/ui/card'
 import { Badge } from '@/components/ui/badge'
@@ -15,7 +15,7 @@ export default async function StatusDashboardPage(props: {
     const params = await props.params
     const searchParams = await props.searchParams
     const isNew = searchParams.new === '1'
-    const supabase = await createClient()
+    const supabase = createAdminClient()
     const rawRef = params.ref.toUpperCase()
 
     // 1. Try fetching by reference_number
