@@ -63,10 +63,10 @@ export default async function PaymentReviewPage(props: { params: Promise<{ id: s
             .getPublicUrl(publicUrl);
         publicUrl = data.publicUrl;
         previewUrl = data.publicUrl;
-    } else if (publicUrl && (publicUrl.includes('drive.google.com/file/d/') || publicUrl.includes('drive.google.com/uc?'))) {
+    } else if (publicUrl && (publicUrl.includes('drive.google.com') || publicUrl.includes('lh3.googleusercontent.com/d/'))) {
         isGoogleDrive = true;
         let fileId = '';
-        const matchFileD = publicUrl.match(/\/d\/(.+?)\//);
+        const matchFileD = publicUrl.match(/\/d\/(.+?)(?:\/|$)/);
         const matchUc = publicUrl.match(/id=([^&]+)/);
         if (matchFileD && matchFileD[1]) {
             fileId = matchFileD[1];
