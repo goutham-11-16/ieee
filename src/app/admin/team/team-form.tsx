@@ -133,7 +133,30 @@ export default function TeamForm({ member, onClose }: { member?: any, onClose: (
             </div>
             <div className="space-y-2">
                 <Label htmlFor="role">Role / Position *</Label>
-                <Input id="role" name="role" required defaultValue={member?.role} placeholder="e.g. Content Lead" />
+                <select
+                    id="role"
+                    name="role"
+                    required
+                    defaultValue={member?.role || ''}
+                    className="flex h-10 w-full items-center justify-between rounded-md border border-input bg-background px-3 py-2 text-sm ring-offset-background placeholder:text-muted-foreground focus:outline-none focus:ring-2 focus:ring-ring focus:ring-offset-2 disabled:cursor-not-allowed disabled:opacity-50"
+                >
+                    <option value="" disabled>Select a position</option>
+                    <option value="Faculty Head">Faculty Head</option>
+                    <option value="Chairman">Chairman</option>
+                    <option value="Vice President">Vice President</option>
+                    <option value="Secretary">Secretary</option>
+                    <option value="Treasurer">Treasurer</option>
+                    <option value="PR & Outreach Lead">PR & Outreach Lead</option>
+                    <option value="Web Development Lead">Web Development Lead</option>
+                    <option value="Technical Activities Lead">Technical Activities Lead</option>
+                    <option value="Design & Media Lead">Design & Media Lead</option>
+                    <option value="Event Co-ordinator Team">Event Co-ordinator Team</option>
+                    <option value="PR & Outreach Team">PR & Outreach Team</option>
+                    <option value="Technical Activities Team">Technical Activities Team</option>
+                    <option value="Web Development Team">Web Development Team</option>
+                    <option value="Design & Media Team">Design & Media Team</option>
+                    <option value="Volunteer">Volunteer</option>
+                </select>
             </div>
 
             <div className="space-y-2">

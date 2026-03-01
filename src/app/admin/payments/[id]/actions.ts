@@ -9,8 +9,12 @@ import QRCode from 'qrcode'
 export async function verifyPayment(paymentId: string, registrationId: string) {
     const supabase = await createClient()
     const { data: { user } } = await supabase.auth.getUser()
-
     if (!user) return { error: 'Unauthorized' }
+
+    const { data: profile } = await supabase.from('profiles').select('role').eq('id', user.id).single()
+    if (!profile || !['finance_admin', 'super_admin', 'admin'].includes(profile.role)) {
+        return { error: 'Unauthorized. Only Finance Admins or Super Admins can verify payments.' }
+    }
 
     // 1. Fetch details for Receipt
     const { data: payment } = await supabase
@@ -133,7 +137,12 @@ export async function verifyPayment(paymentId: string, registrationId: string) {
             .update({ status: 'approved', ticket_qr_uuid: ticketQrUuid })
             .eq('id', registrationId)
 
-        await logAction('VERIFY_PAYMENT', 'payments', paymentId, { status: 'verified', generatedReceipt: fileName })
+        await logAction('VERIFY_PAYMENT', 'payments', paymentId, {
+            status: 'verified',
+            generatedReceipt: fileName,
+            prev_state: 'pending_verification',
+            new_state: 'verified'
+        })
 
         revalidatePath('/admin/payments')
         return { success: true }
@@ -147,8 +156,12 @@ export async function verifyPayment(paymentId: string, registrationId: string) {
 export async function rejectPayment(paymentId: string, reason: string) {
     const supabase = await createClient()
     const { data: { user } } = await supabase.auth.getUser()
-
     if (!user) return { error: 'Unauthorized' }
+
+    const { data: profile } = await supabase.from('profiles').select('role').eq('id', user.id).single()
+    if (!profile || !['finance_admin', 'super_admin', 'admin'].includes(profile.role)) {
+        return { error: 'Unauthorized. Only Finance Admins or Super Admins can reject payments.' }
+    }
 
     // Fetch the payment to get the registration ID
     const { data: payment } = await supabase
@@ -182,7 +195,11 @@ export async function rejectPayment(paymentId: string, reason: string) {
 
     if (regError) return { error: regError.message }
 
-    await logAction('REJECT_PAYMENT', 'payments', paymentId, { reason })
+    await logAction('REJECT_PAYMENT', 'payments', paymentId, {
+        reason,
+        prev_state: 'pending_verification',
+        new_state: 'rejected'
+    })
 
     revalidatePath('/admin/payments')
     return { success: true }

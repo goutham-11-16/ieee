@@ -61,7 +61,7 @@ export default function LoginPage() {
                             ))}
                         </div>
                         <span className="text-sm font-medium text-slate-500 dark:text-slate-400 ml-2">
-                            Join 500+ active student members
+                            Join 50+ active student members
                         </span>
                     </div>
                 </motion.div>
@@ -121,7 +121,7 @@ export default function LoginPage() {
                                                 id="email"
                                                 name="email"
                                                 type="email"
-                                                placeholder="m@example.com"
+                                                placeholder="Enter your email"
                                                 required
                                                 className="pl-11 h-12 bg-slate-50/50 dark:bg-slate-800/50 border-slate-200 dark:border-slate-800 focus:ring-4 focus:ring-blue-500/10 focus:border-blue-600 transition-all rounded-xl"
                                                 disabled={isPending}

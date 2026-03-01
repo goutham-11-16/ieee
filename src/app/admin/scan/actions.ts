@@ -2,6 +2,7 @@
 
 import { createClient } from '@/lib/supabase/server'
 import { revalidatePath } from 'next/cache'
+import { logAction } from '@/lib/actions/audit'
 
 export type ScanResult = {
     success: boolean;
@@ -150,6 +151,12 @@ export async function verifyTicket(qrDataString: string, targetEventId: string, 
         return { success: false, message: 'Database Error', errorType: 'INVALID' }
     }
 
+    await logAction('SCAN_TICKET', 'attendance', registration.id, {
+        sessionName,
+        prev_state: 'absent',
+        new_state: 'present'
+    })
+
     return {
         success: true,
         message: 'Verified!',
@@ -183,6 +190,12 @@ export async function markSessionsPresent(registrationId: string, eventId: strin
         console.error("Error retroactively marking attendance:", error)
         return { success: false, error: 'Database Error while marking past sessions' }
     }
+
+    await logAction('MARK_ATTENDANCE_OVERRIDE', 'attendance', registrationId, {
+        sessions: sessionsToMark,
+        prev_state: 'absent',
+        new_state: 'present'
+    })
 
     return { success: true }
 }

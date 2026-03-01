@@ -65,17 +65,17 @@ export async function createEvent(formData: FormData) {
 
 
 
-    // Determine Status
     let status = 'draft'
     let isPublished = false
 
-    // If submitting, we set to 'pending_approval' (unless super admin, who might auto-publish, 
-    // but for this scenario we strictly follow the flow: submit -> approval)
+    // If submitting, we set to 'pending_approval' explicitly
+    // Super Admins/Admins can publish directly, Event Admins must go through approval.
     if (action === 'submit') {
         if (profile?.role === 'super_admin' || profile?.role === 'admin') {
             status = 'published'
             isPublished = true
         } else {
+            // Strict override regardless of client payloads
             status = 'pending_approval'
             isPublished = false
         }
@@ -120,7 +120,11 @@ export async function createEvent(formData: FormData) {
             '00000000-0000-0000-0000-000000000000', // Placeholder ID for new objects
             eventData
         )
-        await logAction('CREATE_EVENT_REQUEST', 'events', '00000000-0000-0000-0000-000000000000', { title, status: 'pending_approval' })
+        await logAction('CREATE_EVENT_REQUEST', 'events', '00000000-0000-0000-0000-000000000000', {
+            title,
+            prev_state: 'draft',
+            new_state: status
+        })
         revalidatePath('/events')
         revalidatePath('/admin/events')
         return { success: true }
@@ -137,7 +141,11 @@ export async function createEvent(formData: FormData) {
         throw new Error('Supabase Create Event Error: ' + error.message)
     }
 
-    await logAction('CREATE_EVENT', 'events', data.id, { title, status })
+    await logAction('CREATE_EVENT', 'events', data.id, {
+        title,
+        prev_state: 'none',
+        new_state: status
+    })
 
     revalidatePath('/events')
     revalidatePath(`/events/${data.id}`)

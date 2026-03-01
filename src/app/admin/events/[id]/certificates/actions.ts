@@ -103,11 +103,12 @@ export async function generateCertificates(eventId: string) {
         .from('registrations')
         .select(`
             id,
+            status,
             guest_name,
             guest_reg_no,
             team_members,
             user:profiles!user_id(full_name),
-            event:events(title, date),
+            event:events(title, date, fees),
             payments(status),
             attendance(id)
         `)
@@ -133,7 +134,7 @@ export async function generateCertificates(eventId: string) {
     const exceptions: any[] = []
 
     for (const reg of registrations) {
-        const hasVerifiedPayment = reg.payments?.some((p: any) => p.status === 'verified')
+        const isApprovedRegistration = reg.status === 'approved'
         const hasAttended = reg.attendance && reg.attendance.length > 0
 
         let leaderName = reg.guest_name || 'Guest Participant';
@@ -147,17 +148,17 @@ export async function generateCertificates(eventId: string) {
             teamList = teamList.concat(memberNames)
         }
 
-        if (hasVerifiedPayment && hasAttended) {
+        if (isApprovedRegistration && hasAttended) {
             // All Good
             for (const pName of teamList) {
                 eligible.push({ reg, pName })
             }
-        } else if (hasVerifiedPayment && !hasAttended) {
-            exceptions.push({ reg, participant_name: leaderName, reason: 'Paid but Absent' })
-        } else if (!hasVerifiedPayment && hasAttended) {
-            exceptions.push({ reg, participant_name: leaderName, reason: 'Attended but Unpaid (or Pending)' })
+        } else if (isApprovedRegistration && !hasAttended) {
+            exceptions.push({ reg, participant_name: leaderName, reason: 'Approved but Absent' })
+        } else if (!isApprovedRegistration && hasAttended) {
+            exceptions.push({ reg, participant_name: leaderName, reason: `Attended but Status is ${reg.status}` })
         } else {
-            // Neither paid nor attended - we can silently ignore them as they just didn't show up
+            // Neither approved nor attended - we can silently ignore them as they just didn't show up
         }
     }
 
@@ -309,14 +310,35 @@ export async function generateCertificates(eventId: string) {
         }
     }
 
-    // 7. Complete Job
+    // 7. Complete Job (Queue for Approval instead of final Publish if not Super Admin)
+    const { data: profile } = await supabase.from('profiles').select('role').eq('id', user.id).single()
+    const isSuperAdmin = profile?.role === 'super_admin'
+    const finalStatus = isSuperAdmin ? 'completed' : 'pending_approval'
+
     await supabase.from('certificate_jobs').update({
-        status: 'completed',
+        status: finalStatus,
         completed_at: new Date().toISOString(),
         total_eligible: eligible.length,
         total_exceptions: exceptions.length,
         total_generated: generatedCount
     }).eq('id', job.id)
+
+    // Log the heavy action
+    await logAction('GENERATE_CERTIFICATES', 'certificate_jobs', job.id, {
+        eligibleCount: eligible.length,
+        generatedCount,
+        exceptionsCount: exceptions.length
+    })
+
+    if (!isSuperAdmin) {
+        const { createApprovalRequest } = await import('@/lib/actions/approvals')
+        await createApprovalRequest(
+            'GENERATE_CERTIFICATES',
+            'certificate_jobs',
+            job.id,
+            { status: 'completed' }
+        )
+    }
 
     revalidatePath('/')
     revalidatePath(`/admin/events/${eventId}/certificates`)

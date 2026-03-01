@@ -10,8 +10,12 @@ import crypto from 'crypto'
 export async function markRegistrationAsPaid(registrationId: string) {
     const supabase = await createClient()
     const { data: { user } } = await supabase.auth.getUser()
-
     if (!user) return { error: 'Unauthorized' }
+
+    const { data: profile } = await supabase.from('profiles').select('role').eq('id', user.id).single()
+    if (!profile || !['finance_admin', 'super_admin', 'admin'].includes(profile.role)) {
+        return { error: 'Unauthorized. Only Finance Admins or Super Admins can verify payments.' }
+    }
 
     // 1. Fetch info
     const { data: reg, error: regError } = await supabase
@@ -111,7 +115,12 @@ export async function markRegistrationAsPaid(registrationId: string) {
         .update({ status: 'approved', ticket_qr_uuid: ticketQrUuid })
         .eq('id', registrationId)
 
-    await logAction('VERIFY_PAYMENT', 'payments', payment.id, { status: 'verified', method: 'in-person' })
+    await logAction('VERIFY_PAYMENT', 'payments', payment.id, {
+        status: 'verified',
+        method: 'in-person',
+        prev_state: 'none',
+        new_state: 'verified'
+    })
 
     revalidatePath('/admin/payments')
     revalidatePath(`/status/${reg.reference_number}`)

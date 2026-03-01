@@ -14,12 +14,13 @@ export async function logAction(
     } = await supabase.auth.getUser()
 
     if (!user) return
+    const timestamp = new Date().toISOString()
 
     await supabase.from('audit_logs').insert({
         actor_id: user.id,
         action,
         entity_type: entityType,
         entity_id: entityId,
-        new_values: metadata,
+        new_values: { ...metadata, timestamp },
     })
 }

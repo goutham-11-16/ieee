@@ -58,7 +58,8 @@ export async function registerForEvent(eventId: string) {
         .insert({
             user_id: user.id,
             event_id: eventId,
-            status
+            status,
+            ticket_qr_uuid: status === 'approved' ? crypto.randomUUID() : null
         })
         .select()
         .single()
@@ -67,7 +68,11 @@ export async function registerForEvent(eventId: string) {
         return { error: error.message }
     }
 
-    await logAction('REGISTER_EVENT', 'registrations', data.id, { eventId, status })
+    await logAction('REGISTER_EVENT', 'registrations', data.id, {
+        eventId,
+        prev_state: 'none',
+        new_state: status
+    })
 
     revalidatePath(`/events/${eventId}`)
     return { success: true, status }
@@ -188,7 +193,7 @@ export async function registerGuest(formData: FormData) {
             guest_phone: guestPhone,
             guest_institution: guestInstitution,
             reference_number: referenceNumber,
-            ticket_qr_uuid: crypto.randomUUID(),
+            ticket_qr_uuid: status === 'approved' ? crypto.randomUUID() : null,
             status,
             expires_at: expiresAt,
             custom_responses: customResponses,
@@ -206,7 +211,13 @@ export async function registerGuest(formData: FormData) {
         action: 'REGISTER_GUEST',
         entity_type: 'registrations',
         entity_id: data.id,
-        new_values: { eventId, status, referenceNumber }
+        new_values: {
+            eventId,
+            referenceNumber,
+            prev_state: 'none',
+            new_state: status,
+            timestamp: new Date().toISOString()
+        }
     })
 
     revalidatePath(`/events/${eventId}`)

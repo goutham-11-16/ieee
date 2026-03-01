@@ -88,10 +88,24 @@ export default async function StatusDashboardPage(props: {
     const isPending = payment?.status === 'pending_verification'
     const isVerified = payment?.status === 'verified'
 
-    const { data: certificates } = await supabase
-        .from('certificates')
-        .select('unique_code, file_url, participant_name')
-        .eq('registration_id', reg.id)
+    // Only fetch certificates if there is a 'completed' (i.e., approved) certificate job for this event
+    const { data: approvedJob } = await supabase
+        .from('certificate_jobs')
+        .select('id, status')
+        .eq('event_id', reg.event_id)
+        .eq('status', 'completed')
+        .order('created_at', { ascending: false })
+        .limit(1)
+        .maybeSingle()
+
+    let certificates: any[] | null = null;
+    if (approvedJob) {
+        const { data: certs } = await supabase
+            .from('certificates')
+            .select('unique_code, file_url, participant_name')
+            .eq('registration_id', reg.id)
+        certificates = certs;
+    }
 
     // Check deadlines for payment
     const now = new Date()

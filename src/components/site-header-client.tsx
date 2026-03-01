@@ -35,7 +35,7 @@ export default function SiteHeader({ profile }: { profile: any }) {
         { href: '/', label: 'Home' },
         { href: '/events', label: 'Events' },
         { href: '/about', label: 'About' },
-        { href: '/team', label: 'Team' },
+        { href: '/team', label: 'Our Teams' },
         { href: '/contact', label: 'Contact' }
     ]
 
