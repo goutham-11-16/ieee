@@ -148,7 +148,7 @@ export default async function PaymentReviewPage(props: { params: Promise<{ id: s
                                 <span className="font-mono bg-slate-100 dark:bg-slate-800 px-1 rounded">{payment.transaction_reference}</span>
 
                                 <span className="text-muted-foreground">Date:</span>
-                                <span>{new Date(payment.created_at).toLocaleString()}</span>
+                                <span>{new Date(payment.created_at).toLocaleString('en-IN', { timeZone: 'Asia/Kolkata' })}</span>
 
                                 <span className="text-muted-foreground">Status:</span>
                                 <Badge>{payment.status}</Badge>

@@ -68,7 +68,7 @@ export default async function ExceptionsPage() {
                                                 </Badge>
                                             </TableCell>
                                             <TableCell className="text-muted-foreground text-sm">
-                                                {new Date(exc.created_at).toLocaleString()}
+                                                {new Date(exc.created_at).toLocaleString('en-IN', { timeZone: 'Asia/Kolkata' })}
                                             </TableCell>
                                             <TableCell className="text-right space-x-2">
                                                 <ForceGenerateButton exceptionId={exc.id} registrationId={exc.registration_id} />

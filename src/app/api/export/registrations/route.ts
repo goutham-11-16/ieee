@@ -55,11 +55,11 @@ export async function GET(request: NextRequest) {
             reg.guest_institution || 'N/A',
             reg.guest_reg_no || 'N/A',
             reg.event?.title || 'N/A',
-            new Date(reg.event?.date).toLocaleDateString('en-GB'),
+            new Date(reg.event?.date).toLocaleDateString('en-GB', { timeZone: 'Asia/Kolkata' }),
             reg.status,
             reg.payment?.[0]?.status || 'N/A',
             reg.payment?.[0]?.amount || 0,
-            new Date(reg.created_at).toLocaleString(),
+            new Date(reg.created_at).toLocaleString('en-IN', { timeZone: 'Asia/Kolkata' }),
             teamCount,
             customResponsesStr
         ]

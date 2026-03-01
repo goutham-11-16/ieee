@@ -97,7 +97,7 @@ export default async function ApprovalsDashboard() {
                                         </pre>
                                     </TableCell>
                                     <TableCell>
-                                        {new Date(req.created_at).toLocaleDateString('en-GB')}
+                                        {new Date(req.created_at).toLocaleDateString('en-GB', { timeZone: 'Asia/Kolkata' })}
                                     </TableCell>
                                     <TableCell className="flex gap-2">
                                         <form action={approveRequest.bind(null, req.id) as any}>

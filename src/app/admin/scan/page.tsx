@@ -160,7 +160,7 @@ export default function ScannerPage() {
                     <SelectContent>
                         {events.map(ev => (
                             <SelectItem key={ev.id} value={ev.id}>
-                                {ev.title} ({new Date(ev.date).toLocaleDateString('en-GB')})
+                                {ev.title} ({new Date(ev.date).toLocaleDateString('en-GB', { timeZone: 'Asia/Kolkata' })})
                             </SelectItem>
                         ))}
                     </SelectContent>

@@ -73,7 +73,7 @@ export default async function VerifyCertificatePage(props: { params: Promise<{ c
                     <div>
                         <p className="text-xs text-muted-foreground uppercase tracking-wide">Event</p>
                         <p className="font-medium">{certificate.registration.event.title}</p>
-                        <p className="text-sm text-muted-foreground">{new Date(certificate.registration.event.date).toLocaleDateString('en-GB')}</p>
+                        <p className="text-sm text-muted-foreground">{new Date(certificate.registration.event.date).toLocaleDateString('en-GB', { timeZone: 'Asia/Kolkata' })}</p>
                     </div>
                     <div>
                         <p className="text-xs text-muted-foreground uppercase tracking-wide">Certificate ID</p>

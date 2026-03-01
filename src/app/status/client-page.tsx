@@ -111,7 +111,7 @@ export default function StatusCheckerClient({ events }: { events: any[] }) {
                                             <option value="" disabled>Select the event...</option>
                                             {events.map((evt) => (
                                                 <option key={evt.id} value={evt.id}>
-                                                    {evt.title} ({new Date(evt.date).toLocaleDateString('en-GB')})
+                                                    {evt.title} ({new Date(evt.date).toLocaleDateString('en-GB', { timeZone: 'Asia/Kolkata' })})
                                                 </option>
                                             ))}
                                         </select>

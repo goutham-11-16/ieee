@@ -68,7 +68,7 @@ export async function verifyPayment(paymentId: string, registrationId: string) {
         }
 
         drawField('Receipt ID:', paymentId.slice(0, 8).toUpperCase(), height - 120)
-        drawField('Date:', new Date().toLocaleDateString('en-GB'), height - 140)
+        drawField('Date:', new Date().toLocaleDateString('en-GB', { timeZone: 'Asia/Kolkata' }), height - 140)
 
         const eventTitle = Array.isArray(reg?.event) ? reg.event[0]?.title : reg?.event?.title;
         const payerName = reg?.guest_name || (Array.isArray(reg?.user) ? reg.user[0]?.full_name : reg?.user?.full_name);

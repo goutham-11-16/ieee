@@ -87,7 +87,7 @@ export default async function AdminDashboardOverview() {
                                 <div key={reg.id} className="flex items-center justify-between border-b border-border/50 pb-4 last:border-0 last:pb-0">
                                     <div className="space-y-1">
                                         <p className="text-sm font-medium leading-none">{reg.event?.title || 'Unknown Event'}</p>
-                                        <p className="text-xs text-muted-foreground">{new Date(reg.created_at).toLocaleDateString('en-GB')}</p>
+                                        <p className="text-xs text-muted-foreground">{new Date(reg.created_at).toLocaleDateString('en-GB', { timeZone: 'Asia/Kolkata' })}</p>
                                     </div>
                                     <Badge variant="outline" className="font-normal capitalize">{reg.status.replace('_', ' ')}</Badge>
                                 </div>

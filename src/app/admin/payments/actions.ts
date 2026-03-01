@@ -72,7 +72,7 @@ export async function markRegistrationAsPaid(registrationId: string) {
         }
 
         drawField('Receipt ID:', payment.id.slice(0, 8).toUpperCase(), height - 120)
-        drawField('Date:', new Date().toLocaleDateString('en-GB'), height - 140)
+        drawField('Date:', new Date().toLocaleDateString('en-GB', { timeZone: 'Asia/Kolkata' }), height - 140)
         drawField('Event:', reg.event?.title || 'Unknown Event', height - 180)
         drawField('Payer:', reg.guest_name || reg.user?.full_name || 'N/A', height - 200)
         drawField('Amount Paid:', `₹${amount}`, height - 220)

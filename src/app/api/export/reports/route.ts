@@ -44,7 +44,7 @@ export async function GET(request: NextRequest) {
     doc.setFontSize(20)
     doc.text(title, 14, 22)
     doc.setFontSize(11)
-    doc.text(`Generated on ${new Date().toLocaleString()}`, 14, 30)
+    doc.text(`Generated on ${new Date().toLocaleString('en-IN', { timeZone: 'Asia/Kolkata' })}`, 14, 30)
 
     let head: string[][] = []
     let body: any[][] = []
@@ -131,8 +131,8 @@ export async function GET(request: NextRequest) {
                 reg.guest_name || reg.user?.full_name || 'N/A',
                 reg.guest_email || reg.user?.email || 'N/A',
                 a.session_name || 'Default Scan',
-                a.check_in_time ? new Date(a.check_in_time).toLocaleString() : 'N/A',
-                a.check_out_time ? new Date(a.check_out_time).toLocaleString() : 'N/A'
+                a.check_in_time ? new Date(a.check_in_time).toLocaleString('en-IN', { timeZone: 'Asia/Kolkata' }) : 'N/A',
+                a.check_out_time ? new Date(a.check_out_time).toLocaleString('en-IN', { timeZone: 'Asia/Kolkata' }) : 'N/A'
             ]
         })
     } else if (type === 'payments') {
@@ -147,7 +147,7 @@ export async function GET(request: NextRequest) {
                 `Rs. ${p.amount}`,
                 p.status.toUpperCase(),
                 p.transaction_reference || 'N/A',
-                new Date(p.created_at).toLocaleDateString('en-GB')
+                new Date(p.created_at).toLocaleDateString('en-GB', { timeZone: 'Asia/Kolkata' })
             ])
         )
     } else if (type === 'certificates') {
@@ -159,7 +159,7 @@ export async function GET(request: NextRequest) {
         body = (certs || []).map((c: any) => [
             c.participant_name || 'N/A',
             c.unique_code || 'N/A',
-            new Date(c.created_at).toLocaleDateString('en-GB')
+            new Date(c.created_at).toLocaleDateString('en-GB', { timeZone: 'Asia/Kolkata' })
         ])
     }
 

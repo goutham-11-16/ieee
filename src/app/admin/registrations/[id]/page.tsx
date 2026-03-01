@@ -100,7 +100,7 @@ export default async function AdminRegistrationDetails(props: { params: Promise<
                         </div>
                         <div className="flex items-center gap-2 text-sm">
                             <CalendarIcon className="h-4 w-4 text-muted-foreground" />
-                            {new Date(reg.event?.date).toLocaleString()}
+                            {new Date(reg.event?.date).toLocaleString('en-IN', { timeZone: 'Asia/Kolkata' })}
                         </div>
                     </CardContent>
                 </Card>

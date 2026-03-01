@@ -151,7 +151,7 @@ export default async function TicketPage(props: { params: Promise<{ id: string }
                     <div className="space-y-4 text-sm">
                         <div className="flex items-center justify-center gap-2 text-muted-foreground">
                             <CalendarIcon className="w-4 h-4" />
-                            {new Date(event.date).toLocaleString()}
+                            {new Date(event.date).toLocaleString('en-IN', { timeZone: 'Asia/Kolkata' })}
                         </div>
                         <div className="flex items-center justify-center gap-2 text-muted-foreground">
                             <MapPinIcon className="w-4 h-4" />

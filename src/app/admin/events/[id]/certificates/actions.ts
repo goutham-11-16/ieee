@@ -272,7 +272,7 @@ export async function generateCertificates(eventId: string) {
                     if (tag === '{name}') return pName
                     if (tag === '{regno}') return reg.guest_reg_no || 'N/A'
                     if (tag === '{eventName}') return reg.event?.title || 'Unknown'
-                    if (tag === '{date}') return reg.event?.date ? new Date(reg.event.date).toLocaleDateString('en-GB') : 'N/A'
+                    if (tag === '{date}') return reg.event?.date ? new Date(reg.event.date).toLocaleDateString('en-GB', { timeZone: 'Asia/Kolkata' }) : 'N/A'
                     return ''
                 }
 
