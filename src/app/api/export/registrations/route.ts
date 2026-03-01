@@ -27,6 +27,7 @@ export async function GET(request: NextRequest) {
       event:events(title, date),
       payment:payments(amount, status, transaction_reference)
     `)
+        .neq('status', 'pending_payment')
         .order('created_at', { ascending: false })
 
     if (!registrations) {

@@ -119,7 +119,7 @@ export default async function AdminPaymentsPage(props: { searchParams: Promise<{
                         </div>
 
                         <div className="border-t pt-6 mt-6">
-                            {(registration.payments && registration.payments.length > 0 && registration.payments.some((p: any) => p.status === 'verified')) ? (
+                            {registration.payments && registration.payments.some((p: any) => p.status === 'verified') ? (
                                 <div className="flex items-center gap-3 text-emerald-700 bg-emerald-50 border border-emerald-200 p-4 rounded-lg">
                                     <CheckCircleIcon className="w-6 h-6 shrink-0" />
                                     <div>
@@ -128,21 +128,41 @@ export default async function AdminPaymentsPage(props: { searchParams: Promise<{
                                     </div>
                                 </div>
                             ) : (
-                                <form action={async () => {
-                                    'use server'
-                                    await markRegistrationAsPaid(registration.id)
-                                }}>
-                                    <div className="flex flex-col gap-4">
-                                        <div className="bg-amber-50 border border-amber-200 p-4 rounded-lg text-amber-800">
-                                            <p className="font-semibold mb-1">Manual Verification Required</p>
-                                            <p className="text-sm">Verify that you have received the correct payment of exactly <b>₹{(eventData?.fees * (eventData?.is_fee_per_person ? (1 + (registration.team_members?.length || 0)) : 1)).toFixed(2)}</b> from the registrant before clicking confirm.</p>
+                                <div className="space-y-6">
+                                    {/* Online Payment Check */}
+                                    {registration.payments?.find((p: any) => p.status === 'pending_verification') ? (
+                                        <div className="bg-blue-50 border border-blue-200 p-5 rounded-lg">
+                                            <div className="flex flex-col md:flex-row items-center justify-between gap-4">
+                                                <div>
+                                                    <p className="font-bold text-blue-900 text-lg mb-1">Online Payment Pending Verification</p>
+                                                    <p className="text-blue-800 text-sm">A payment proof has been uploaded for this registration and is waiting for review.</p>
+                                                </div>
+                                                <Button size="lg" className="shrink-0 font-bold bg-blue-600 hover:bg-blue-700 shadow-md" asChild>
+                                                    <Link href={`/admin/payments/${registration.payments.find((p: any) => p.status === 'pending_verification').id}`}>
+                                                        Review Online Proof
+                                                    </Link>
+                                                </Button>
+                                            </div>
                                         </div>
-                                        <Button className="w-full h-auto py-4 text-base md:text-lg font-bold shadow-md whitespace-normal" size="lg" disabled={eventData?.fees <= 0}>
-                                            <CheckCircleIcon className="w-6 h-6 mr-2 shrink-0" />
-                                            <span>{eventData?.fees <= 0 ? 'Event is Free (No Payment Needed)' : 'Confirm Offline Verification & Mark as Paid'}</span>
-                                        </Button>
-                                    </div>
-                                </form>
+                                    ) : null}
+
+                                    {/* Manual Offline Verification Form */}
+                                    <form action={async () => {
+                                        'use server'
+                                        await markRegistrationAsPaid(registration.id)
+                                    }}>
+                                        <div className="flex flex-col gap-4">
+                                            <div className="bg-amber-50 border border-amber-200 p-4 rounded-lg text-amber-800">
+                                                <p className="font-semibold mb-1">Manual Offline Verification</p>
+                                                <p className="text-sm">Use this only if the user paid in cash or via a transaction that wasn't uploaded through the system. Verify you have received <b>₹{(eventData?.fees * (eventData?.is_fee_per_person ? (1 + (registration.team_members?.length || 0)) : 1)).toFixed(2)}</b>.</p>
+                                            </div>
+                                            <Button className="w-full h-auto py-4 text-base md:text-lg font-bold shadow-sm whitespace-normal" size="lg" disabled={eventData?.fees <= 0}>
+                                                <CheckCircleIcon className="w-6 h-6 mr-2 shrink-0" />
+                                                <span>{eventData?.fees <= 0 ? 'Event is Free (No Payment Needed)' : 'Confirm Offline Verification & Mark as Paid'}</span>
+                                            </Button>
+                                        </div>
+                                    </form>
+                                </div>
                             )}
                         </div>
                     </CardContent>

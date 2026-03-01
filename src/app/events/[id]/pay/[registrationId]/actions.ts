@@ -1,10 +1,11 @@
 'use server'
 
+import { createAdminClient } from '@/lib/supabase/admin'
 import { createClient } from '@/lib/supabase/server'
 import { revalidatePath } from 'next/cache'
 
 export async function uploadTimedPaymentProof(formData: FormData) {
-    const supabase = await createClient()
+    const supabase = createAdminClient()
 
     const randomHex = Array.from({ length: 4 }, () => Math.floor(Math.random() * 256).toString(16).padStart(2, '0')).join('').toUpperCase()
     const finalReferenceNumber = 'KARE-' + randomHex

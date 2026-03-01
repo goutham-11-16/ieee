@@ -19,6 +19,7 @@ export default async function AdminRegistrationsPage() {
       event:events(title),
       payments(status, created_at)
     `)
+        .neq('status', 'pending_payment')
 
     // Client-side sort for complex logic "Unpaid Last"
     // Priority: 
