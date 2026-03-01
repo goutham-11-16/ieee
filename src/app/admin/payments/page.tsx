@@ -2,10 +2,10 @@ import { createClient } from '@/lib/supabase/server'
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
 import { Badge } from '@/components/ui/badge'
 import PaymentSearchForm from './search-form'
-import { CheckCircleIcon, XCircleIcon } from 'lucide-react'
-import { markRegistrationAsPaid } from './actions'
+import { CheckCircleIcon, XCircleIcon, InfoIcon } from 'lucide-react'
 import { Button } from '@/components/ui/button'
 import Link from 'next/link'
+import PendingPaymentsList from './pending-payments-list'
 
 export default async function AdminPaymentsPage(props: { searchParams: Promise<{ ref?: string }> }) {
     const searchParams = await props.searchParams
@@ -55,8 +55,8 @@ export default async function AdminPaymentsPage(props: { searchParams: Promise<{
 
     return (
         <div className="space-y-6 max-w-4xl mx-auto">
-            <h1 className="text-3xl font-bold">Offline Payment verification</h1>
-            <p className="text-muted-foreground">Search by Reference Number to approve in-person payments.</p>
+            <h1 className="text-3xl font-bold">Payment Verification</h1>
+            <p className="text-muted-foreground">Verify and approve digital payment proofs uploaded by users.</p>
 
             <Card>
                 <CardHeader>
@@ -100,11 +100,6 @@ export default async function AdminPaymentsPage(props: { searchParams: Promise<{
                                 <p className="font-bold text-2xl text-blue-600">
                                     ₹{(eventData?.fees * (eventData?.is_fee_per_person ? (1 + (registration.team_members?.length || 0)) : 1)).toFixed(2)}
                                 </p>
-                                {eventData?.is_fee_per_person && (registration.team_members?.length || 0) > 0 && (
-                                    <p className="text-xs text-muted-foreground mt-1">
-                                        (₹{eventData.fees} × {1 + registration.team_members.length} members)
-                                    </p>
-                                )}
                             </div>
                             <div>
                                 <p className="text-muted-foreground mb-1">Registration Status:</p>
@@ -135,7 +130,7 @@ export default async function AdminPaymentsPage(props: { searchParams: Promise<{
                                             <div className="flex flex-col md:flex-row items-center justify-between gap-4">
                                                 <div>
                                                     <p className="font-bold text-blue-900 text-lg mb-1">Online Payment Pending Verification</p>
-                                                    <p className="text-blue-800 text-sm">A payment proof has been uploaded for this registration and is waiting for review.</p>
+                                                    <p className="text-blue-800 text-sm">A payment proof has been uploaded and is waiting for review.</p>
                                                 </div>
                                                 <Button size="lg" className="shrink-0 font-bold bg-blue-600 hover:bg-blue-700 shadow-md" asChild>
                                                     <Link href={`/admin/payments/${registration.payments.find((p: any) => p.status === 'pending_verification').id}`}>
@@ -144,24 +139,15 @@ export default async function AdminPaymentsPage(props: { searchParams: Promise<{
                                                 </Button>
                                             </div>
                                         </div>
-                                    ) : null}
-
-                                    {/* Manual Offline Verification Form */}
-                                    <form action={async () => {
-                                        'use server'
-                                        await markRegistrationAsPaid(registration.id)
-                                    }}>
-                                        <div className="flex flex-col gap-4">
-                                            <div className="bg-amber-50 border border-amber-200 p-4 rounded-lg text-amber-800">
-                                                <p className="font-semibold mb-1">Manual Offline Verification</p>
-                                                <p className="text-sm">Use this only if the user paid in cash or via a transaction that wasn't uploaded through the system. Verify you have received <b>₹{(eventData?.fees * (eventData?.is_fee_per_person ? (1 + (registration.team_members?.length || 0)) : 1)).toFixed(2)}</b>.</p>
+                                    ) : (
+                                        <div className="flex items-center gap-3 text-slate-700 bg-slate-50 border border-slate-200 p-4 rounded-lg">
+                                            <InfoIcon className="w-6 h-6 shrink-0" />
+                                            <div>
+                                                <p className="font-bold text-lg">No Online Proof Found</p>
+                                                <p className="text-sm">The user hasn't uploaded any payment receipt yet. They must upload proof via the Registration Status page before it can be verified online.</p>
                                             </div>
-                                            <Button className="w-full h-auto py-4 text-base md:text-lg font-bold shadow-sm whitespace-normal" size="lg" disabled={eventData?.fees <= 0}>
-                                                <CheckCircleIcon className="w-6 h-6 mr-2 shrink-0" />
-                                                <span>{eventData?.fees <= 0 ? 'Event is Free (No Payment Needed)' : 'Confirm Offline Verification & Mark as Paid'}</span>
-                                            </Button>
                                         </div>
-                                    </form>
+                                    )}
                                 </div>
                             )}
                         </div>
@@ -171,60 +157,9 @@ export default async function AdminPaymentsPage(props: { searchParams: Promise<{
 
             {/* Pending Online Payments Section */}
             <div className="pt-8">
-                <h2 className="text-2xl font-bold mb-4">Pending Online Payments</h2>
-                <Card>
-                    <CardHeader>
-                        <CardTitle>Needs Verification</CardTitle>
-                        <p className="text-sm text-muted-foreground">Payments uploaded by users via the Status Checker waiting for admin review.</p>
-                    </CardHeader>
-                    <CardContent>
-                        {pendingPayments && pendingPayments.length > 0 ? (
-                            <div className="overflow-x-auto">
-                                <table className="w-full text-sm text-left">
-                                    <thead className="text-xs text-muted-foreground uppercase bg-slate-50 dark:bg-slate-900">
-                                        <tr>
-                                            <th className="px-4 py-3">Date</th>
-                                            <th className="px-4 py-3">Guest Name</th>
-                                            <th className="px-4 py-3">Event</th>
-                                            <th className="px-4 py-3">Amount</th>
-                                            <th className="px-4 py-3 text-right">Action</th>
-                                        </tr>
-                                    </thead>
-                                    <tbody>
-                                        {pendingPayments.map((p) => {
-                                            // Handle TS strictness for joins
-                                            const reg = p.registration as any
-                                            const evt = Array.isArray(reg?.event) ? reg.event[0] : reg?.event
-                                            const profile = Array.isArray(reg?.user) ? reg.user[0] : reg?.user
-
-                                            return (
-                                                <tr key={p.id} className="border-b dark:border-slate-800">
-                                                    <td className="px-4 py-3">{new Date(p.created_at).toLocaleDateString()}</td>
-                                                    <td className="px-4 py-3 font-medium">
-                                                        {reg?.guest_name || profile?.full_name || 'Unknown User'}<br />
-                                                        <span className="text-xs text-muted-foreground font-normal">{reg?.guest_email || profile?.email || 'No email'}</span>
-                                                    </td>
-                                                    <td className="px-4 py-3">{evt?.title || 'Unknown'}</td>
-                                                    <td className="px-4 py-3">₹{p.amount}</td>
-                                                    <td className="px-4 py-3 text-right">
-                                                        <Button variant="outline" size="sm" asChild>
-                                                            <Link href={`/admin/payments/${p.id}`}>Review Proof</Link>
-                                                        </Button>
-                                                    </td>
-                                                </tr>
-                                            )
-                                        })}
-                                    </tbody>
-                                </table>
-                            </div>
-                        ) : (
-                            <div className="text-center py-8 text-muted-foreground">
-                                No pending online payments right now. You are all caught up!
-                            </div>
-                        )}
-                    </CardContent>
-                </Card>
+                <PendingPaymentsList initialPayments={(pendingPayments || []) as any} />
             </div>
         </div>
     )
 }
+
