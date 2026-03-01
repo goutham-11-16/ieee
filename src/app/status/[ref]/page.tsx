@@ -77,9 +77,10 @@ export default async function StatusDashboardPage(props: {
     const participantName = reg.guest_name || reg.user?.full_name || 'Guest Participant'
     const participantEmail = reg.guest_email || reg.user?.email || ''
 
-    const payment = reg.payments && reg.payments.length > 0
+    const verifiedPayment = reg.payments?.find((p: any) => p.status === 'verified');
+    const payment = verifiedPayment || (reg.payments && reg.payments.length > 0
         ? [...reg.payments].sort((a: any, b: any) => new Date(b.created_at).getTime() - new Date(a.created_at).getTime())[0]
-        : undefined;
+        : undefined);
     const eventDate = new Date(reg.event.date)
     const isPaymentRequired = reg.event.fees > 0
     const paymentRejected = payment && payment.status === 'rejected'

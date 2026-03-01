@@ -76,8 +76,9 @@ export async function verifyPayment(paymentId: string, registrationId: string) {
         page.drawText('Status: VERIFIED', { x: 50, y: height - 280, size: 16, font: fontBold, color: rgb(0, 0.6, 0) })
 
         // Generate QR Code
-        if (p.registration?.ticket_qr_uuid) {
-            const qrDataUrl = await QRCode.toDataURL(p.registration.ticket_qr_uuid, { margin: 1, width: 150 })
+        const ticketQrUuid = p.registration?.ticket_qr_uuid || crypto.randomUUID()
+        if (ticketQrUuid) {
+            const qrDataUrl = await QRCode.toDataURL(ticketQrUuid, { margin: 1, width: 150 })
             const pngImageBytes = Buffer.from(qrDataUrl.split(',')[1], 'base64')
             const pngImage = await pdfDoc.embedPng(pngImageBytes)
             page.drawImage(pngImage, {
@@ -129,7 +130,7 @@ export async function verifyPayment(paymentId: string, registrationId: string) {
 
         await supabase
             .from('registrations')
-            .update({ status: 'approved' })
+            .update({ status: 'approved', ticket_qr_uuid: ticketQrUuid })
             .eq('id', registrationId)
 
         await logAction('VERIFY_PAYMENT', 'payments', paymentId, { status: 'verified', generatedReceipt: fileName })

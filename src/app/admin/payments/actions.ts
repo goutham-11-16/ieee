@@ -29,6 +29,7 @@ export async function markRegistrationAsPaid(registrationId: string) {
     const teamCount = Array.isArray(reg.team_members) ? reg.team_members.length : 0
     const amount = event?.is_fee_per_person ? (event.fees * (1 + teamCount)) : (event?.fees || 0)
     const transactionRef = 'MANUAL-' + crypto.randomBytes(4).toString('hex').toUpperCase()
+    const ticketQrUuid = reg.ticket_qr_uuid || crypto.randomUUID()
 
     // 2. Create payment record automatically as 'verified'
     const { data: payment, error: paymentError } = await supabase
@@ -70,8 +71,8 @@ export async function markRegistrationAsPaid(registrationId: string) {
 
         page.drawText('Status: PAID & VERIFIED', { x: 50, y: height - 280, size: 16, font: fontBold, color: rgb(0, 0.6, 0) })
 
-        if (reg.ticket_qr_uuid) {
-            const qrDataUrl = await QRCode.toDataURL(reg.ticket_qr_uuid, { margin: 1, width: 150 })
+        if (ticketQrUuid) {
+            const qrDataUrl = await QRCode.toDataURL(ticketQrUuid, { margin: 1, width: 150 })
             const pngImageBytes = Buffer.from(qrDataUrl.split(',')[1], 'base64')
             const pngImage = await pdfDoc.embedPng(pngImageBytes)
             page.drawImage(pngImage, {
@@ -107,7 +108,7 @@ export async function markRegistrationAsPaid(registrationId: string) {
     // Even if it was pending_payment, verify payment -> Approves it.
     await supabase
         .from('registrations')
-        .update({ status: 'approved' })
+        .update({ status: 'approved', ticket_qr_uuid: ticketQrUuid })
         .eq('id', registrationId)
 
     await logAction('VERIFY_PAYMENT', 'payments', payment.id, { status: 'verified', method: 'in-person' })
