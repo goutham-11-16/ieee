@@ -170,14 +170,16 @@ export async function generateCertificates(eventId: string) {
     }
 
     // Load Template Buffer exactly once
-    let templateArrayBuffer: ArrayBuffer;
+    let finalTemplateBuffer: Uint8Array;
+    let rawBuffer: ArrayBuffer;
+
     if (template.background_url?.startsWith('http')) {
         const res = await fetch(template.background_url);
         if (!res.ok) {
             await supabase.from('certificate_jobs').update({ status: 'failed' }).eq('id', job.id)
             return { success: false, error: 'Failed to fetch template file from URL' }
         }
-        templateArrayBuffer = await res.arrayBuffer();
+        rawBuffer = await res.arrayBuffer();
     } else {
         const { data: fileData, error: dlError } = await supabase.storage
             .from('certificate_templates')
@@ -187,8 +189,33 @@ export async function generateCertificates(eventId: string) {
             await supabase.from('certificate_jobs').update({ status: 'failed' }).eq('id', job.id)
             return { success: false, error: 'Failed to download template file from storage' }
         }
-        templateArrayBuffer = await fileData.arrayBuffer()
+        rawBuffer = await fileData.arrayBuffer()
     }
+
+    // Detect if PDF or Image
+    const uint8 = new Uint8Array(rawBuffer);
+    if (uint8[0] === 0x25 && uint8[1] === 0x50 && uint8[2] === 0x44 && uint8[3] === 0x46) {
+        finalTemplateBuffer = uint8;
+    } else {
+        // It's an image (PNG or JPG)
+        try {
+            const pdfDoc = await PDFDocument.create();
+            let image;
+            // PNG signature: 89 50 4E 47
+            if (uint8[0] === 0x89 && uint8[1] === 0x50 && uint8[2] === 0x4E && uint8[3] === 0x47) {
+                image = await pdfDoc.embedPng(rawBuffer);
+            } else {
+                image = await pdfDoc.embedJpg(rawBuffer);
+            }
+            const page = pdfDoc.addPage([image.width, image.height]);
+            page.drawImage(image, { x: 0, y: 0, width: image.width, height: image.height });
+            finalTemplateBuffer = await pdfDoc.save();
+        } catch (e) {
+            await supabase.from('certificate_jobs').update({ status: 'failed' }).eq('id', job.id)
+            return { success: false, error: 'Failed to process background image. Ensure it is a valid PDF, PNG or JPG.' }
+        }
+    }
+
     const layout = template.layout_config as any
     const elementsArray = Array.isArray(layout) ? layout : (layout?.elements || [])
 
@@ -209,7 +236,7 @@ export async function generateCertificates(eventId: string) {
         if (existing) continue
 
         try {
-            const pdfDoc = await PDFDocument.load(templateArrayBuffer)
+            const pdfDoc = await PDFDocument.load(finalTemplateBuffer)
             const pages = pdfDoc.getPages()
             const firstPage = pages[0]
 
