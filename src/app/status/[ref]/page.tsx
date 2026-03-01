@@ -1,5 +1,5 @@
 import { createClient } from '@/lib/supabase/server'
-import { notFound } from 'next/navigation'
+import { notFound, redirect } from 'next/navigation'
 import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from '@/components/ui/card'
 import { Badge } from '@/components/ui/badge'
 import { Button } from '@/components/ui/button'
@@ -18,7 +18,8 @@ export default async function StatusDashboardPage(props: {
     const supabase = await createClient()
     const rawRef = params.ref.toUpperCase()
 
-    const { data: registration } = await supabase
+    // 1. Try fetching by reference_number
+    let { data: registration } = await supabase
         .from('registrations')
         .select(`
             id,
@@ -30,6 +31,7 @@ export default async function StatusDashboardPage(props: {
             ticket_qr_uuid,
             custom_responses,
             team_members,
+            event_id,
             event:events (
                 id,
                 title,
@@ -57,7 +59,15 @@ export default async function StatusDashboardPage(props: {
             user:profiles!user_id(full_name, email)
         `)
         .eq('reference_number', rawRef)
-        .single()
+        .maybeSingle()
+
+    // 2. If not found by ref, try by ID (fallback for edge cases)
+    if (!registration && rawRef.length > 20) {
+        const { data: byId } = await supabase.from('registrations').select('reference_number').eq('id', params.ref).maybeSingle()
+        if (byId?.reference_number) {
+            redirect(`/status/${byId.reference_number}`)
+        }
+    }
 
     if (!registration) {
         return (
@@ -69,6 +79,11 @@ export default async function StatusDashboardPage(props: {
                 </Button>
             </div>
         )
+    }
+
+    // 3. Graceful Redirect: If the URL ref doesn't match the latest reference_number, redirect
+    if (registration.reference_number && registration.reference_number.toUpperCase() !== rawRef) {
+        redirect(`/status/${registration.reference_number}`)
     }
 
     const reg = registration as any

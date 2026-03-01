@@ -85,9 +85,9 @@ export default async function TicketPage(props: { params: Promise<{ id: string }
     const isVerified = paymentStatus === 'verified'
 
     // Rule: No Payment = No QR (unless free event)
-    // Rule: Must be approved
+    // Rule: Must be approved OR have a verified payment
     const isApproved = reg.status === 'approved'
-    const canViewTicket = isApproved && (!isPaidEvent || isVerified)
+    const canViewTicket = (isApproved || isVerified) && (!isPaidEvent || isVerified)
 
     if (!canViewTicket) {
         return (
@@ -104,7 +104,7 @@ export default async function TicketPage(props: { params: Promise<{ id: string }
                             Your ticket is not ready yet. This could be because:
                         </p>
                         <ul className="list-disc pl-5 space-y-2 text-sm text-muted-foreground">
-                            {!isApproved && <li>Your registration is still <strong>pending approval</strong>.</li>}
+                            {(!isApproved && !isVerified) && <li>Your registration is still <strong>pending approval</strong>.</li>}
                             {(isPaidEvent && !isVerified) && <li>Your payment has not been <strong>verified</strong> yet.</li>}
                         </ul>
                     </CardContent>

@@ -124,6 +124,8 @@ export async function verifyPayment(paymentId: string, registrationId: string) {
             newRef = 'KARE-' + randomHex
         }
 
+        console.log(`Updating registration ${targetRegId}: status=approved, ref=${newRef}`);
+
         const { error: regUpdateError } = await adminSupabase
             .from('registrations')
             .update({
@@ -133,7 +135,10 @@ export async function verifyPayment(paymentId: string, registrationId: string) {
             })
             .eq('id', targetRegId)
 
-        if (regUpdateError) return { error: 'Registration update failed: ' + regUpdateError.message }
+        if (regUpdateError) {
+            console.error('Registration update failed:', regUpdateError);
+            return { error: 'Registration update failed: ' + regUpdateError.message }
+        }
 
         await logAction('VERIFY_PAYMENT', 'payments', paymentId, {
             status: 'verified',
