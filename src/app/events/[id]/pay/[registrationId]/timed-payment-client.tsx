@@ -84,7 +84,7 @@ export default function TimedPaymentClient({ registrationId, amount, paymentQrUr
                 toast.error(result.error)
             } else {
                 toast.success('Payment submitted successfully! Generating ticket...')
-                router.push(`/status/${referenceNumber}?new=1`);
+                router.push(`/status/${result.referenceNumber}?new=1`);
             }
         } catch (e) {
             console.error(e);

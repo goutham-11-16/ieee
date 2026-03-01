@@ -6,6 +6,9 @@ import { revalidatePath } from 'next/cache'
 export async function uploadTimedPaymentProof(formData: FormData) {
     const supabase = await createClient()
 
+    const randomHex = Array.from({ length: 4 }, () => Math.floor(Math.random() * 256).toString(16).padStart(2, '0')).join('').toUpperCase()
+    const finalReferenceNumber = 'KARE-' + randomHex
+
     const registrationId = formData.get('registrationId') as string
     const amount = parseFloat(formData.get('amount') as string)
     const transactionRef = formData.get('transactionRef') as string
@@ -50,10 +53,10 @@ export async function uploadTimedPaymentProof(formData: FormData) {
 
     if (paymentError) return { error: paymentError.message }
 
-    // Update registration status
+    // Update registration status and assign final reference number
     const { error: regError } = await supabase
         .from('registrations')
-        .update({ status: 'pending_approval' }) // Wait for finance admin to approve the payment
+        .update({ status: 'pending_approval', reference_number: finalReferenceNumber }) // Wait for finance admin to approve the payment
         .eq('id', registrationId)
 
     if (regError) return { error: regError.message }
@@ -61,7 +64,7 @@ export async function uploadTimedPaymentProof(formData: FormData) {
     revalidatePath(`/admin/registrations`)
     revalidatePath(`/admin/payments`)
 
-    return { success: true }
+    return { success: true, referenceNumber: finalReferenceNumber }
 }
 
 export async function expireRegistration(registrationId: string) {

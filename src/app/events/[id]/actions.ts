@@ -177,12 +177,14 @@ export async function registerGuest(formData: FormData) {
     let expiresAt = null
 
     // If event is paid, force pending_payment and 5-min timer
+    let referenceNumber = ''
     if (event.fees > 0) {
         status = 'pending_payment'
         expiresAt = new Date(Date.now() + 5 * 60000).toISOString() // 5 minutes
+        referenceNumber = `TEMP-${uuidv4().slice(0, 8).toUpperCase()}` // Temporary reference until payment is made
+    } else {
+        referenceNumber = generateReference() // Final reference for free events immediately
     }
-
-    const referenceNumber = generateReference()
 
     const { data, error } = await supabase
         .from('registrations')
