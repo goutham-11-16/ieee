@@ -18,10 +18,10 @@ export async function GET(request: NextRequest) {
     let allowedRoles = ['admin', 'super_admin']
     if (type === 'payments') {
         allowedRoles.push('finance_admin')
-    } else {
-        allowedRoles.push('event_admin')
     } else if (type === 'certificates') {
         allowedRoles.push('content_admin')
+    } else {
+        allowedRoles.push('event_admin')
     }
 
     if (!allowedRoles.includes(profile.role)) {
