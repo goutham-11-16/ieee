@@ -100,7 +100,7 @@ export default function PendingPaymentsList({ initialPayments }: { initialPaymen
                                     return (
                                         <tr key={p.id} className="hover:bg-slate-50/50 dark:hover:bg-slate-900/50 transition-colors">
                                             <td className="px-6 py-4 whitespace-nowrap text-muted-foreground">
-                                                {new Date(p.created_at).toLocaleDateString(undefined, { month: 'short', day: 'numeric' })}
+                                                {new Date(p.created_at).toLocaleDateString('en-GB', { month: 'short', day: 'numeric' })}
                                             </td>
                                             <td className="px-6 py-4">
                                                 <div className="flex flex-col">

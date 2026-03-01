@@ -34,7 +34,7 @@ export default function RegistrationList({ registrations }: { registrations: Reg
                         <div>
                             <h3 className="font-semibold text-lg">{reg.event.title}</h3>
                             <p className="text-sm text-muted-foreground">
-                                {new Date(reg.event.date).toLocaleDateString()} • {reg.event.location}
+                                {new Date(reg.event.date).toLocaleDateString('en-GB')} • {reg.event.location}
                             </p>
                             <div className="mt-2 flex gap-2">
                                 <Badge variant={reg.status === 'approved' ? 'default' : 'secondary'}>

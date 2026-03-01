@@ -23,7 +23,7 @@ export default async function AdminReportsPage() {
                     <Card key={event.id}>
                         <CardHeader className="bg-slate-50 dark:bg-slate-900/40">
                             <CardTitle className="text-lg flex items-center justify-between">
-                                <span>{event.title} <span className="text-sm font-normal text-muted-foreground">({new Date(event.date).toLocaleDateString()})</span></span>
+                                <span>{event.title} <span className="text-sm font-normal text-muted-foreground">({new Date(event.date).toLocaleDateString('en-GB')})</span></span>
                             </CardTitle>
                         </CardHeader>
                         <CardContent className="pt-6">

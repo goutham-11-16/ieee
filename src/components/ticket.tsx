@@ -21,7 +21,7 @@ export default function Ticket({
             <div className="absolute top-0 w-full h-2 bg-gradient-to-r from-blue-500 to-purple-500" />
             <CardHeader className="text-center pb-2">
                 <CardTitle className="text-lg">{eventTitle}</CardTitle>
-                <p className="text-xs text-muted-foreground">{new Date(date).toLocaleDateString()}</p>
+                <p className="text-xs text-muted-foreground">{new Date(date).toLocaleDateString('en-GB')}</p>
             </CardHeader>
             <CardContent className="flex flex-col items-center gap-4">
                 <div className="bg-white p-2 rounded shadow-sm border">

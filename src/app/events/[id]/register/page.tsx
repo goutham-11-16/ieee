@@ -91,7 +91,7 @@ export default async function RegisterPage(props: { params: Promise<{ id: string
                 <div className="bg-white dark:bg-slate-950 p-6 rounded-xl border shadow-sm">
                     <h1 className="text-2xl font-bold text-slate-900 dark:text-white mb-2">{event.title}</h1>
                     <div className="flex gap-4 text-sm text-slate-600 dark:text-slate-400">
-                        <span>{new Date(event.date).toLocaleDateString()}</span>
+                        <span>{new Date(event.date).toLocaleDateString('en-GB')}</span>
                         <span>•</span>
                         <span>{event.location || 'Location TBA'}</span>
                         <span>•</span>

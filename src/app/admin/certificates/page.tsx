@@ -35,7 +35,7 @@ export default async function CertificatesPage() {
                         <Card key={event.id} className="flex flex-col">
                             <CardHeader>
                                 <CardTitle className="text-xl line-clamp-1">{event.title}</CardTitle>
-                                <CardDescription>{new Date(event.date).toLocaleDateString()}</CardDescription>
+                                <CardDescription>{new Date(event.date).toLocaleDateString('en-GB')}</CardDescription>
                             </CardHeader>
                             <CardContent className="flex-1 flex flex-col justify-end space-y-4">
                                 <div className="flex items-center gap-2">

@@ -34,7 +34,7 @@ export async function GET(request: NextRequest) {
     const pdfBytes = await generateCertificate(
         reg.user.full_name,
         reg.event.title,
-        new Date(reg.event.date).toLocaleDateString()
+        new Date(reg.event.date).toLocaleDateString('en-GB')
     )
 
     // Return PDF stream

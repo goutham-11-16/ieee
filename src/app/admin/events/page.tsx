@@ -53,7 +53,7 @@ export default async function AdminEventsPage() {
                     <Card key={event.id}>
                         <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
                             <CardTitle className="text-sm font-medium">
-                                {new Date(event.date).toLocaleDateString()}
+                                {new Date(event.date).toLocaleDateString('en-GB')}
                             </CardTitle>
                             {event.isVirtualDraft ? (
                                 <Badge variant="secondary" className="bg-orange-100 text-orange-800 border-none">Pending Approval</Badge>

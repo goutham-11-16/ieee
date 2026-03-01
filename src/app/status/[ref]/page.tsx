@@ -180,7 +180,7 @@ export default async function StatusDashboardPage(props: {
                             <CardDescription className="flex items-center gap-4 text-base">
                                 <span className="flex items-center gap-1">
                                     <CalendarIcon className="w-4 h-4" />
-                                    {eventDate.toLocaleDateString()}
+                                    {eventDate.toLocaleDateString('en-GB')}
                                 </span>
                                 <span className="flex items-center gap-1">
                                     <MapPinIcon className="w-4 h-4" />
@@ -218,7 +218,7 @@ export default async function StatusDashboardPage(props: {
                                 <div className="grid grid-cols-2 gap-y-4 text-sm">
                                     <div>
                                         <span className="text-muted-foreground block mb-1">Registration Date</span>
-                                        <span className="font-medium">{new Date(reg.created_at).toLocaleDateString()}</span>
+                                        <span className="font-medium">{new Date(reg.created_at).toLocaleDateString('en-GB')}</span>
                                     </div>
                                     <div>
                                         <span className="text-muted-foreground block mb-1">Event Fee</span>

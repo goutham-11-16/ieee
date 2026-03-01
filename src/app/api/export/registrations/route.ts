@@ -55,7 +55,7 @@ export async function GET(request: NextRequest) {
             reg.guest_institution || 'N/A',
             reg.guest_reg_no || 'N/A',
             reg.event?.title || 'N/A',
-            new Date(reg.event?.date).toLocaleDateString(),
+            new Date(reg.event?.date).toLocaleDateString('en-GB'),
             reg.status,
             reg.payment?.[0]?.status || 'N/A',
             reg.payment?.[0]?.amount || 0,

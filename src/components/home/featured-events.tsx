@@ -67,7 +67,7 @@ export async function FeaturedEvents() {
                                                 />
                                                 <div className="absolute inset-0 bg-gradient-to-t from-black/80 via-black/20 to-transparent opacity-80 group-hover/card:opacity-100 transition-opacity"></div>
                                                 <div className="absolute top-4 right-4 bg-white/95 dark:bg-black/80 px-3 py-1 rounded-full text-xs font-bold shadow-md backdrop-blur-sm text-black dark:text-white">
-                                                    {new Date(event.date).toLocaleDateString(undefined, { month: 'short', day: 'numeric' })}
+                                                    {new Date(event.date).toLocaleDateString('en-GB', { month: 'short', day: 'numeric' })}
                                                 </div>
                                                 <div className={`absolute top-4 left-4 px-3 py-1 rounded-full text-xs font-bold shadow-sm backdrop-blur-sm ${badgeClass}`}>
                                                     {badgeText}

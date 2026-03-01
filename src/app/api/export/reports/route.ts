@@ -147,7 +147,7 @@ export async function GET(request: NextRequest) {
                 `Rs. ${p.amount}`,
                 p.status.toUpperCase(),
                 p.transaction_reference || 'N/A',
-                new Date(p.created_at).toLocaleDateString()
+                new Date(p.created_at).toLocaleDateString('en-GB')
             ])
         )
     } else if (type === 'certificates') {
@@ -159,7 +159,7 @@ export async function GET(request: NextRequest) {
         body = (certs || []).map((c: any) => [
             c.participant_name || 'N/A',
             c.unique_code || 'N/A',
-            new Date(c.created_at).toLocaleDateString()
+            new Date(c.created_at).toLocaleDateString('en-GB')
         ])
     }
 
