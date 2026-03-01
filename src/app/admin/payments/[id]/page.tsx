@@ -52,7 +52,7 @@ export default async function PaymentReviewPage(props: { params: Promise<{ id: s
     const profile = Array.isArray(reg.user) ? reg.user[0] : reg.user;
 
     // Get public URL for proof
-    let publicUrl = payment.proof_url || '';
+    let publicUrl = payment.proof_url || payment.receipt_url || '';
     let previewUrl = publicUrl;
     let isGoogleDrive = false;
 

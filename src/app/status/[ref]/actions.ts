@@ -30,7 +30,7 @@ export async function uploadPaymentProof(formData: FormData) {
             registration_id: registrationId,
             amount: parseFloat(amountStr),
             transaction_reference: transactionRef,
-            receipt_url: uploadData.path,
+            proof_url: uploadData.path,
             status: 'pending_verification'
         })
 
