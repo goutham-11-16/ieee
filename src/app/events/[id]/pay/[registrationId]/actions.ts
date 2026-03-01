@@ -53,7 +53,7 @@ export async function uploadTimedPaymentProof(formData: FormData) {
                 registration_id: registrationId,
                 amount,
                 transaction_reference: transactionRef,
-                status: 'pending',
+                status: 'pending_verification',
                 receipt_url: proofUrl
             })
             .select()
