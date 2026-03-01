@@ -90,11 +90,12 @@ export default async function PaymentReviewPage(props: { params: Promise<{ id: s
                                         Payment Proof Document
                                     </span>
                                     {isGoogleDrive ? (
-                                        <Button asChild>
-                                            <a href={previewUrl} target="_blank" rel="noopener noreferrer">
-                                                Open in Google Drive
-                                            </a>
-                                        </Button>
+                                        <iframe
+                                            src={previewUrl}
+                                            className="w-full h-full absolute inset-0 rounded-lg border-0"
+                                            allow="autoplay"
+                                            title="Payment Proof Document"
+                                        />
                                     ) : (
                                         <img
                                             src={previewUrl}
