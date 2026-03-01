@@ -5,6 +5,7 @@ import { revalidatePath } from 'next/cache'
 import { PDFDocument, rgb, StandardFonts } from 'pdf-lib'
 import { logAction } from '@/lib/actions/audit'
 import QRCode from 'qrcode'
+import crypto from 'crypto'
 
 export async function verifyPayment(paymentId: string, registrationId: string) {
     const supabase = await createClient()
