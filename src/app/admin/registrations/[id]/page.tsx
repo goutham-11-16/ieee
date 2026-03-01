@@ -112,7 +112,7 @@ export default async function AdminRegistrationDetails(props: { params: Promise<
                     <CardContent className="space-y-4">
                         <div className="flex justify-between items-center border-b pb-2">
                             <span className="text-sm text-muted-foreground">Payment Status</span>
-                            <Badge variant={payment?.status === 'verified' ? 'success' : payment?.status === 'pending_verification' ? 'warning' : 'secondary'}>
+                            <Badge variant={payment?.status === 'verified' ? 'success' : ['pending_verification', 'pending'].includes(payment?.status) ? 'warning' : 'secondary'}>
                                 {payment?.status || 'unpaid'}
                             </Badge>
                         </div>

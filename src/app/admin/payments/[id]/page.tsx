@@ -180,7 +180,7 @@ export default async function PaymentReviewPage(props: { params: Promise<{ id: s
                         </CardContent>
                     </Card>
 
-                    {payment.status === 'pending_verification' && (
+                    {['pending_verification', 'pending'].includes(payment.status) && (
                         <Card>
                             <CardHeader>
                                 <CardTitle>Actions</CardTitle>
