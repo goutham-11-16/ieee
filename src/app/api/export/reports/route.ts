@@ -20,6 +20,8 @@ export async function GET(request: NextRequest) {
         allowedRoles.push('finance_admin')
     } else {
         allowedRoles.push('event_admin')
+    } else if (type === 'certificates') {
+        allowedRoles.push('content_admin')
     }
 
     if (!allowedRoles.includes(profile.role)) {
