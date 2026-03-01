@@ -4,6 +4,7 @@ import { createClient } from '@/lib/supabase/server'
 import { revalidatePath } from 'next/cache'
 import { PDFDocument, rgb, StandardFonts } from 'pdf-lib'
 import { generateUUID } from '@/lib/utils'
+import { uploadToGoogleDrive } from '@/lib/drive'
 
 // Helper function cloned for MVP speed. In production, move to a shared lib.
 async function generateSingleCertificate(supabase: any, registrationId: string, participantName: string, eventId: string) {
@@ -131,6 +132,15 @@ async function generateSingleCertificate(supabase: any, registrationId: string, 
     await supabase.storage
         .from('certificates')
         .upload(fileName, Buffer.from(pdfBytes), { contentType: 'application/pdf' })
+
+    // Sync to Google Drive
+    await uploadToGoogleDrive({
+        base64Data: Buffer.from(pdfBytes).toString('base64'),
+        filename: `${participantName.replace(/\s+/g, '_')}_${uniqueCode}.pdf`,
+        mimeType: 'application/pdf',
+        eventTitle: reg.event?.title?.trim() || 'Unknown_Event',
+        targetFolder: 'Certificates'
+    });
 
     await supabase.from('certificates').insert({
         registration_id: reg.id,

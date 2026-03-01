@@ -6,6 +6,7 @@ import { PDFDocument, rgb, StandardFonts } from 'pdf-lib'
 import { createApprovalRequest } from '@/lib/actions/approvals'
 import { logAction } from '@/lib/actions/audit'
 import { generateUUID } from '@/lib/utils'
+import { uploadToGoogleDrive } from '@/lib/drive'
 
 export async function saveTemplate(formData: FormData) {
     const supabase = await createClient()
@@ -42,6 +43,24 @@ export async function saveTemplate(formData: FormData) {
         })
 
     if (error) return { error: error.message }
+
+    // Sync Template Background to Google Drive
+    if (file && file.size > 0) {
+        try {
+            const { data: eventData } = await supabase.from('events').select('title').eq('id', eventId).single();
+            const base64Data = Buffer.from(await file.arrayBuffer()).toString('base64');
+            const ext = file.name.split('.').pop() || 'png';
+            await uploadToGoogleDrive({
+                base64Data,
+                filename: `Template_Background.${ext}`,
+                mimeType: ext === 'pdf' ? 'application/pdf' : `image/${ext}`,
+                eventTitle: eventData?.title || 'Unknown_Event',
+                targetFolder: 'Templates'
+            });
+        } catch (e) {
+            console.error("Template Drive sync failed:", e);
+        }
+    }
 
     revalidatePath(`/admin/events/${eventId}/certificates`)
     return { success: true }
@@ -293,27 +312,13 @@ export async function generateCertificates(eventId: string) {
                 .upload(fileName, Buffer.from(pdfBytes), { contentType: 'application/pdf' })
 
             // Optional Output to Google Drive
-            try {
-                const scriptUrl = process.env.NEXT_PUBLIC_GOOGLE_SCRIPT_URL;
-                if (scriptUrl) {
-                    const base64Data = Buffer.from(pdfBytes).toString('base64');
-                    const uploadPayload = {
-                        base64Data: base64Data,
-                        filename: `${pName.replace(/\s+/g, '_')}_${uniqueCode}.pdf`,
-                        mimeType: 'application/pdf',
-                        eventTitle: reg.event?.title?.trim() || 'Unknown_Event',
-                        targetFolder: 'Certificates'
-                    };
-
-                    await fetch(scriptUrl, {
-                        method: 'POST',
-                        headers: { 'Content-Type': 'text/plain' },
-                        body: JSON.stringify(uploadPayload)
-                    });
-                }
-            } catch (e) {
-                console.error("Drive upload failed for cert:", e)
-            }
+            await uploadToGoogleDrive({
+                base64Data: Buffer.from(pdfBytes).toString('base64'),
+                filename: `${pName.replace(/\s+/g, '_')}_${uniqueCode}.pdf`,
+                mimeType: 'application/pdf',
+                eventTitle: reg.event?.title?.trim() || 'Unknown_Event',
+                targetFolder: 'Certificates'
+            });
 
             await supabase.from('certificates').insert({
                 registration_id: reg.id,
