@@ -144,7 +144,7 @@ export async function GET(request: NextRequest) {
         body = (regs || []).flatMap((r: any) =>
             (r.payments || []).map((p: any) => [
                 r.guest_name || r.user?.full_name || 'N/A',
-                `$${p.amount}`,
+                `Rs. ${p.amount}`,
                 p.status.toUpperCase(),
                 p.transaction_reference || 'N/A',
                 new Date(p.created_at).toLocaleDateString()
