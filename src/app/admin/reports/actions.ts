@@ -30,7 +30,7 @@ export async function exportParticipantsCSV(eventId: string) {
             user:profiles!user_id(full_name, email),
             created_at,
             payments(amount, transaction_ref, proof_url, status),
-            attendance(session_name, scanned_at)
+            attendance(session_name, check_in_time)
         `)
         .eq('event_id', eventId)
 
@@ -73,7 +73,7 @@ export async function exportParticipantsCSV(eventId: string) {
         // Dynamic Attendance Columns
         const attendanceRow = sessions.map((sess: any) => {
             const scan = aList?.find((a: any) => a.session_name === sess.name)
-            return scan ? new Date(scan.scanned_at).toLocaleString() : 'Absent'
+            return scan ? new Date(scan.check_in_time).toLocaleString() : 'Absent'
         })
 
         return [...baseRow, ...attendanceRow]
@@ -106,7 +106,7 @@ export async function exportParticipantsPDF(eventId: string) {
             user:profiles!user_id(full_name, email),
             created_at,
             payments(amount, transaction_ref, proof_url, status),
-            attendance(session_name, scanned_at)
+            attendance(session_name, check_in_time)
         `)
         .eq('event_id', eventId)
 

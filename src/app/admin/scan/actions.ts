@@ -95,7 +95,7 @@ export async function verifyTicket(qrDataString: string, targetEventId: string, 
     // 5. Fetch all scans for this registration
     const { data: existingScans } = await supabase
         .from('attendance')
-        .select('scanned_at, session_name')
+        .select('check_in_time, session_name')
         .eq('registration_id', registration.id)
 
     const scannedSessionNames = existingScans?.map(s => s.session_name) || []
@@ -105,7 +105,7 @@ export async function verifyTicket(qrDataString: string, targetEventId: string, 
     if (currentScan) {
         return {
             success: false,
-            message: `Already scanned at ${new Date(currentScan.scanned_at).toLocaleTimeString()}`,
+            message: `Already scanned at ${new Date(currentScan.check_in_time).toLocaleTimeString()}`,
             attendeeName: reg.user.full_name,
             errorType: 'DUPLICATE'
         }
@@ -145,7 +145,7 @@ export async function verifyTicket(qrDataString: string, targetEventId: string, 
             registration_id: registration.id,
             event_id: targetEventId,
             scanned_by: user.id,
-            scanned_at: new Date().toISOString(),
+            check_in_time: new Date().toISOString(),
             session_name: sessionName
         })
 
@@ -180,7 +180,7 @@ export async function markSessionsPresent(registrationId: string, eventId: strin
         registration_id: registrationId,
         event_id: eventId,
         scanned_by: user.id,
-        scanned_at: new Date().toISOString(),
+        check_in_time: new Date().toISOString(),
         session_name: sessionName,
         is_retroactive: true // Optional: if you add this column later to track manual overrides
     }))
