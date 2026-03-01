@@ -7,8 +7,11 @@ import { logAction } from '@/lib/actions/audit'
 import QRCode from 'qrcode'
 import { v4 as uuidv4 } from 'uuid'
 
+import { createAdminClient } from '@/lib/supabase/admin'
+
 export async function verifyPayment(paymentId: string, registrationId: string) {
     const supabase = await createClient()
+    const adminSupabase = createAdminClient()
     const { data: { user } } = await supabase.auth.getUser()
     if (!user) return { error: 'Unauthorized' }
 
@@ -24,7 +27,9 @@ export async function verifyPayment(paymentId: string, registrationId: string) {
             amount, 
             transaction_reference, 
             created_at,
-            registration:registrations(
+            registration:registrations!registration_id(
+                id,
+                reference_number,
                 ticket_qr_uuid,
                 guest_name,
                 user:profiles!registrations_user_id_fkey(full_name),
@@ -37,28 +42,15 @@ export async function verifyPayment(paymentId: string, registrationId: string) {
     if (!payment) return { error: 'Payment not found' }
 
     // 2. Generate PDF Receipt
-    // In a real app, load a template. Here we create from scratch.
     try {
-        interface PaymentDetail {
-            amount: number;
-            transaction_reference: string;
-            created_at: string;
-            registration: {
-                ticket_qr_uuid: string;
-                guest_name: string;
-                user: any;
-                event: any;
-            };
-        }
-        const p = payment as unknown as PaymentDetail;
+        const p = payment as any;
+        const reg = p.registration;
 
         const pdfDoc = await PDFDocument.create()
         const page = pdfDoc.addPage([600, 400])
         const { width, height } = page.getSize()
         const font = await pdfDoc.embedFont(StandardFonts.Helvetica)
         const fontBold = await pdfDoc.embedFont(StandardFonts.HelveticaBold)
-
-        page.drawText('Use this as a placeholder for the logo', { x: 50, y: height - 50, size: 12, font: font, color: rgb(0.5, 0.5, 0.5) })
 
         page.drawText('PAYMENT RECEIPT', { x: 50, y: height - 80, size: 24, font: fontBold, color: rgb(0, 0, 0) })
 
@@ -70,8 +62,8 @@ export async function verifyPayment(paymentId: string, registrationId: string) {
         drawField('Receipt ID:', paymentId.slice(0, 8).toUpperCase(), height - 120)
         drawField('Date:', new Date().toLocaleDateString(), height - 140)
 
-        const eventTitle = Array.isArray(p.registration?.event) ? p.registration.event[0]?.title : p.registration?.event?.title;
-        const payerName = p.registration?.guest_name || (Array.isArray(p.registration?.user) ? p.registration.user[0]?.full_name : p.registration?.user?.full_name);
+        const eventTitle = Array.isArray(reg?.event) ? reg.event[0]?.title : reg?.event?.title;
+        const payerName = reg?.guest_name || (Array.isArray(reg?.user) ? reg.user[0]?.full_name : reg?.user?.full_name);
 
         drawField('Event:', eventTitle || 'Unknown Event', height - 180)
         drawField('Payer:', payerName || 'N/A', height - 200)
@@ -81,7 +73,7 @@ export async function verifyPayment(paymentId: string, registrationId: string) {
         page.drawText('Status: VERIFIED', { x: 50, y: height - 280, size: 16, font: fontBold, color: rgb(0, 0.6, 0) })
 
         // Generate QR Code
-        const ticketQrUuid = p.registration?.ticket_qr_uuid || uuidv4()
+        const ticketQrUuid = reg?.ticket_qr_uuid || uuidv4()
         if (ticketQrUuid) {
             const qrDataUrl = await QRCode.toDataURL(ticketQrUuid, { margin: 1, width: 150 })
             const pngImageBytes = Buffer.from(qrDataUrl.split(',')[1], 'base64')
@@ -101,20 +93,15 @@ export async function verifyPayment(paymentId: string, registrationId: string) {
 
         // Upload Receipt
         const fileName = `receipts/${paymentId}.pdf`
-        const { error: uploadError } = await supabase.storage
-            .from('receipts') // Ensure this bucket exists!
+        await adminSupabase.storage
+            .from('receipts')
             .upload(fileName, pdfBuffer, {
                 contentType: 'application/pdf',
                 upsert: true
             })
 
-        if (uploadError) {
-            console.error('Receipt upload failed', uploadError)
-            // Proceed anyway? Or fail? Let's proceed but warn.
-        }
-
-        // 3. Update Status
-        const { error: updateError } = await supabase
+        // 3. Update Payment Status (Online Payments)
+        const { error: updateError } = await adminSupabase
             .from('payments')
             .update({
                 status: 'verified',
@@ -126,31 +113,40 @@ export async function verifyPayment(paymentId: string, registrationId: string) {
 
         if (updateError) return { error: updateError.message }
 
-        // 4. Update Registration if needed
-        // Check if registration is waiting for payment? 
-        // Logic: specific events might require manual approval regardless of payment.
-        // But if `requires_approval` was false (default), it might be 'approved' already.
-        // If it WAS 'pending_approval', does payment verify it? Usually yes for paid events.
-        // Let's assume verifying payment -> Approves registration if it's strictly just a payment wait.
+        // 4. Update Registration Status & Fix Reference ID if it's still TEMP-
+        let newRef = reg.reference_number;
+        if (reg.reference_number?.startsWith('TEMP-')) {
+            const randomHex = Array.from({ length: 4 }, () => Math.floor(Math.random() * 256).toString(16).padStart(2, '0')).join('').toUpperCase()
+            newRef = 'KARE-' + randomHex
+        }
 
-        await supabase
+        const { error: regUpdateError } = await adminSupabase
             .from('registrations')
-            .update({ status: 'approved', ticket_qr_uuid: ticketQrUuid })
+            .update({
+                status: 'approved',
+                ticket_qr_uuid: ticketQrUuid,
+                reference_number: newRef
+            })
             .eq('id', registrationId)
+
+        if (regUpdateError) return { error: 'Registration update failed: ' + regUpdateError.message }
 
         await logAction('VERIFY_PAYMENT', 'payments', paymentId, {
             status: 'verified',
             generatedReceipt: fileName,
-            prev_state: 'pending_verification',
-            new_state: 'verified'
+            prev_status: reg.status,
+            new_status: 'approved'
         })
 
         revalidatePath('/admin/payments')
-        return { success: true }
+        revalidatePath(`/status/${reg.reference_number}`)
+        revalidatePath(`/status/${newRef}`)
 
-    } catch (e) {
+        return { success: true, newReferenceNumber: newRef }
+
+    } catch (e: any) {
         console.error(e)
-        return { error: 'Failed to generate receipt or verify.' }
+        return { error: 'Failed to verify payment: ' + (e.message || 'Unknown error') }
     }
 }
 

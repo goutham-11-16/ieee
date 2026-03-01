@@ -7,8 +7,11 @@ import { logAction } from '@/lib/actions/audit'
 import QRCode from 'qrcode'
 import { v4 as uuidv4 } from 'uuid'
 
+import { createAdminClient } from '@/lib/supabase/admin'
+
 export async function markRegistrationAsPaid(registrationId: string) {
     const supabase = await createClient()
+    const adminSupabase = createAdminClient()
     const { data: { user } } = await supabase.auth.getUser()
     if (!user) return { error: 'Unauthorized' }
 
@@ -32,12 +35,13 @@ export async function markRegistrationAsPaid(registrationId: string) {
     const event = Array.isArray(reg.event) ? reg.event[0] : reg.event
     const teamCount = Array.isArray(reg.team_members) ? reg.team_members.length : 0
     const amount = event?.is_fee_per_person ? (event.fees * (1 + teamCount)) : (event?.fees || 0)
+
     const randomHex = Array.from({ length: 4 }, () => Math.floor(Math.random() * 256).toString(16).padStart(2, '0')).join('').toUpperCase()
     const transactionRef = 'MANUAL-' + randomHex
     const ticketQrUuid = reg.ticket_qr_uuid || uuidv4()
 
     // 2. Create payment record automatically as 'verified'
-    const { data: payment, error: paymentError } = await supabase
+    const { data: payment, error: paymentError } = await adminSupabase
         .from('payments')
         .insert({
             registration_id: registrationId,
@@ -93,9 +97,7 @@ export async function markRegistrationAsPaid(registrationId: string) {
         const pdfBuffer = Buffer.from(pdfBytes)
 
         const fileName = `public/${payment.id}.pdf`
-
-        // We do not strictly fail if storage is missing, but try uploading.
-        const { error: uploadError } = await supabase.storage
+        const { error: uploadError } = await adminSupabase.storage
             .from('receipts')
             .upload(fileName, pdfBuffer, {
                 contentType: 'application/pdf',
@@ -103,27 +105,40 @@ export async function markRegistrationAsPaid(registrationId: string) {
             })
 
         if (!uploadError) {
-            await supabase.from('payments').update({ receipt_url: fileName }).eq('id', payment.id)
+            await adminSupabase.from('payments').update({ receipt_url: fileName }).eq('id', payment.id)
         }
     } catch (e) {
         console.error("PDF Gen Error:", e)
     }
 
-    // 4. Update Registration Status
-    // Even if it was pending_payment, verify payment -> Approves it.
-    await supabase
+    // 4. Update Registration Status & Fix Reference ID if it's still TEMP-
+    let newRef = reg.reference_number;
+    if (reg.reference_number?.startsWith('TEMP-')) {
+        const randomHex2 = Array.from({ length: 4 }, () => Math.floor(Math.random() * 256).toString(16).padStart(2, '0')).join('').toUpperCase()
+        newRef = 'KARE-' + randomHex2
+    }
+
+    const { error: regUpdateError } = await adminSupabase
         .from('registrations')
-        .update({ status: 'approved', ticket_qr_uuid: ticketQrUuid })
+        .update({
+            status: 'approved',
+            ticket_qr_uuid: ticketQrUuid,
+            reference_number: newRef
+        })
         .eq('id', registrationId)
+
+    if (regUpdateError) return { error: 'Registration update failed: ' + regUpdateError.message }
 
     await logAction('VERIFY_PAYMENT', 'payments', payment.id, {
         status: 'verified',
         method: 'in-person',
-        prev_state: 'none',
-        new_state: 'verified'
+        prev_status: reg.status,
+        new_status: 'approved'
     })
 
     revalidatePath('/admin/payments')
     revalidatePath(`/status/${reg.reference_number}`)
-    return { success: true }
+    revalidatePath(`/status/${newRef}`)
+
+    return { success: true, newReferenceNumber: newRef }
 }
