@@ -125,16 +125,25 @@ export default function ScannerPage() {
         }
     }
 
-    const resetScan = () => {
+    const resetScan = async () => {
         setScanResult(null)
-        // Resume scanning
         if (html5QrCodeRef.current) {
-            // html5-qrcode's pause/resume API isn't always reliable across versions, 
-            // but resume() works safely if paused.
             try {
-                html5QrCodeRef.current.resume()
+                // Only resume if it's actually in a PAUSED state to avoid "scanner is not paused" errors
+                // State 3 is PAUSED in html5-qrcode
+                if (html5QrCodeRef.current.getState() === 3) {
+                    html5QrCodeRef.current.resume()
+                } else if (html5QrCodeRef.current.getState() === 2) {
+                    // It's already scanning, just clear any overlays
+                } else {
+                    // If it's in any other state, best to just restart it
+                    await stopCamera()
+                    await startCamera()
+                }
             } catch (e) {
-                console.error("Could not resume", e)
+                console.error("Could not resume scanner safely, restarting...", e)
+                await stopCamera()
+                await startCamera()
             }
         }
     }

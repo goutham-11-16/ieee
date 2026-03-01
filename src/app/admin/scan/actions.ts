@@ -46,6 +46,7 @@ export async function verifyTicket(qrDataString: string, targetEventId: string, 
             status,
             ticket_qr_uuid,
             team_members,
+            guest_name,
             user:profiles!user_id(full_name, email),
             event:events(date, end_date)
         `)
@@ -101,12 +102,13 @@ export async function verifyTicket(qrDataString: string, targetEventId: string, 
     const scannedSessionNames = existingScans?.map(s => s.session_name) || []
 
     // 6. Check Duplicate Scan for CURRENT session
+    const userProfile = Array.isArray(registration.user) ? registration.user[0] : registration.user;
     const currentScan = existingScans?.find(s => s.session_name === sessionName)
     if (currentScan) {
         return {
             success: false,
             message: `Already scanned at ${new Date(currentScan.check_in_time).toLocaleTimeString()}`,
-            attendeeName: reg.user.full_name,
+            attendeeName: registration.guest_name || userProfile?.full_name || 'Guest',
             errorType: 'DUPLICATE'
         }
     }
@@ -162,7 +164,7 @@ export async function verifyTicket(qrDataString: string, targetEventId: string, 
     return {
         success: true,
         message: 'Verified!',
-        attendeeName: reg.user.full_name,
+        attendeeName: registration.guest_name || userProfile?.full_name || 'Guest',
         teamMembers: registration.team_members || [],
         missedSessions: missedSessions.length > 0 ? missedSessions : undefined,
         registrationId: registration.id // Added so UI can trigger retroactive marking
@@ -181,8 +183,7 @@ export async function markSessionsPresent(registrationId: string, eventId: strin
         event_id: eventId,
         scanned_by: user.id,
         check_in_time: new Date().toISOString(),
-        session_name: sessionName,
-        is_retroactive: true // Optional: if you add this column later to track manual overrides
+        session_name: sessionName
     }))
 
     const { error } = await supabase
