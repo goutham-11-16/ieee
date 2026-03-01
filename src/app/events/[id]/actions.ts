@@ -1,9 +1,9 @@
 'use server'
 
 import { createClient } from '@/lib/supabase/server'
+import { createAdminClient } from '@/lib/supabase/admin'
 import { revalidatePath } from 'next/cache'
 import { logAction } from '@/lib/actions/audit'
-import { nanoid } from 'nanoid' // We'll use Math.random for simplicity if nanoid isn't installed. Let's use a standard crypto fallback.
 import { v4 as uuidv4 } from 'uuid'
 
 function generateReference() {
@@ -19,8 +19,10 @@ export async function registerForEvent(eventId: string) {
         return { error: 'You must be logged in to register.' }
     }
 
-    // 1. Proactively delete any expired registrations to allow re-entry
-    await supabase.from('registrations').delete().eq('user_id', user.id).eq('event_id', eventId).eq('status', 'expired')
+    // 1. Proactively delete any stale registrations to allow re-entry
+    const admin = createAdminClient()
+    await admin.from('registrations').delete().eq('user_id', user.id).eq('event_id', eventId).in('status', ['expired', 'rejected', 'cancelled'])
+    await admin.from('registrations').delete().eq('user_id', user.id).eq('event_id', eventId).eq('status', 'pending_payment').lt('expires_at', new Date().toISOString())
 
     // 2. Check if already registered (Active)
     const { data: existing } = await supabase
@@ -139,10 +141,14 @@ export async function registerGuest(formData: FormData) {
         }
     }
 
-    // Check for duplicates
+    // Check for duplicates with proactive cleanup
+    const nowTimeStr = new Date().toISOString()
+
     if (guestPhone) {
-        // Proactively delete any expired registrations with this phone to allow re-entry
-        await supabase.from('registrations').delete().eq('event_id', eventId).eq('guest_phone', guestPhone).eq('status', 'expired')
+        // Purge stale/failed records first using admin client to bypass RLS
+        const admin = createAdminClient()
+        await admin.from('registrations').delete().eq('event_id', eventId).eq('guest_phone', guestPhone).in('status', ['expired', 'rejected', 'cancelled'])
+        await admin.from('registrations').delete().eq('event_id', eventId).eq('guest_phone', guestPhone).eq('status', 'pending_payment').lt('expires_at', nowTimeStr)
 
         const { data: phoneReg } = await supabase
             .from('registrations')
@@ -151,13 +157,15 @@ export async function registerGuest(formData: FormData) {
             .eq('guest_phone', guestPhone)
             .limit(1)
         if (phoneReg && phoneReg.length > 0) {
-            return { error: 'This Phone Number is already registered for this event with an active session.' }
+            return { error: 'This Phone Number is already registered for this event.' }
         }
     }
 
     if (guestRegNo) {
-        // Proactively delete any expired registrations with this reg no to allow re-entry
-        await supabase.from('registrations').delete().eq('event_id', eventId).eq('guest_reg_no', guestRegNo).eq('status', 'expired')
+        // Purge stale/failed records first using admin client to bypass RLS
+        const admin = createAdminClient()
+        await admin.from('registrations').delete().eq('event_id', eventId).eq('guest_reg_no', guestRegNo).in('status', ['expired', 'rejected', 'cancelled'])
+        await admin.from('registrations').delete().eq('event_id', eventId).eq('guest_reg_no', guestRegNo).eq('status', 'pending_payment').lt('expires_at', nowTimeStr)
 
         const { data: regNoReg } = await supabase
             .from('registrations')
@@ -166,13 +174,15 @@ export async function registerGuest(formData: FormData) {
             .eq('guest_reg_no', guestRegNo)
             .limit(1)
         if (regNoReg && regNoReg.length > 0) {
-            return { error: 'This Registration Number is already registered for this event with an active session.' }
+            return { error: 'This Registration Number is already registered for this event.' }
         }
     }
 
     if (guestEmail) {
-        // Proactively delete any expired registrations with this email to allow re-entry
-        await supabase.from('registrations').delete().eq('event_id', eventId).eq('guest_email', guestEmail).eq('status', 'expired')
+        // Purge stale/failed records first using admin client to bypass RLS
+        const admin = createAdminClient()
+        await admin.from('registrations').delete().eq('event_id', eventId).eq('guest_email', guestEmail).in('status', ['expired', 'rejected', 'cancelled'])
+        await admin.from('registrations').delete().eq('event_id', eventId).eq('guest_email', guestEmail).eq('status', 'pending_payment').lt('expires_at', nowTimeStr)
 
         const { data: emailReg } = await supabase
             .from('registrations')
@@ -181,7 +191,7 @@ export async function registerGuest(formData: FormData) {
             .eq('guest_email', guestEmail)
             .limit(1)
         if (emailReg && emailReg.length > 0) {
-            return { error: 'This Email Address is already registered for this event with an active session.' }
+            return { error: 'This Email Address is already registered for this event.' }
         }
     }
 
@@ -199,15 +209,14 @@ export async function registerGuest(formData: FormData) {
 
     let status = event.requires_approval ? 'pending_approval' : 'approved'
     let expiresAt = null
-
-    // If event is paid, force pending_payment and 5-min timer
     let referenceNumber = ''
+
     if (event.fees > 0) {
         status = 'pending_payment'
         expiresAt = new Date(Date.now() + 5 * 60000).toISOString() // 5 minutes
-        referenceNumber = `TEMP-${uuidv4().slice(0, 8).toUpperCase()}` // Temporary reference until payment is made
+        referenceNumber = `TEMP-${uuidv4().slice(0, 8).toUpperCase()}`
     } else {
-        referenceNumber = generateReference() // Final reference for free events immediately
+        referenceNumber = generateReference()
     }
 
     const { data, error } = await supabase
