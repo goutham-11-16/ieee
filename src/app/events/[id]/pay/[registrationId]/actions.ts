@@ -86,15 +86,22 @@ export async function uploadTimedPaymentProof(formData: FormData) {
 }
 
 export async function expireRegistration(registrationId: string) {
-    const supabase = await createClient()
+    try {
+        const supabase = createAdminClient()
 
-    // Safety check, only expire if pending payment
-    const { data } = await supabase.from('registrations').select('status').eq('id', registrationId).single()
-    if (data?.status === 'pending_payment') {
-        await supabase
-            .from('registrations')
-            .update({ status: 'expired' })
-            .eq('id', registrationId)
+        // Safety check, only expire if pending payment
+        const { data } = await supabase.from('registrations').select('status').eq('id', registrationId).maybeSingle()
+        if (data?.status === 'pending_payment') {
+            const { error: deleteError } = await supabase
+                .from('registrations')
+                .delete()
+                .eq('id', registrationId)
+
+            if (deleteError) console.error("Auto-expiry delete error:", deleteError)
+        }
+        return { success: true }
+    } catch (e) {
+        console.error("Auto-expiry exception:", e)
+        return { success: false }
     }
-    return { success: true }
 }

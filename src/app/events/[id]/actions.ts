@@ -19,16 +19,19 @@ export async function registerForEvent(eventId: string) {
         return { error: 'You must be logged in to register.' }
     }
 
-    // Check if already registered
+    // 1. Proactively delete any expired registrations to allow re-entry
+    await supabase.from('registrations').delete().eq('user_id', user.id).eq('event_id', eventId).eq('status', 'expired')
+
+    // 2. Check if already registered (Active)
     const { data: existing } = await supabase
         .from('registrations')
         .select('id')
         .eq('user_id', user.id)
         .eq('event_id', eventId)
-        .single()
+        .maybeSingle()
 
     if (existing) {
-        return { error: 'You are already registered for this event.' }
+        return { error: 'You are already registered for this event with an active session.' }
     }
 
     // Fetch event to check approval and deadlines
@@ -138,6 +141,9 @@ export async function registerGuest(formData: FormData) {
 
     // Check for duplicates
     if (guestPhone) {
+        // Proactively delete any expired registrations with this phone to allow re-entry
+        await supabase.from('registrations').delete().eq('event_id', eventId).eq('guest_phone', guestPhone).eq('status', 'expired')
+
         const { data: phoneReg } = await supabase
             .from('registrations')
             .select('id')
@@ -145,11 +151,14 @@ export async function registerGuest(formData: FormData) {
             .eq('guest_phone', guestPhone)
             .limit(1)
         if (phoneReg && phoneReg.length > 0) {
-            return { error: 'This Phone Number is already registered for this event.' }
+            return { error: 'This Phone Number is already registered for this event with an active session.' }
         }
     }
 
     if (guestRegNo) {
+        // Proactively delete any expired registrations with this reg no to allow re-entry
+        await supabase.from('registrations').delete().eq('event_id', eventId).eq('guest_reg_no', guestRegNo).eq('status', 'expired')
+
         const { data: regNoReg } = await supabase
             .from('registrations')
             .select('id')
@@ -157,7 +166,7 @@ export async function registerGuest(formData: FormData) {
             .eq('guest_reg_no', guestRegNo)
             .limit(1)
         if (regNoReg && regNoReg.length > 0) {
-            return { error: 'This Registration Number is already registered for this event.' }
+            return { error: 'This Registration Number is already registered for this event with an active session.' }
         }
     }
 
