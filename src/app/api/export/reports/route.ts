@@ -51,36 +51,74 @@ export async function GET(request: NextRequest) {
 
     if (type === 'registrations') {
         const { data } = await supabase.from('registrations')
-            .select('id, status, created_at, guest_name, guest_email, guest_phone, guest_reg_no, custom_responses, team_members, user:profiles!user_id(full_name, email)')
+            .select(`
+                id, 
+                status, 
+                reference_number, 
+                created_at, 
+                guest_name, 
+                guest_email, 
+                guest_phone, 
+                guest_reg_no, 
+                custom_responses, 
+                team_members, 
+                user:profiles!user_id(full_name, email)
+            `)
             .eq('event_id', eventId)
+            .in('status', ['approved', 'pending_approval'])
+            .order('created_at', { ascending: true })
 
-        head = [['Name', 'Email', 'Phone', 'Reg No', 'Role', 'Status']]
+        const totalRegs = data?.length || 0
+        let totalHumans = 0
+
         const rawBody: any[][] = []
-        const nowTime = new Date().getTime()
 
-
-            ; (data || []).forEach((r: any) => {
-                if (r.status === 'pending_payment' && r.expires_at) {
-                    const expTime = new Date(r.expires_at).getTime()
-                    if (nowTime > expTime) return
-                }
+            ; (data || []).forEach((r: any, index: number) => {
+                totalHumans += 1 // The leader
+                const teamMembers = Array.isArray(r.team_members) ? r.team_members : []
+                totalHumans += teamMembers.length
 
                 const leaderName = r.guest_name || r.user?.full_name || 'Guest'
                 const leaderEmail = r.guest_email || r.user?.email || 'N/A'
                 const phone = r.guest_phone || 'N/A'
                 const regNo = r.guest_reg_no || 'N/A'
 
-                rawBody.push([leaderName, leaderEmail, phone, regNo, 'Leader / Solo', r.status])
-
-                if (r.team_members && Array.isArray(r.team_members)) {
-                    r.team_members.forEach((m: any) => {
-                        if (m.guestName) {
-                            rawBody.push([`  -> ${m.guestName}`, m.guestEmail || 'N/A', m.guestPhone || 'N/A', m.guestRegNo || 'N/A', 'Team Member', r.status])
-                        }
-                    })
+                // Add Divider Row for better separation (except for the first row)
+                if (index > 0) {
+                    rawBody.push([{ content: '', colSpan: 6, styles: { fillColor: [245, 245, 245], minCellHeight: 2 } }])
                 }
+
+                rawBody.push([
+                    r.reference_number || 'N/A',
+                    leaderName,
+                    leaderEmail,
+                    phone,
+                    regNo,
+                    'Primary'
+                ])
+
+                teamMembers.forEach((m: any) => {
+                    if (m.guestName) {
+                        rawBody.push([
+                            '', // No ref ID for members (they share leader's)
+                            `  • ${m.guestName}`,
+                            m.guestEmail || 'N/A',
+                            m.guestPhone || 'N/A',
+                            m.guestRegNo || 'N/A',
+                            'Team Member'
+                        ])
+                    }
+                })
             })
+
+        head = [['Ref ID', 'Name', 'Email', 'Phone', 'Reg No', 'Type']]
         body = rawBody
+
+        // Add Summary Stats
+        doc.setFontSize(10)
+        doc.setTextColor(100)
+        doc.text(`Total Registrations: ${totalRegs} | Total Participants: ${totalHumans}`, 14, 36)
+        doc.setTextColor(0)
     } else if (type === 'attendance') {
         const { data } = await supabase.from('attendance')
             .select('check_in_time, check_out_time, session_name, registration:registrations(guest_name, guest_email, user:profiles!user_id(full_name, email))')

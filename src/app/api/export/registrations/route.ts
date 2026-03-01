@@ -15,6 +15,7 @@ export async function GET(request: NextRequest) {
         .select(`
       id,
       status,
+      reference_number,
       created_at,
       guest_name,
       guest_email,
@@ -27,7 +28,7 @@ export async function GET(request: NextRequest) {
       event:events(title, date),
       payment:payments(amount, status, transaction_reference)
     `)
-        .neq('status', 'pending_payment')
+        .in('status', ['approved', 'pending_approval'])
         .order('created_at', { ascending: false })
 
     if (!registrations) {
@@ -35,7 +36,7 @@ export async function GET(request: NextRequest) {
     }
 
     // Convert to CSV
-    const headers = ['Registration ID', 'Leader Name', 'Leader Email', 'Phone', 'Institution', 'Reg No', 'Event', 'Event Date', 'Status', 'Payment Status', 'Amount', 'Date Registered', 'Team Size', 'Custom Responses']
+    const headers = ['Reference ID', 'Registration ID', 'Leader Name', 'Leader Email', 'Phone', 'Institution', 'Reg No', 'Event', 'Event Date', 'Status', 'Payment Status', 'Amount', 'Date Registered', 'Team Size', 'Custom Responses']
     const rows = registrations.map((reg: any) => {
         const teamCount = Array.isArray(reg.team_members) ? reg.team_members.length : 0;
         let customResponsesStr = '';
@@ -46,6 +47,7 @@ export async function GET(request: NextRequest) {
         }
 
         return [
+            reg.reference_number || 'N/A',
             reg.id,
             reg.guest_name || reg.user?.full_name || 'N/A',
             reg.guest_email || reg.user?.email || 'N/A',
