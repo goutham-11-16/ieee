@@ -4,7 +4,7 @@ import { createClient } from '@/lib/supabase/server'
 import { createAdminClient } from '@/lib/supabase/admin'
 import { revalidatePath } from 'next/cache'
 import { logAction } from '@/lib/actions/audit'
-import { v4 as uuidv4 } from 'uuid'
+import { generateUUID } from '@/lib/utils'
 
 function generateReference() {
     const randomHex = Array.from({ length: 4 }, () => Math.floor(Math.random() * 256).toString(16).padStart(2, '0')).join('').toUpperCase()
@@ -67,7 +67,7 @@ export async function registerForEvent(eventId: string) {
             user_id: user.id,
             event_id: eventId,
             status,
-            ticket_qr_uuid: uuidv4()
+            ticket_qr_uuid: generateUUID()
         })
         .select()
         .single()
@@ -199,7 +199,7 @@ export async function registerGuest(formData: FormData) {
     if (event.fees > 0) {
         status = 'pending_payment'
         expiresAt = new Date(Date.now() + 5 * 60000).toISOString() // 5 minutes
-        referenceNumber = `TEMP-${uuidv4().slice(0, 8).toUpperCase()}`
+        referenceNumber = `TEMP-${generateUUID().slice(0, 8).toUpperCase()}`
     } else {
         referenceNumber = generateReference()
     }
@@ -214,7 +214,7 @@ export async function registerGuest(formData: FormData) {
             guest_phone: guestPhone,
             guest_institution: guestInstitution,
             reference_number: referenceNumber,
-            ticket_qr_uuid: uuidv4(),
+            ticket_qr_uuid: generateUUID(),
             status,
             expires_at: expiresAt,
             custom_responses: customResponses,

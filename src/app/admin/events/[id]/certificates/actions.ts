@@ -5,7 +5,7 @@ import { revalidatePath } from 'next/cache'
 import { PDFDocument, rgb, StandardFonts } from 'pdf-lib'
 import { createApprovalRequest } from '@/lib/actions/approvals'
 import { logAction } from '@/lib/actions/audit'
-import { v4 as uuidv4 } from 'uuid'
+import { generateUUID } from '@/lib/utils'
 
 export async function saveTemplate(formData: FormData) {
     const supabase = await createClient()
@@ -221,7 +221,9 @@ export async function generateCertificates(eventId: string) {
                 return ''
             }
 
-            const uniqueCode = uuidv4().slice(0, 8).toUpperCase()
+            const randomHex = Array.from({ length: 4 }, () => Math.floor(Math.random() * 256).toString(16).padStart(2, '0')).join('').toUpperCase()
+            const refNo = `CERT-${randomHex}`
+            const uniqueCode = generateUUID().slice(0, 8).toUpperCase()
 
             const hexToRgb = (hex: string) => {
                 hex = hex.replace(/^#/, '')
@@ -233,6 +235,7 @@ export async function generateCertificates(eventId: string) {
             elementsArray.forEach((el: any) => {
                 let text = mapField(el.tag || el.field, pName)
                 if (el.tag === '{uniqueCode}' || el.field === 'unique_code') text = uniqueCode
+                if (el.tag === '{refNo}' || el.field === 'ref_no') text = refNo
 
                 if (text) {
                     const { r, g, b } = hexToRgb(el.color || '#000000')

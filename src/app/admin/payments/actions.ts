@@ -5,7 +5,7 @@ import { revalidatePath } from 'next/cache'
 import { PDFDocument, rgb, StandardFonts } from 'pdf-lib'
 import { logAction } from '@/lib/actions/audit'
 import QRCode from 'qrcode'
-import { v4 as uuidv4 } from 'uuid'
+import { generateUUID } from '@/lib/utils'
 
 import { createAdminClient } from '@/lib/supabase/admin'
 
@@ -38,7 +38,7 @@ export async function markRegistrationAsPaid(registrationId: string) {
 
     const randomHex = Array.from({ length: 4 }, () => Math.floor(Math.random() * 256).toString(16).padStart(2, '0')).join('').toUpperCase()
     const transactionRef = 'MANUAL-' + randomHex
-    const ticketQrUuid = reg.ticket_qr_uuid || uuidv4()
+    const ticketQrUuid = reg.ticket_qr_uuid || generateUUID()
 
     // 2. Create payment record automatically as 'verified'
     const { data: payment, error: paymentError } = await adminSupabase
@@ -142,3 +142,4 @@ export async function markRegistrationAsPaid(registrationId: string) {
 
     return { success: true, newReferenceNumber: newRef }
 }
+

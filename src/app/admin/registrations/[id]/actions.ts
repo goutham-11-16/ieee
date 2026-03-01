@@ -2,7 +2,6 @@
 
 import { createClient } from '@/lib/supabase/server'
 import { revalidatePath } from 'next/cache'
-import { v4 as uuidv4 } from 'uuid'
 import { logAction } from '@/lib/actions/audit'
 
 export async function forceMarkPaid(registrationId: string) {
