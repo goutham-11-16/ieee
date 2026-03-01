@@ -31,13 +31,19 @@ async function generateSingleCertificate(supabase: any, registrationId: string, 
     if (!reg) throw new Error('Registration not found')
 
     // Download template
-    const { data: fileData, error: dlError } = await supabase.storage
-        .from('certificate_templates')
-        .download(template.background_url)
+    let templateArrayBuffer: ArrayBuffer;
+    if (template.background_url?.startsWith('http')) {
+        const res = await fetch(template.background_url);
+        if (!res.ok) throw new Error('Failed to fetch template file from URL');
+        templateArrayBuffer = await res.arrayBuffer();
+    } else {
+        const { data: fileData, error: dlError } = await supabase.storage
+            .from('certificate_templates')
+            .download(template.background_url)
 
-    if (dlError || !fileData) throw new Error('Failed to download template file')
-
-    const templateArrayBuffer = await fileData.arrayBuffer()
+        if (dlError || !fileData) throw new Error('Failed to download template file from storage');
+        templateArrayBuffer = await fileData.arrayBuffer()
+    }
     const layout = template.layout_config as any
     const elementsArray = Array.isArray(layout) ? layout : (layout?.elements || [])
 
