@@ -5,6 +5,7 @@ import { Button } from '@/components/ui/button'
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table'
 import { CheckCircle2, XCircle, AlertCircle } from 'lucide-react'
 import { approveRequest, rejectRequest } from '@/lib/actions/approvals'
+import { SubmitButton } from '@/components/ui/submit-button'
 
 export default async function ApprovalsDashboard() {
     const supabase = await createClient()
@@ -101,14 +102,14 @@ export default async function ApprovalsDashboard() {
                                     </TableCell>
                                     <TableCell className="flex gap-2">
                                         <form action={approveRequest.bind(null, req.id) as any}>
-                                            <Button size="sm" className="bg-green-600 hover:bg-green-700">
+                                            <SubmitButton size="sm" className="bg-green-600 hover:bg-green-700">
                                                 <CheckCircle2 className="w-4 h-4 mr-1" /> Approve
-                                            </Button>
+                                            </SubmitButton>
                                         </form>
                                         <form action={rejectRequest.bind(null, req.id, 'Rejected by admin') as any}>
-                                            <Button size="sm" variant="destructive">
+                                            <SubmitButton size="sm" variant="destructive">
                                                 <XCircle className="w-4 h-4 mr-1" /> Reject
-                                            </Button>
+                                            </SubmitButton>
                                         </form>
                                     </TableCell>
                                 </TableRow>

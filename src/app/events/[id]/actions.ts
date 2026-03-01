@@ -61,7 +61,7 @@ export async function registerForEvent(eventId: string) {
 
     const status = event.requires_approval ? 'pending_approval' : 'approved'
 
-    const { data, error } = await supabase
+    const { data: data, error } = await supabase
         .from('registrations')
         .insert({
             user_id: user.id,
@@ -74,6 +74,31 @@ export async function registerForEvent(eventId: string) {
 
     if (error) {
         return { error: error.message }
+    }
+
+    // OCC: Race Condition Catch for Capacity
+    const typedEv = event as any;
+    if (typedEv.max_capacity) {
+        const { data: verifyRegs } = await admin
+            .from('registrations')
+            .select('status, expires_at, team_members')
+            .eq('event_id', eventId)
+            .in('status', ['approved', 'pending_approval', 'pending_payment'])
+
+        if (verifyRegs) {
+            const nowTime = new Date().getTime()
+            const verifySeats = verifyRegs.reduce((acc, reg) => {
+                if (reg.status === 'pending_payment' && reg.expires_at && nowTime > new Date(reg.expires_at).getTime()) return acc
+                if (typedEv.is_capacity_by_teams) return acc + 1
+                const teamMembers = Array.isArray(reg.team_members) ? reg.team_members : []
+                return acc + 1 + (teamMembers.filter((m: any) => m && m.guestName && m.guestName.trim() !== '').length)
+            }, 0)
+
+            if (verifySeats > typedEv.max_capacity) {
+                await admin.from('registrations').delete().eq('id', data.id)
+                return { error: 'Unfortunately, the last available seat was just taken by someone else.' }
+            }
+        }
     }
 
     if (data) {
@@ -205,7 +230,7 @@ export async function registerGuest(formData: FormData) {
         referenceNumber = generateReference()
     }
 
-    const { data, error } = await supabase
+    const { data: data, error } = await supabase
         .from('registrations')
         .insert({
             event_id: eventId,
@@ -226,6 +251,30 @@ export async function registerGuest(formData: FormData) {
 
     if (error) {
         return { error: error.message }
+    }
+
+    // OCC: Race Condition Catch for Guest Capacity
+    if (event.max_capacity) {
+        const { data: verifyRegs } = await admin
+            .from('registrations')
+            .select('status, expires_at, team_members')
+            .eq('event_id', eventId)
+            .in('status', ['approved', 'pending_approval', 'pending_payment'])
+
+        if (verifyRegs) {
+            const nowTime = new Date().getTime()
+            const verifySeats = verifyRegs.reduce((acc, reg) => {
+                if (reg.status === 'pending_payment' && reg.expires_at && nowTime > new Date(reg.expires_at).getTime()) return acc
+                if (event.is_capacity_by_teams) return acc + 1
+                const tm = Array.isArray(reg.team_members) ? reg.team_members : []
+                return acc + 1 + (tm.filter((m: any) => m && m.guestName && m.guestName.trim() !== '').length)
+            }, 0)
+
+            if (verifySeats > event.max_capacity) {
+                await admin.from('registrations').delete().eq('id', data.id)
+                return { error: 'Unfortunately, the last available seat was just taken by someone else.' }
+            }
+        }
     }
 
     // Log using Admin client (ensures it works even if guest)

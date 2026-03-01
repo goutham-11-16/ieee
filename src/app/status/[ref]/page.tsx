@@ -402,22 +402,23 @@ export default async function StatusDashboardPage(props: {
                             </Button>
                         ))}
 
+                        {event.whatsapp_link && (
+                            <Button size="default" className="w-full sm:w-auto bg-green-500 hover:bg-green-600 text-white shadow-md transform transition-transform hover:-translate-y-0.5" asChild>
+                                <a href={event.whatsapp_link} target="_blank" rel="noopener noreferrer">
+                                    Join WhatsApp Group
+                                </a>
+                            </Button>
+                        )}
+                        {event.instagram_link && (
+                            <Button size="default" className="w-full sm:w-auto bg-pink-600 hover:bg-pink-700 text-white shadow-md transform transition-transform hover:-translate-y-0.5" asChild>
+                                <a href={event.instagram_link} target="_blank" rel="noopener noreferrer">
+                                    Follow on Instagram
+                                </a>
+                            </Button>
+                        )}
+
                         {((reg.status === 'approved' || isVerified)) && (
                             <>
-                                {event.whatsapp_link && (
-                                    <Button size="default" className="w-full sm:w-auto bg-green-500 hover:bg-green-600 text-white shadow-md transform transition-transform hover:-translate-y-0.5" asChild>
-                                        <a href={event.whatsapp_link} target="_blank" rel="noopener noreferrer">
-                                            Join WhatsApp Group
-                                        </a>
-                                    </Button>
-                                )}
-                                {event.instagram_link && (
-                                    <Button size="default" className="w-full sm:w-auto bg-pink-600 hover:bg-pink-700 text-white shadow-md transform transition-transform hover:-translate-y-0.5" asChild>
-                                        <a href={event.instagram_link} target="_blank" rel="noopener noreferrer">
-                                            Follow on Instagram
-                                        </a>
-                                    </Button>
-                                )}
                                 <Button size="default" className="w-full sm:w-auto bg-emerald-600 hover:bg-emerald-700 shadow-md transform transition-transform hover:-translate-y-0.5" asChild>
                                     <Link href={`/tickets/${reg.id}`}>
                                         <TicketIcon className="mr-2 h-5 w-5" /> View Digital Ticket
@@ -426,7 +427,7 @@ export default async function StatusDashboardPage(props: {
                             </>
                         )}
 
-                        {!(reg.status === 'approved' || isVerified) && (!certificates || certificates.length === 0) && (
+                        {!(reg.status === 'approved' || isVerified) && (!certificates || certificates.length === 0) && (!event.whatsapp_link && !event.instagram_link) && (
                             <div className="w-full text-center md:text-right text-sm text-muted-foreground italic">
                                 Action locked until approval
                             </div>
