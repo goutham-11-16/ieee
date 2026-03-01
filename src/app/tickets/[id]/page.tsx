@@ -74,12 +74,18 @@ export default async function TicketPage(props: { params: Promise<{ id: string }
         };
         payments: { status: string; created_at: string }[];
     }
-    const reg = registration as unknown as RegistrationDetail;
+    const reg = registration as any;
+    const event = Array.isArray(reg.event) ? reg.event[0] : reg.event;
+    const profile = Array.isArray(reg.user) ? reg.user[0] : reg.user;
+
+    if (!event) {
+        notFound();
+    }
 
     // PAYMENT VALIDATION
-    const isPaidEvent = reg.event.fees > 0
+    const isPaidEvent = event.fees > 0
     const latestPayment = reg.payments && reg.payments.length > 0
-        ? [...reg.payments].sort((a, b) => new Date(b.created_at).getTime() - new Date(a.created_at).getTime())[0]
+        ? [...reg.payments].sort((a: any, b: any) => new Date(b.created_at).getTime() - new Date(a.created_at).getTime())[0]
         : null;
     const paymentStatus = latestPayment?.status
     const isVerified = paymentStatus === 'verified'
@@ -121,7 +127,7 @@ export default async function TicketPage(props: { params: Promise<{ id: string }
     const qrData = JSON.stringify({
         regId: reg.id,
         uuid: reg.ticket_qr_uuid,
-        event: reg.event.id
+        event: event.id
     })
 
     return (
@@ -134,7 +140,7 @@ export default async function TicketPage(props: { params: Promise<{ id: string }
                     <div>
                         <h2 className="text-xl font-bold text-slate-900 dark:text-white uppercase tracking-wider mb-2">Admit One</h2>
                         <h1 className="text-2xl font-bold text-blue-600 dark:text-blue-400 leading-tight">
-                            {reg.event.title}
+                            {event.title}
                         </h1>
                     </div>
 
@@ -145,14 +151,14 @@ export default async function TicketPage(props: { params: Promise<{ id: string }
                     <div className="space-y-4 text-sm">
                         <div className="flex items-center justify-center gap-2 text-muted-foreground">
                             <CalendarIcon className="w-4 h-4" />
-                            {new Date(reg.event.date).toLocaleString()}
+                            {new Date(event.date).toLocaleString()}
                         </div>
                         <div className="flex items-center justify-center gap-2 text-muted-foreground">
                             <MapPinIcon className="w-4 h-4" />
-                            {reg.event.location || 'Location TBA'}
+                            {event.location || 'Location TBA'}
                         </div>
                         <div className="border-t pt-4">
-                            <p className="font-semibold">{reg.guest_name || reg.user?.full_name}</p>
+                            <p className="font-semibold">{reg.guest_name || profile?.full_name}</p>
                             <p className="text-xs text-muted-foreground text-ellipsis overflow-hidden">{reg.id}</p>
                         </div>
                     </div>

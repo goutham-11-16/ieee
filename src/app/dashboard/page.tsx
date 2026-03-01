@@ -38,7 +38,6 @@ export default async function DashboardPage() {
             )
         `)
         .eq('user_id', user.id)
-        .eq('user_id', user.id)
         .order('created_at', { ascending: false })
 
     const { data: certificates } = await supabase
@@ -58,12 +57,16 @@ export default async function DashboardPage() {
                         if (nowTime > expTime) reg.status = 'expired'
                     }
 
+                    const event = Array.isArray(reg.event) ? reg.event[0] : reg.event;
+                    if (!event) return null;
+
                     const payment = reg.payments && reg.payments.length > 0
                         ? [...reg.payments].sort((a: any, b: any) => new Date(b.created_at).getTime() - new Date(a.created_at).getTime())[0]
                         : undefined;
-                    const eventDate = new Date(reg.event.date)
-                    const isPyamentRequired = reg.event.fees > 0
-                    const isUnpaid = isPyamentRequired && (!payment || payment.status === 'unpaid')
+
+                    const eventDate = new Date(event.date)
+                    const isPaymentRequired = (event.fees || 0) > 0
+                    const isUnpaid = isPaymentRequired && (!payment || payment.status === 'unpaid')
                     const isPending = payment?.status === 'pending_verification'
                     const isVerified = payment?.status === 'verified'
 
@@ -72,15 +75,15 @@ export default async function DashboardPage() {
                             <CardHeader className="bg-slate-50 dark:bg-slate-900/50">
                                 <div className="flex justify-between items-start">
                                     <div>
-                                        <CardTitle className="text-xl mb-2">{reg.event.title}</CardTitle>
+                                        <CardTitle className="text-xl mb-2">{event.title}</CardTitle>
                                         <CardDescription className="flex items-center gap-4">
                                             <span className="flex items-center gap-1">
                                                 <CalendarIcon className="w-4 h-4" />
-                                                {formatDateTimeIST(reg.event.date)}
+                                                {formatDateTimeIST(event.date)}
                                             </span>
                                             <span className="flex items-center gap-1">
                                                 <MapPinIcon className="w-4 h-4" />
-                                                {reg.event.location || 'TBA'}
+                                                {event.location || 'TBA'}
                                             </span>
                                         </CardDescription>
                                     </div>
@@ -104,11 +107,11 @@ export default async function DashboardPage() {
                                                     <span className="text-muted-foreground">ID:</span> {reg.id.slice(0, 8)}...
                                                 </div>
                                                 <div>
-                                                    <span className="text-muted-foreground">Fee:</span> {reg.event.fees > 0 ? `₹${reg.event.fees}` : 'Free'}
+                                                    <span className="text-muted-foreground">Fee:</span> {event.fees > 0 ? `₹${event.fees}` : 'Free'}
                                                 </div>
-                                                {reg.event.registration_end && (
+                                                {event.registration_end && (
                                                     <div className="col-span-2 text-amber-600 font-medium">
-                                                        Deadline: {formatDateTimeIST(reg.event.registration_end)}
+                                                        Deadline: {formatDateTimeIST(event.registration_end)}
                                                     </div>
                                                 )}
                                             </div>
@@ -118,7 +121,7 @@ export default async function DashboardPage() {
                                     <div className="space-y-4 flex-1 border-t md:border-t-0 md:border-l pt-4 md:pt-0 pl-0 md:pl-6 border-slate-100 dark:border-slate-800">
                                         <h4 className="text-sm font-medium text-muted-foreground mb-1">Payment & Ticket</h4>
 
-                                        {isPyamentRequired ? (
+                                        {isPaymentRequired ? (
                                             <div className="space-y-3">
                                                 <div className="flex items-center justify-between">
                                                     <span className="text-sm">Status:</span>
@@ -170,7 +173,7 @@ export default async function DashboardPage() {
                                     return null
                                 })()}
 
-                                {(reg.status === 'approved' && (!isPyamentRequired || isVerified)) && (
+                                {(reg.status === 'approved' && (!isPaymentRequired || isVerified)) && (
                                     <Button size="sm" asChild>
                                         <Link href={`/tickets/${reg.id}`}>
                                             <TicketIcon className="mr-2 h-4 w-4" /> View Ticket

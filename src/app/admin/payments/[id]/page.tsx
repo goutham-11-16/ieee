@@ -36,6 +36,21 @@ export default async function PaymentReviewPage(props: { params: Promise<{ id: s
         notFound()
     }
 
+    // Join Normalization
+    const reg = Array.isArray(payment.registration) ? payment.registration[0] : payment.registration;
+
+    if (!reg) {
+        return (
+            <div className="container py-20 text-center">
+                <h1 className="text-2xl font-bold text-red-600">Registration Not Found</h1>
+                <p className="mt-4 text-muted-foreground">This payment record is not associated with any valid registration.</p>
+            </div>
+        )
+    }
+
+    const event = Array.isArray(reg.event) ? reg.event[0] : reg.event;
+    const profile = Array.isArray(reg.user) ? reg.user[0] : reg.user;
+
     // Get public URL for proof
     let publicUrl = payment.proof_url || '';
     let previewUrl = publicUrl;
@@ -148,18 +163,18 @@ export default async function PaymentReviewPage(props: { params: Promise<{ id: s
                         <CardContent className="space-y-4">
                             <div className="grid grid-cols-2 gap-2 text-sm">
                                 <span className="text-muted-foreground">User:</span>
-                                <span>{payment.registration.guest_name || (Array.isArray(payment.registration.user) ? payment.registration.user[0]?.full_name : payment.registration.user?.full_name) || "Unknown User"} <br /> <span className="text-xs text-muted-foreground">{payment.registration.guest_email || (Array.isArray(payment.registration.user) ? payment.registration.user[0]?.email : payment.registration.user?.email) || "No email"}</span></span>
+                                <span>{reg.guest_name || profile?.full_name || "Unknown User"} <br /> <span className="text-xs text-muted-foreground">{reg.guest_email || profile?.email || "No email"}</span></span>
 
                                 <span className="text-muted-foreground">Event:</span>
-                                <span>{(Array.isArray(payment.registration.event) ? payment.registration.event[0]?.title : payment.registration.event?.title) || "Unknown Event"}</span>
+                                <span>{event?.title || "Unknown Event"}</span>
 
                                 <span className="text-muted-foreground">Event Fee:</span>
-                                <span>₹{(Array.isArray(payment.registration.event) ? payment.registration.event[0]?.fees : payment.registration.event?.fees) || 0} {(Array.isArray(payment.registration.event) ? payment.registration.event[0]?.is_fee_per_person : payment.registration.event?.is_fee_per_person) ? '(per person)' : ''}</span>
+                                <span>₹{event?.fees || 0} {event?.is_fee_per_person ? '(per person)' : ''}</span>
 
                                 <span className="text-muted-foreground">Expected Total:</span>
                                 <span className="font-bold text-blue-600">
-                                    ₹{(((Array.isArray(payment.registration.event) ? payment.registration.event[0]?.fees : payment.registration.event?.fees) || 0) *
-                                        ((Array.isArray(payment.registration.event) ? payment.registration.event[0]?.is_fee_per_person : payment.registration.event?.is_fee_per_person) ? (1 + (payment.registration.team_members?.length || 0)) : 1)).toFixed(2)}
+                                    ₹{((event?.fees || 0) *
+                                        (event?.is_fee_per_person ? (1 + (reg.team_members?.length || 0)) : 1)).toFixed(2)}
                                 </span>
                             </div>
                         </CardContent>
@@ -171,7 +186,7 @@ export default async function PaymentReviewPage(props: { params: Promise<{ id: s
                                 <CardTitle>Actions</CardTitle>
                             </CardHeader>
                             <CardContent>
-                                <PaymentActions paymentId={payment.id} registrationId={payment.registration.id} />
+                                <PaymentActions paymentId={payment.id} registrationId={reg.id} />
                             </CardContent>
                         </Card>
                     )}

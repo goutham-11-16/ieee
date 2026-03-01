@@ -44,7 +44,8 @@ export default async function StatusDashboardPage(props: {
                 payment_qr_url,
                 whatsapp_link,
                 instagram_link,
-                attendance_sessions
+                attendance_sessions,
+                form_schema
             ),
             payments (
                 status,
@@ -88,16 +89,32 @@ export default async function StatusDashboardPage(props: {
 
     const reg = registration as any
 
+    // --- Join Normalization (Supabase returns arrays for some relation types) ---
+    const event = Array.isArray(reg.event) ? reg.event[0] : reg.event;
+    const user = Array.isArray(reg.user) ? reg.user[0] : reg.user;
+
+    // Final defensive check against null event (prevents render crash)
+    if (!event) {
+        console.error("Status page: Event details missing for registration", reg.id)
+        return (
+            <div className="container py-24 px-4 text-center">
+                <h1 className="text-2xl font-bold text-red-600">Event Not Found</h1>
+                <p className="mt-4 text-muted-foreground">The event associated with this registration could not be loaded. Please contact support.</p>
+            </div>
+        )
+    }
+
     // Fallback logic for legacy vs new guest registrations
-    const participantName = reg.guest_name || reg.user?.full_name || 'Guest Participant'
-    const participantEmail = reg.guest_email || reg.user?.email || ''
+    const participantName = reg.guest_name || user?.full_name || 'Guest Participant'
+    const participantEmail = reg.guest_email || user?.email || ''
 
     const verifiedPayment = reg.payments?.find((p: any) => p.status === 'verified');
     const payment = verifiedPayment || (reg.payments && reg.payments.length > 0
         ? [...reg.payments].sort((a: any, b: any) => new Date(b.created_at).getTime() - new Date(a.created_at).getTime())[0]
         : undefined);
-    const eventDate = new Date(reg.event.date)
-    const isPaymentRequired = reg.event.fees > 0
+
+    const eventDate = event?.date ? new Date(event.date) : new Date();
+    const isPaymentRequired = (event?.fees || 0) > 0
     const paymentRejected = payment && payment.status === 'rejected'
     const isUnpaid = isPaymentRequired && (!payment || payment.status === 'unpaid' || paymentRejected)
     const isPending = payment?.status === 'pending_verification'
@@ -124,7 +141,7 @@ export default async function StatusDashboardPage(props: {
 
     // Check deadlines for payment
     const now = new Date()
-    const deadlineStr = reg.event.payment_deadline || reg.event.registration_end || reg.event.date
+    const deadlineStr = event.payment_deadline || event.registration_end || event.date
     const deadline = new Date(deadlineStr)
     const missedPaymentDeadline = isUnpaid && now > deadline
 
@@ -159,7 +176,7 @@ export default async function StatusDashboardPage(props: {
                 <CardHeader className="bg-slate-50 dark:bg-slate-900/50">
                     <div className="flex justify-between items-start">
                         <div>
-                            <CardTitle className="text-2xl mb-2">{reg.event.title}</CardTitle>
+                            <CardTitle className="text-2xl mb-2">{event.title}</CardTitle>
                             <CardDescription className="flex items-center gap-4 text-base">
                                 <span className="flex items-center gap-1">
                                     <CalendarIcon className="w-4 h-4" />
@@ -167,7 +184,7 @@ export default async function StatusDashboardPage(props: {
                                 </span>
                                 <span className="flex items-center gap-1">
                                     <MapPinIcon className="w-4 h-4" />
-                                    {reg.event.location || 'TBA'}
+                                    {event.location || 'TBA'}
                                 </span>
                             </CardDescription>
                         </div>
@@ -205,11 +222,11 @@ export default async function StatusDashboardPage(props: {
                                     </div>
                                     <div>
                                         <span className="text-muted-foreground block mb-1">Event Fee</span>
-                                        <span className="font-medium">{reg.event.fees > 0 ? `₹${reg.event.fees}` : 'Free'}</span>
+                                        <span className="font-medium">{event.fees > 0 ? `₹${event.fees}` : 'Free'}</span>
                                     </div>
                                     {reg.custom_responses && Object.entries(reg.custom_responses).map(([key, value]) => {
                                         // Retrieve label from schema if possible
-                                        const schemaField = reg.event.form_schema?.find((f: any) => f.id === key);
+                                        const schemaField = event.form_schema?.find((f: any) => f.id === key);
                                         const label = schemaField ? schemaField.label : key;
                                         return (
                                             <div key={key} className="overflow-hidden">
@@ -240,7 +257,7 @@ export default async function StatusDashboardPage(props: {
                                                     {member.customResponses && Object.keys(member.customResponses).length > 0 && (
                                                         <div className="mt-2 pt-2 border-t border-slate-200 dark:border-slate-800 text-xs space-y-1">
                                                             {Object.entries(member.customResponses).map(([key, value]) => {
-                                                                const schemaField = reg.event.form_schema?.find((f: any) => f.id === key);
+                                                                const schemaField = event.form_schema?.find((f: any) => f.id === key);
                                                                 const label = schemaField ? schemaField.label : key;
                                                                 return (
                                                                     <div key={key} className="break-words whitespace-pre-wrap overflow-hidden"><span className="text-slate-500">{label}:</span> {String(value)}</div>
@@ -258,8 +275,8 @@ export default async function StatusDashboardPage(props: {
                             <section>
                                 <h4 className="text-lg font-semibold border-b pb-2 mb-4">Attendance Tracker</h4>
                                 <div className="space-y-3">
-                                    {reg.event.attendance_sessions && reg.event.attendance_sessions.length > 0 ? (
-                                        reg.event.attendance_sessions.map((session: any) => {
+                                    {event.attendance_sessions && event.attendance_sessions.length > 0 ? (
+                                        event.attendance_sessions.map((session: any) => {
                                             const sessionName = typeof session === 'string' ? session : session.name;
                                             const sessionId = typeof session === 'string' ? session : (session.id || session.name);
                                             const sessionRecord = reg.attendance?.find((a: any) => a.session_name === sessionName) || null;
@@ -328,19 +345,19 @@ export default async function StatusDashboardPage(props: {
                                                 <div className="mb-4 text-center">
                                                     <p className="text-sm font-semibold text-slate-500 uppercase tracking-wider mb-1">Amount to Pay</p>
                                                     <p className="text-3xl font-black text-slate-900 dark:text-white">
-                                                        ₹{(reg.event.fees * (reg.event.is_fee_per_person ? (1 + (reg.team_members?.length || 0)) : 1)).toFixed(2)}
+                                                        ₹{(event.fees * (event.is_fee_per_person ? (1 + (reg.team_members?.length || 0)) : 1)).toFixed(2)}
                                                     </p>
-                                                    {reg.event.is_fee_per_person && reg.team_members?.length > 0 && (
+                                                    {event.is_fee_per_person && reg.team_members?.length > 0 && (
                                                         <p className="text-xs text-muted-foreground mt-1">
-                                                            (₹{reg.event.fees.toFixed(2)} × {1 + reg.team_members.length} members)
+                                                            (₹{event.fees.toFixed(2)} × {1 + reg.team_members.length} members)
                                                         </p>
                                                     )}
                                                 </div>
                                                 <PaymentUploadForm
                                                     registrationId={reg.id}
-                                                    amount={reg.event.fees}
+                                                    amount={event.fees}
                                                     reference={reg.reference_number}
-                                                    paymentQrUrl={reg.event.payment_qr_url}
+                                                    paymentQrUrl={event.payment_qr_url}
                                                 />
                                                 <div className="mt-4 flex items-start gap-2 text-xs text-muted-foreground bg-blue-50 dark:bg-blue-900/20 p-3 rounded text-left border border-blue-100 dark:border-blue-900/50">
                                                     <AlertCircleIcon className="w-4 h-4 text-blue-600 dark:text-blue-400 shrink-0 mt-0.5" />
@@ -373,7 +390,7 @@ export default async function StatusDashboardPage(props: {
                 <div className="container mx-auto max-w-4xl flex items-center justify-between gap-4 flex-wrap sm:flex-nowrap">
                     <div className="hidden md:block flex-1 min-w-0">
                         <p className="text-sm font-semibold truncate">Ref: {reg.reference_number}</p>
-                        <p className="text-xs text-muted-foreground truncate">{reg.event.title}</p>
+                        <p className="text-xs text-muted-foreground truncate">{event.title}</p>
                     </div>
 
                     <div className="w-full md:w-auto flex items-center justify-end gap-3 flex-wrap sm:flex-nowrap shrink-0">
@@ -387,16 +404,16 @@ export default async function StatusDashboardPage(props: {
 
                         {((reg.status === 'approved' || isVerified)) && (
                             <>
-                                {reg.event.whatsapp_link && (
+                                {event.whatsapp_link && (
                                     <Button size="default" className="w-full sm:w-auto bg-green-500 hover:bg-green-600 text-white shadow-md transform transition-transform hover:-translate-y-0.5" asChild>
-                                        <a href={reg.event.whatsapp_link} target="_blank" rel="noopener noreferrer">
+                                        <a href={event.whatsapp_link} target="_blank" rel="noopener noreferrer">
                                             Join WhatsApp Group
                                         </a>
                                     </Button>
                                 )}
-                                {reg.event.instagram_link && (
+                                {event.instagram_link && (
                                     <Button size="default" className="w-full sm:w-auto bg-pink-600 hover:bg-pink-700 text-white shadow-md transform transition-transform hover:-translate-y-0.5" asChild>
-                                        <a href={reg.event.instagram_link} target="_blank" rel="noopener noreferrer">
+                                        <a href={event.instagram_link} target="_blank" rel="noopener noreferrer">
                                             Follow on Instagram
                                         </a>
                                     </Button>
