@@ -170,16 +170,25 @@ export async function generateCertificates(eventId: string) {
     }
 
     // Load Template Buffer exactly once
-    const { data: fileData, error: dlError } = await supabase.storage
-        .from('certificate_templates')
-        .download(template.background_url)
+    let templateArrayBuffer: ArrayBuffer;
+    if (template.background_url?.startsWith('http')) {
+        const res = await fetch(template.background_url);
+        if (!res.ok) {
+            await supabase.from('certificate_jobs').update({ status: 'failed' }).eq('id', job.id)
+            return { success: false, error: 'Failed to fetch template file from URL' }
+        }
+        templateArrayBuffer = await res.arrayBuffer();
+    } else {
+        const { data: fileData, error: dlError } = await supabase.storage
+            .from('certificate_templates')
+            .download(template.background_url)
 
-    if (dlError || !fileData) {
-        await supabase.from('certificate_jobs').update({ status: 'failed' }).eq('id', job.id)
-        return { success: false, error: 'Failed to download template file' }
+        if (dlError || !fileData) {
+            await supabase.from('certificate_jobs').update({ status: 'failed' }).eq('id', job.id)
+            return { success: false, error: 'Failed to download template file from storage' }
+        }
+        templateArrayBuffer = await fileData.arrayBuffer()
     }
-
-    const templateArrayBuffer = await fileData.arrayBuffer()
     const layout = template.layout_config as any
     const elementsArray = Array.isArray(layout) ? layout : (layout?.elements || [])
 
