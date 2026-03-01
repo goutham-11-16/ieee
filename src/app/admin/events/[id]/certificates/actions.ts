@@ -234,104 +234,106 @@ export async function generateCertificates(eventId: string) {
 
     let generatedCount = 0
 
-    // 5. Generate Eligible
-    for (const item of eligible) {
-        const { reg, pName } = item
+    const chunkSize = 5 // Process 5 certificates simultaneously
+    for (let i = 0; i < eligible.length; i += chunkSize) {
+        const chunk = eligible.slice(i, i + chunkSize)
 
-        // Check existing
-        const { data: existing } = await supabase
-            .from('certificates')
-            .select('id')
-            .eq('registration_id', reg.id)
-            .eq('participant_name', pName)
-            .single()
+        await Promise.all(chunk.map(async (item) => {
+            const { reg, pName } = item
 
-        if (existing) continue
-
-        try {
-            const pdfDoc = await PDFDocument.load(finalTemplateBuffer)
-            const pages = pdfDoc.getPages()
-            const firstPage = pages[0]
-
-            const loadedFonts: Record<string, any> = {
-                'Helvetica': await pdfDoc.embedFont(StandardFonts.Helvetica),
-                'HelveticaBold': await pdfDoc.embedFont(StandardFonts.HelveticaBold),
-                'HelveticaOblique': await pdfDoc.embedFont(StandardFonts.HelveticaOblique),
-                'HelveticaBoldOblique': await pdfDoc.embedFont(StandardFonts.HelveticaBoldOblique),
-                'TimesRoman': await pdfDoc.embedFont(StandardFonts.TimesRoman),
-                'TimesBold': await pdfDoc.embedFont(StandardFonts.TimesRomanBold),
-                'TimesItalic': await pdfDoc.embedFont(StandardFonts.TimesRomanItalic),
-                'TimesBoldItalic': await pdfDoc.embedFont(StandardFonts.TimesRomanBoldItalic),
-                'Courier': await pdfDoc.embedFont(StandardFonts.Courier),
-                'CourierBold': await pdfDoc.embedFont(StandardFonts.CourierBold),
-                'CourierOblique': await pdfDoc.embedFont(StandardFonts.CourierOblique),
-                'CourierBoldOblique': await pdfDoc.embedFont(StandardFonts.CourierBoldOblique),
-            }
-
-            const mapField = (tag: string, pName: string) => {
-                if (tag === '{name}') return pName
-                if (tag === '{regno}') return reg.guest_reg_no || 'N/A'
-                if (tag === '{eventName}') return reg.event?.title || 'Unknown'
-                if (tag === '{date}') return reg.event?.date ? new Date(reg.event.date).toLocaleDateString('en-GB') : 'N/A'
-                return ''
-            }
-
-            const randomHex = Array.from({ length: 4 }, () => Math.floor(Math.random() * 256).toString(16).padStart(2, '0')).join('').toUpperCase()
-            const refNo = `CERT-${randomHex}`
-            const uniqueCode = generateUUID().slice(0, 8).toUpperCase()
-
-            const hexToRgb = (hex: string) => {
-                hex = hex.replace(/^#/, '')
-                if (hex.length === 3) hex = hex.split('').map(c => c + c).join('')
-                const num = parseInt(hex, 16)
-                return { r: (num >> 16) / 255, g: ((num >> 8) & 255) / 255, b: (num & 255) / 255 }
-            }
-
-            elementsArray.forEach((el: any) => {
-                let text = mapField(el.tag || el.field, pName)
-                if (el.tag === '{uniqueCode}' || el.field === 'unique_code') text = uniqueCode
-                if (el.tag === '{refNo}' || el.field === 'ref_no') text = refNo
-
-                if (text) {
-                    const { r, g, b } = hexToRgb(el.color || '#000000')
-                    firstPage.drawText(text, {
-                        x: el.x,
-                        y: el.y,
-                        size: el.size || 24,
-                        font: loadedFonts[el.font] || loadedFonts['Helvetica'],
-                        color: rgb(r, g, b)
-                    })
-                }
-            })
-
-            const pdfBytes = await pdfDoc.save()
-            const fileName = `generated/${uniqueCode}.pdf`
-
-            await supabase.storage
+            // Check existing
+            const { data: existing } = await supabase
                 .from('certificates')
-                .upload(fileName, Buffer.from(pdfBytes), { contentType: 'application/pdf' })
+                .select('id')
+                .eq('registration_id', reg.id)
+                .eq('participant_name', pName)
+                .single()
 
-            // Optional Output to Google Drive
-            await uploadToGoogleDrive({
-                base64Data: Buffer.from(pdfBytes).toString('base64'),
-                filename: `${pName.replace(/\s+/g, '_')}_${uniqueCode}.pdf`,
-                mimeType: 'application/pdf',
-                eventTitle: reg.event?.title?.trim() || 'Unknown_Event',
-                targetFolder: 'Certificates'
-            });
+            if (existing) return
 
-            await supabase.from('certificates').insert({
-                registration_id: reg.id,
-                template_id: template.id,
-                unique_code: uniqueCode,
-                file_url: fileName,
-                participant_name: pName
-            })
+            try {
+                const pdfDoc = await PDFDocument.load(finalTemplateBuffer)
+                const pages = pdfDoc.getPages()
+                const firstPage = pages[0]
 
-            generatedCount++
-        } catch (e) {
-            console.error(`Gen error for ${pName}`, e)
-        }
+                // Optmize embedding fonts: ONLY embed what is actually used to save significant generation time
+                const usedFontNames = [...new Set(elementsArray.map((e: any) => e.font).filter(Boolean))]
+                if (usedFontNames.length === 0) usedFontNames.push('Helvetica') // Default
+
+                const loadedFonts: Record<string, any> = {}
+                for (const fName of usedFontNames) {
+                    if (fName === 'Helvetica') loadedFonts[fName] = await pdfDoc.embedFont(StandardFonts.Helvetica);
+                    if (fName === 'HelveticaBold') loadedFonts[fName] = await pdfDoc.embedFont(StandardFonts.HelveticaBold);
+                    if (fName === 'TimesRoman') loadedFonts[fName] = await pdfDoc.embedFont(StandardFonts.TimesRoman);
+                    if (fName === 'Courier') loadedFonts[fName] = await pdfDoc.embedFont(StandardFonts.Courier);
+                }
+
+                const mapField = (tag: string, pName: string) => {
+                    if (tag === '{name}') return pName
+                    if (tag === '{regno}') return reg.guest_reg_no || 'N/A'
+                    if (tag === '{eventName}') return reg.event?.title || 'Unknown'
+                    if (tag === '{date}') return reg.event?.date ? new Date(reg.event.date).toLocaleDateString('en-GB') : 'N/A'
+                    return ''
+                }
+
+                const randomHex = Array.from({ length: 4 }, () => Math.floor(Math.random() * 256).toString(16).padStart(2, '0')).join('').toUpperCase()
+                const refNo = `CERT-${randomHex}`
+                const uniqueCode = generateUUID().slice(0, 8).toUpperCase()
+
+                const hexToRgb = (hex: string) => {
+                    hex = hex.replace(/^#/, '')
+                    if (hex.length === 3) hex = hex.split('').map(c => c + c).join('')
+                    const num = parseInt(hex, 16)
+                    return { r: (num >> 16) / 255, g: ((num >> 8) & 255) / 255, b: (num & 255) / 255 }
+                }
+
+                for (const el of elementsArray) {
+                    let text = mapField(el.tag || el.field, pName)
+                    if (el.tag === '{uniqueCode}' || el.field === 'unique_code') text = uniqueCode
+                    if (el.tag === '{refNo}' || el.field === 'ref_no') text = refNo
+
+                    if (text) {
+                        const { r, g, b } = hexToRgb(el.color || '#000000')
+                        firstPage.drawText(text, {
+                            x: el.x || 0, // Fallbacks
+                            y: el.y || 0,
+                            size: el.size || 24,
+                            font: loadedFonts[el.font] || loadedFonts['Helvetica'] || await pdfDoc.embedFont(StandardFonts.Helvetica),
+                            color: rgb(r, g, b)
+                        })
+                    }
+                }
+
+                const pdfBytes = await pdfDoc.save()
+                const fileName = `generated/${uniqueCode}.pdf`
+
+                // PARALLELIZE Uploads (Supabase AND Google Drive concurrently)
+                await Promise.allSettled([
+                    supabase.storage
+                        .from('certificates')
+                        .upload(fileName, Buffer.from(pdfBytes), { contentType: 'application/pdf' }),
+                    uploadToGoogleDrive({
+                        base64Data: Buffer.from(pdfBytes).toString('base64'),
+                        filename: `${pName.replace(/\s+/g, '_')}_${uniqueCode}.pdf`,
+                        mimeType: 'application/pdf',
+                        eventTitle: reg.event?.title?.trim() || 'Unknown_Event',
+                        targetFolder: 'Certificates'
+                    })
+                ]);
+
+                await supabase.from('certificates').insert({
+                    registration_id: reg.id,
+                    template_id: template.id,
+                    unique_code: uniqueCode,
+                    file_url: fileName,
+                    participant_name: pName
+                })
+
+                generatedCount++
+            } catch (e) {
+                console.error(`Gen error for ${pName}`, e)
+            }
+        }))
     }
 
     // 6. Log Exceptions
