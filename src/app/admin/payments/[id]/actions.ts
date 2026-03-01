@@ -21,12 +21,13 @@ export async function verifyPayment(paymentId: string, registrationId: string) {
     }
 
     // 1. Fetch details for Receipt
-    const { data: payment } = await supabase
+    const { data: payment } = await adminSupabase
         .from('payments')
         .select(`
             amount, 
             transaction_reference, 
             created_at,
+            registration_id,
             registration:registrations!registration_id(
                 id,
                 reference_number,
@@ -44,7 +45,10 @@ export async function verifyPayment(paymentId: string, registrationId: string) {
     // 2. Generate PDF Receipt
     try {
         const p = payment as any;
-        const reg = p.registration;
+        const reg = Array.isArray(p.registration) ? p.registration[0] : p.registration;
+        const targetRegId = p.registration_id || reg?.id;
+
+        if (!reg || !targetRegId) return { error: 'Associated registration not found' }
 
         const pdfDoc = await PDFDocument.create()
         const page = pdfDoc.addPage([600, 400])
@@ -127,7 +131,7 @@ export async function verifyPayment(paymentId: string, registrationId: string) {
                 ticket_qr_uuid: ticketQrUuid,
                 reference_number: newRef
             })
-            .eq('id', registrationId)
+            .eq('id', targetRegId)
 
         if (regUpdateError) return { error: 'Registration update failed: ' + regUpdateError.message }
 
@@ -152,6 +156,7 @@ export async function verifyPayment(paymentId: string, registrationId: string) {
 
 export async function rejectPayment(paymentId: string, reason: string) {
     const supabase = await createClient()
+    const adminSupabase = createAdminClient()
     const { data: { user } } = await supabase.auth.getUser()
     if (!user) return { error: 'Unauthorized' }
 
@@ -169,7 +174,7 @@ export async function rejectPayment(paymentId: string, reason: string) {
 
     if (!payment) return { error: 'Payment not found' }
 
-    const { error } = await supabase
+    const { error } = await adminSupabase
         .from('payments')
         .update({
             status: 'rejected',
@@ -182,7 +187,7 @@ export async function rejectPayment(paymentId: string, reason: string) {
     if (error) return { error: error.message }
 
     // Grant a 24-hour extension for the user to re-upload payment proof
-    const { error: regError } = await supabase
+    const { error: regError } = await adminSupabase
         .from('registrations')
         .update({
             status: 'pending_payment',

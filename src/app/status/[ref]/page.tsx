@@ -157,12 +157,14 @@ export default async function StatusDashboardPage(props: {
                             </CardDescription>
                         </div>
                         <Badge className="text-sm px-3 py-1" variant={
-                            reg.status === 'approved' ? 'success' :
+                            (reg.status === 'approved' || isVerified) ? 'success' :
                                 reg.status === 'rejected' ? 'destructive' :
                                     reg.status === 'expired' ? 'outline' :
                                         reg.status === 'pending_approval' ? 'warning' : 'secondary'
                         }>
-                            {reg.status === 'pending_approval' ? 'Approval Pending' : reg.status}
+                            {(reg.status === 'approved' || isVerified) ? 'Approved' :
+                                reg.status === 'pending_approval' ? 'Approval Pending' :
+                                    reg.status.replace('_', ' ')}
                         </Badge>
                     </div>
                 </CardHeader>
@@ -368,7 +370,7 @@ export default async function StatusDashboardPage(props: {
                             </Button>
                         ))}
 
-                        {(reg.status === 'approved' && (!isPaymentRequired || isVerified)) && (
+                        {((reg.status === 'approved' || isVerified)) && (
                             <>
                                 {reg.event.whatsapp_link && (
                                     <Button size="default" className="w-full sm:w-auto bg-green-500 hover:bg-green-600 text-white shadow-md transform transition-transform hover:-translate-y-0.5" asChild>
@@ -392,7 +394,7 @@ export default async function StatusDashboardPage(props: {
                             </>
                         )}
 
-                        {!(reg.status === 'approved' && (!isPaymentRequired || isVerified)) && (!certificates || certificates.length === 0) && (
+                        {!(reg.status === 'approved' || isVerified) && (!certificates || certificates.length === 0) && (
                             <div className="w-full text-center md:text-right text-sm text-muted-foreground italic">
                                 Action locked until approval
                             </div>
