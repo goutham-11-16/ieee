@@ -17,7 +17,7 @@ export function getDriveImageUrl(url: string | null | undefined): string | undef
       fileId = matchUc[1];
     }
     if (fileId) {
-      return `https://drive.google.com/uc?export=download&id=${fileId}`;
+      return `https://lh3.googleusercontent.com/d/${fileId}`;
     }
   }
   return url;

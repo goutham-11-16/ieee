@@ -123,7 +123,7 @@ export function DriveImageUploader({ id, name, folderName, eventTitle, required,
 
             if (res.success) {
                 setProgress(100);
-                const url = res.fileId ? `https://drive.google.com/uc?export=download&id=${res.fileId}` : res.url;
+                const url = res.fileId ? `https://lh3.googleusercontent.com/d/${res.fileId}` : res.url;
                 setUploadedUrl(url);
                 toast.success("Image uploaded successfully!");
             } else {
