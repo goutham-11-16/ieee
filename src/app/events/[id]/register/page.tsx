@@ -55,7 +55,7 @@ export default async function RegisterPage(props: { params: Promise<{ id: string
             .from('registrations')
             .select('team_members, status, expires_at')
             .eq('event_id', params.id)
-            .neq('status', 'cancelled')
+            .in('status', ['approved', 'pending_approval', 'pending_payment'])
 
         if (activeRegs) {
             const nowTime = new Date().getTime()
@@ -64,8 +64,14 @@ export default async function RegisterPage(props: { params: Promise<{ id: string
                     const expTime = new Date(reg.expires_at).getTime()
                     if (nowTime > expTime) return acc // Expired seat
                 }
-                const teamCount = Array.isArray(reg.team_members) ? reg.team_members.length : 0
-                return acc + 1 + teamCount
+
+                if (event.is_capacity_by_teams) {
+                    return acc + 1
+                } else {
+                    const teamMembers = Array.isArray(reg.team_members) ? reg.team_members : []
+                    const validTeamMembers = teamMembers.filter((m: any) => m && m.guestName && m.guestName.trim() !== '')
+                    return acc + 1 + validTeamMembers.length
+                }
             }, 0)
         }
 

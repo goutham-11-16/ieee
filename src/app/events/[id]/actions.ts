@@ -133,12 +133,13 @@ export async function registerGuest(formData: FormData) {
                 if (event.is_capacity_by_teams) {
                     return acc + 1 // Count as 1 team/slot
                 } else {
-                    const teamCount = Array.isArray(reg.team_members) ? reg.team_members.length : 0
-                    return acc + 1 + teamCount // Count every human
+                    const teamMembers = Array.isArray(reg.team_members) ? reg.team_members : []
+                    const validTeamMembers = teamMembers.filter((m: any) => m && m.guestName && m.guestName.trim() !== '')
+                    return acc + 1 + validTeamMembers.length // Count every valid human
                 }
             }, 0)
 
-            const requestedSeats = event.is_capacity_by_teams ? 1 : (1 + teamMembers.length)
+            const requestedSeats = event.is_capacity_by_teams ? 1 : (1 + teamMembers.filter((m: any) => m && m.guestName && m.guestName.trim() !== '').length)
             if (takenSeats + requestedSeats > event.max_capacity) {
                 return { error: `Not enough slots available. Only ${event.max_capacity - takenSeats} slots left.` }
             }

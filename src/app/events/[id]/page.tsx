@@ -48,8 +48,10 @@ export default async function EventDetailsPage(props: { params: Promise<{ id: st
                 if (event.is_capacity_by_teams) {
                     return acc + 1
                 } else {
-                    const teamCount = Array.isArray(reg.team_members) ? reg.team_members.length : 0
-                    return acc + 1 + teamCount
+                    const teamMembers = Array.isArray(reg.team_members) ? reg.team_members : []
+                    // Only count team members that actually have a name filled in
+                    const validTeamMembers = teamMembers.filter((m: any) => m && m.guestName && m.guestName.trim() !== '')
+                    return acc + 1 + validTeamMembers.length
                 }
             }, 0)
         }
