@@ -34,7 +34,7 @@ export function AnimatedHero() {
                             className="relative w-64 h-64 md:w-96 md:h-96 mx-auto rounded-[3rem] overflow-hidden shadow-2xl border border-white/20"
                         >
                             <img
-                                src="/homepage_hero_illustration.png"
+                                src="/homepage_hero_illustration.jpeg"
                                 alt="Innovation Hub"
                                 className="w-full h-full object-cover"
                             />

@@ -36,7 +36,7 @@ export default function LoginPage() {
                             className="relative mx-auto w-80 h-80 rounded-3xl overflow-hidden shadow-2xl border border-white/20"
                         >
                             <img
-                                src="/login_hero_illustration_1772304620610.png"
+                                src="/login_hero_illustration_1772304620610.jpeg"
                                 alt="Innovation Hub"
                                 className="w-full h-full object-cover transition-transform duration-700 group-hover:scale-105"
                             />
