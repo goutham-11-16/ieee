@@ -108,9 +108,19 @@ export default async function StatusDashboardPage(props: {
     const participantName = reg.guest_name || user?.full_name || 'Guest Participant'
     const participantEmail = reg.guest_email || user?.email || ''
 
-    const verifiedPayment = reg.payments?.find((p: any) => p.status === 'verified');
-    const payment = verifiedPayment || (reg.payments && reg.payments.length > 0
-        ? [...reg.payments].sort((a: any, b: any) => new Date(b.created_at).getTime() - new Date(a.created_at).getTime())[0]
+    // Ensure relations that might return as single objects are properly wrapped in arrays
+    const rawPayments = reg.payments || [];
+    const paymentsRecords = Array.isArray(rawPayments) ? rawPayments : [rawPayments];
+
+    const rawAttendance = reg.attendance || [];
+    const attendanceRecords = Array.isArray(rawAttendance) ? rawAttendance : [rawAttendance];
+
+    const rawTeam = reg.team_members || [];
+    const teamMembers = Array.isArray(rawTeam) ? rawTeam : [];
+
+    const verifiedPayment = paymentsRecords.find((p: any) => p.status === 'verified');
+    const payment = verifiedPayment || (paymentsRecords.length > 0
+        ? [...paymentsRecords].sort((a: any, b: any) => new Date(b.created_at).getTime() - new Date(a.created_at).getTime())[0]
         : undefined);
 
     const eventDate = event?.date ? new Date(event.date) : new Date();
@@ -145,8 +155,8 @@ export default async function StatusDashboardPage(props: {
     const deadline = new Date(deadlineStr)
     const missedPaymentDeadline = isUnpaid && now > deadline
 
-    const checkedIn = reg.attendance?.[0]?.check_in_time
-    const checkedOut = reg.attendance?.[0]?.check_out_time
+    const checkedIn = attendanceRecords[0]?.check_in_time
+    const checkedOut = attendanceRecords[0]?.check_out_time
 
     return (
         <div className="container mx-auto py-10 px-4 max-w-4xl">
@@ -238,7 +248,7 @@ export default async function StatusDashboardPage(props: {
                                 </div>
                             </section>
 
-                            {reg.team_members && reg.team_members.length > 0 && (
+                            {teamMembers.length > 0 && (
                                 <section>
                                     <h4 className="text-lg font-semibold border-b pb-2 mb-4">Team Roster</h4>
                                     <div className="space-y-3">
@@ -248,7 +258,7 @@ export default async function StatusDashboardPage(props: {
                                                 <p className="font-medium text-sm">{participantName} <Badge variant="outline" className="ml-2 text-[10px] h-4">Leader</Badge></p>
                                             </div>
                                         </div>
-                                        {reg.team_members.map((member: any, idx: number) => (
+                                        {teamMembers.map((member: any, idx: number) => (
                                             <div key={idx} className="bg-slate-50 dark:bg-slate-900 border p-3 rounded-lg flex items-center gap-3 hover:shadow-md transition-all duration-200">
                                                 <div className="h-8 w-8 rounded-full bg-slate-200 dark:bg-slate-800 flex items-center justify-center font-bold text-slate-600 dark:text-slate-400">{idx + 2}</div>
                                                 <div>
@@ -279,7 +289,7 @@ export default async function StatusDashboardPage(props: {
                                         event.attendance_sessions.map((session: any) => {
                                             const sessionName = typeof session === 'string' ? session : session.name;
                                             const sessionId = typeof session === 'string' ? session : (session.id || session.name);
-                                            const sessionRecord = reg.attendance?.find((a: any) => a.session_name === sessionName) || null;
+                                            const sessionRecord = attendanceRecords.find((a: any) => a.session_name === sessionName) || null;
                                             return (
                                                 <div key={sessionId} className="flex flex-col gap-2 bg-slate-50 dark:bg-slate-900 border p-3 rounded-lg">
                                                     <div className="font-semibold text-sm border-b pb-1">{sessionName}</div>
@@ -345,11 +355,11 @@ export default async function StatusDashboardPage(props: {
                                                 <div className="mb-4 text-center">
                                                     <p className="text-sm font-semibold text-slate-500 uppercase tracking-wider mb-1">Amount to Pay</p>
                                                     <p className="text-3xl font-black text-slate-900 dark:text-white">
-                                                        ₹{(event.fees * (event.is_fee_per_person ? (1 + (reg.team_members?.length || 0)) : 1)).toFixed(2)}
+                                                        ₹{(event.fees * (event.is_fee_per_person ? (1 + teamMembers.length) : 1)).toFixed(2)}
                                                     </p>
-                                                    {event.is_fee_per_person && reg.team_members?.length > 0 && (
+                                                    {event.is_fee_per_person && teamMembers.length > 0 && (
                                                         <p className="text-xs text-muted-foreground mt-1">
-                                                            (₹{event.fees.toFixed(2)} × {1 + reg.team_members.length} members)
+                                                            (₹{event.fees.toFixed(2)} × {1 + teamMembers.length} members)
                                                         </p>
                                                     )}
                                                 </div>
