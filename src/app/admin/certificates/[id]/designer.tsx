@@ -1,6 +1,6 @@
 'use client'
 
-import { useState, useRef } from 'react'
+import { useState, useRef, useEffect } from 'react'
 import { Button } from '@/components/ui/button'
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/components/ui/card'
 import { Input } from '@/components/ui/input'
@@ -87,14 +87,49 @@ export default function CertificateDesigner({ eventId, existingTemplate }: { eve
         }
     }
 
+    const imgRef = useRef<HTMLImageElement>(null)
+    const [naturalSize, setNaturalSize] = useState({ width: 0, height: 0 })
+    const [displaySize, setDisplaySize] = useState({ width: 0, height: 0 })
+
+    const handleImageLoad = () => {
+        if (imgRef.current) {
+            setNaturalSize({
+                width: imgRef.current.naturalWidth,
+                height: imgRef.current.naturalHeight
+            })
+            setDisplaySize({
+                width: imgRef.current.clientWidth,
+                height: imgRef.current.clientHeight
+            })
+        }
+    }
+
+    // Update display size on window resize to keep markers aligned
+    useEffect(() => {
+        const handleResize = () => {
+            if (imgRef.current) {
+                setDisplaySize({
+                    width: imgRef.current.clientWidth,
+                    height: imgRef.current.clientHeight
+                })
+            }
+        }
+        window.addEventListener('resize', handleResize)
+        return () => window.removeEventListener('resize', handleResize)
+    }, [backgroundUrl])
+
     const addElement = () => {
         if (isLocked) return
+        // Default to middle of natural size if available
+        const x = naturalSize.width ? Math.round(naturalSize.width / 2) : 400
+        const y = naturalSize.height ? Math.round(naturalSize.height / 2) : 300
+
         setConfig([...config, {
             id: Date.now().toString(),
             tag: '{name}',
-            x: 400,
-            y: 300,
-            size: 24,
+            x,
+            y,
+            size: 48,
             color: '#000000',
             font: 'Helvetica'
         }])
@@ -159,9 +194,8 @@ export default function CertificateDesigner({ eventId, existingTemplate }: { eve
                     <CardContent className="text-sm text-blue-800 dark:text-blue-300 space-y-3">
                         <p><strong>1. Blank Certificate:</strong> Start by uploading a high-resolution, blank Certificate of Participation (PNG or JPG recommended) without names or dates.</p>
                         <p><strong>2. Placeholders:</strong> Add text placeholders. Use `{'{name}'}` for the participant's name, `{'{regno}'}` for Registration Number, `{'{eventName}'}` for the event title, and `{'{date}'}` for the event date.</p>
-                        <p><strong>3. Positioning:</strong> Position the placeholders using X and Y coordinate fields. This uses standard PDF coordinates: <strong>X is pixels from left</strong>, and <strong>Y is pixels from bottom</strong> of the page.</p>
-                        <p><strong>4. Typography:</strong> Select an appropriate professional font size (e.g., 24px-36px for Name, 16px for Date) and hex color (e.g., #000000).</p>
-                        <p><strong>5. Approval:</strong> Once complete, request a Lock on the template to allow the system to safely generate certificates in mass.</p>
+                        <p><strong>3. Positioning:</strong> Position the placeholders using X and Y coordinate fields. This uses standard PDF coordinates: <strong>X is pixels from left</strong>, and <strong>Y is pixels from bottom</strong> of the original image.</p>
+                        <p><strong>4. Natural Resolution:</strong> {naturalSize.width > 0 ? `Image detected at ${naturalSize.width}x${naturalSize.height}px.` : 'Upload an image to see resolution details.'} coordinates are based on these dimensions.</p>
                     </CardContent>
                 </Card>
 
@@ -180,7 +214,7 @@ export default function CertificateDesigner({ eventId, existingTemplate }: { eve
                                 <div className="flex gap-2 items-center">
                                     <span className="text-sm text-green-600 font-medium truncate">File Uploaded</span>
                                     {!isLocked && (
-                                        <Button variant="outline" size="sm" onClick={() => setBackgroundUrl('')}>Replace</Button>
+                                        <Button variant="outline" size="sm" onClick={() => { setBackgroundUrl(''); setNaturalSize({ width: 0, height: 0 }); }}>Replace</Button>
                                     )}
                                 </div>
                             )}
@@ -220,19 +254,20 @@ export default function CertificateDesigner({ eventId, existingTemplate }: { eve
                                                             <SelectItem value="{eventName}">{'{eventName}'} (Event Title)</SelectItem>
                                                             <SelectItem value="{date}">{'{date}'} (Event Date)</SelectItem>
                                                             <SelectItem value="{uniqueCode}">{'{uniqueCode}'} (UUID)</SelectItem>
+                                                            <SelectItem value="{refNo}">{'{refNo}'} (Ref No)</SelectItem>
                                                         </SelectContent>
                                                     </Select>
                                                 </div>
                                                 <div className="space-y-1">
-                                                    <Label className="text-xs">X (left)</Label>
+                                                    <Label className="text-xs">X (from left)</Label>
                                                     <Input type="number" className="h-8 text-xs font-mono" value={elem.x} onChange={e => updateElement(elem.id, 'x', parseInt(e.target.value) || 0)} disabled={isLocked} />
                                                 </div>
                                                 <div className="space-y-1">
-                                                    <Label className="text-xs">Y (bottom)</Label>
+                                                    <Label className="text-xs">Y (from bottom)</Label>
                                                     <Input type="number" className="h-8 text-xs font-mono" value={elem.y} onChange={e => updateElement(elem.id, 'y', parseInt(e.target.value) || 0)} disabled={isLocked} />
                                                 </div>
                                                 <div className="space-y-1">
-                                                    <Label className="text-xs">Size</Label>
+                                                    <Label className="text-xs">Size (pt)</Label>
                                                     <Input type="number" className="h-8 text-xs" value={elem.size} onChange={e => updateElement(elem.id, 'size', parseInt(e.target.value) || 0)} disabled={isLocked} />
                                                 </div>
                                                 <div className="col-span-2 space-y-1">
@@ -244,16 +279,8 @@ export default function CertificateDesigner({ eventId, existingTemplate }: { eve
                                                         <SelectContent>
                                                             <SelectItem value="Helvetica">Helvetica</SelectItem>
                                                             <SelectItem value="HelveticaBold">Helvetica Bold</SelectItem>
-                                                            <SelectItem value="HelveticaOblique">Helvetica Italic (Oblique)</SelectItem>
-                                                            <SelectItem value="HelveticaBoldOblique">Helvetica Bold Italic</SelectItem>
                                                             <SelectItem value="TimesRoman">Times Roman</SelectItem>
                                                             <SelectItem value="TimesBold">Times Bold</SelectItem>
-                                                            <SelectItem value="TimesItalic">Times Italic</SelectItem>
-                                                            <SelectItem value="TimesBoldItalic">Times Bold Italic</SelectItem>
-                                                            <SelectItem value="Courier">Courier</SelectItem>
-                                                            <SelectItem value="CourierBold">Courier Bold</SelectItem>
-                                                            <SelectItem value="CourierOblique">Courier Italic</SelectItem>
-                                                            <SelectItem value="CourierBoldOblique">Courier Bold Italic</SelectItem>
                                                         </SelectContent>
                                                     </Select>
                                                 </div>
@@ -301,31 +328,44 @@ export default function CertificateDesigner({ eventId, existingTemplate }: { eve
                 <Card className="h-full min-h-[600px] flex flex-col">
                     <CardHeader>
                         <CardTitle>Visual Reference</CardTitle>
-                        <CardDescription>A live preview of your coordinates relative to the original image dimensions. Move the X and Y coordinate fields to move the tags!</CardDescription>
+                        <CardDescription>Position markers relative to image natural resolution. {naturalSize.width > 0 ? `(Target: ${naturalSize.width}x${naturalSize.height}px)` : ''}</CardDescription>
                     </CardHeader>
                     <CardContent className="flex-1 bg-slate-100 dark:bg-slate-900 border-t flex items-center justify-center p-4 overflow-auto">
                         {backgroundUrl ? (
-                            <div className="relative border shadow-xl bg-white max-w-full overflow-hidden" style={{ minHeight: '400px', minWidth: '600px' }}>
-                                <img src={backgroundUrl} alt="Certificate Base" className="w-full h-auto pointer-events-none" />
+                            <div className="relative border shadow-xl bg-white max-w-full" style={{ width: 'fit-content' }}>
+                                <img
+                                    ref={imgRef}
+                                    src={backgroundUrl}
+                                    alt="Certificate Base"
+                                    className="w-full h-auto pointer-events-none block"
+                                    onLoad={handleImageLoad}
+                                />
 
-                                {/* Live Overlay of tags */}
-                                {config.map((el) => (
-                                    <div key={el.id}
-                                        className="absolute px-2 py-1 whitespace-nowrap border-2 border-dashed border-blue-500 bg-white/70 backdrop-blur-sm shadow-sm"
-                                        style={{
-                                            left: `${el.x}px`,
-                                            bottom: `${el.y}px`,
-                                            fontSize: `${el.size || 24}px`,
-                                            color: el.color || '#000000',
-                                            transform: 'translateY(50%)', // Center alignment baseline rough adjust
-                                            fontFamily: getCssFontFamily(el.font),
-                                            fontStyle: getCssFontStyle(el.font),
-                                            fontWeight: getCssFontWeight(el.font)
-                                        }}
-                                    >
-                                        {el.tag}
-                                    </div>
-                                ))}
+                                {/* Live Overlay of tags - calculating relative position based on natural size vs display size */}
+                                {naturalSize.width > 0 && config.map((el) => {
+                                    // Calculate display ratio
+                                    const scaleX = displaySize.width / naturalSize.width;
+                                    const scaleY = displaySize.height / naturalSize.height;
+
+                                    return (
+                                        <div key={el.id}
+                                            className="absolute px-1 whitespace-nowrap border border-dashed border-blue-500 bg-white/50 backdrop-blur-sm pointer-events-none"
+                                            style={{
+                                                left: `${el.x * scaleX}px`,
+                                                // PDF Y is from bottom, so we map natural Y to display bottom
+                                                bottom: `${el.y * scaleY}px`,
+                                                fontSize: `${el.size * scaleX}px`, // Scale font preview roughly
+                                                color: el.color || '#000000',
+                                                transform: 'translateY(50%)', // Rough center adjust
+                                                fontFamily: getCssFontFamily(el.font),
+                                                fontStyle: getCssFontStyle(el.font),
+                                                fontWeight: getCssFontWeight(el.font)
+                                            }}
+                                        >
+                                            {el.tag}
+                                        </div>
+                                    )
+                                })}
                             </div>
                         ) : (
                             <div className="text-muted-foreground flex flex-col items-center justify-center gap-4">
@@ -339,3 +379,4 @@ export default function CertificateDesigner({ eventId, existingTemplate }: { eve
         </div>
     )
 }
+
