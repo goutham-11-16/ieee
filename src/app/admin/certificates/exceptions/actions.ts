@@ -3,6 +3,7 @@
 import { createClient } from '@/lib/supabase/server'
 import { revalidatePath } from 'next/cache'
 import { PDFDocument, rgb, StandardFonts } from 'pdf-lib'
+import { v4 as uuidv4 } from 'uuid'
 
 // Helper function cloned for MVP speed. In production, move to a shared lib.
 async function generateSingleCertificate(supabase: any, registrationId: string, participantName: string, eventId: string) {
@@ -59,7 +60,7 @@ async function generateSingleCertificate(supabase: any, registrationId: string, 
         'CourierBoldOblique': await pdfDoc.embedFont(StandardFonts.CourierBoldOblique),
     }
 
-    const uniqueCode = crypto.randomUUID().slice(0, 8).toUpperCase()
+    const uniqueCode = uuidv4().slice(0, 8).toUpperCase()
 
     const mapField = (tag: string) => {
         if (tag === '{name}') return participantName

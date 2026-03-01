@@ -5,6 +5,7 @@ import { revalidatePath } from 'next/cache'
 import { PDFDocument, rgb, StandardFonts } from 'pdf-lib'
 import { createApprovalRequest } from '@/lib/actions/approvals'
 import { logAction } from '@/lib/actions/audit'
+import { v4 as uuidv4 } from 'uuid'
 
 export async function saveTemplate(formData: FormData) {
     const supabase = await createClient()
@@ -220,7 +221,7 @@ export async function generateCertificates(eventId: string) {
                 return ''
             }
 
-            const uniqueCode = crypto.randomUUID().slice(0, 8).toUpperCase()
+            const uniqueCode = uuidv4().slice(0, 8).toUpperCase()
 
             const hexToRgb = (hex: string) => {
                 hex = hex.replace(/^#/, '')

@@ -5,7 +5,7 @@ import { revalidatePath } from 'next/cache'
 import { PDFDocument, rgb, StandardFonts } from 'pdf-lib'
 import { logAction } from '@/lib/actions/audit'
 import QRCode from 'qrcode'
-import crypto from 'crypto'
+import { v4 as uuidv4 } from 'uuid'
 
 export async function markRegistrationAsPaid(registrationId: string) {
     const supabase = await createClient()
@@ -32,8 +32,9 @@ export async function markRegistrationAsPaid(registrationId: string) {
     const event = Array.isArray(reg.event) ? reg.event[0] : reg.event
     const teamCount = Array.isArray(reg.team_members) ? reg.team_members.length : 0
     const amount = event?.is_fee_per_person ? (event.fees * (1 + teamCount)) : (event?.fees || 0)
-    const transactionRef = 'MANUAL-' + crypto.randomBytes(4).toString('hex').toUpperCase()
-    const ticketQrUuid = reg.ticket_qr_uuid || crypto.randomUUID()
+    const randomHex = Array.from({ length: 4 }, () => Math.floor(Math.random() * 256).toString(16).padStart(2, '0')).join('').toUpperCase()
+    const transactionRef = 'MANUAL-' + randomHex
+    const ticketQrUuid = reg.ticket_qr_uuid || uuidv4()
 
     // 2. Create payment record automatically as 'verified'
     const { data: payment, error: paymentError } = await supabase

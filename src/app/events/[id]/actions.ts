@@ -4,10 +4,11 @@ import { createClient } from '@/lib/supabase/server'
 import { revalidatePath } from 'next/cache'
 import { logAction } from '@/lib/actions/audit'
 import { nanoid } from 'nanoid' // We'll use Math.random for simplicity if nanoid isn't installed. Let's use a standard crypto fallback.
-import crypto from 'crypto'
+import { v4 as uuidv4 } from 'uuid'
 
 function generateReference() {
-    return 'KARE-' + crypto.randomBytes(4).toString('hex').toUpperCase()
+    const randomHex = Array.from({ length: 4 }, () => Math.floor(Math.random() * 256).toString(16).padStart(2, '0')).join('').toUpperCase()
+    return 'KARE-' + randomHex
 }
 
 export async function registerForEvent(eventId: string) {
@@ -59,7 +60,7 @@ export async function registerForEvent(eventId: string) {
             user_id: user.id,
             event_id: eventId,
             status,
-            ticket_qr_uuid: crypto.randomUUID()
+            ticket_qr_uuid: uuidv4()
         })
         .select()
         .single()
@@ -193,7 +194,7 @@ export async function registerGuest(formData: FormData) {
             guest_phone: guestPhone,
             guest_institution: guestInstitution,
             reference_number: referenceNumber,
-            ticket_qr_uuid: crypto.randomUUID(),
+            ticket_qr_uuid: uuidv4(),
             status,
             expires_at: expiresAt,
             custom_responses: customResponses,

@@ -2,7 +2,7 @@
 
 import { createClient } from '@/lib/supabase/server'
 import { revalidatePath } from 'next/cache'
-import crypto from 'crypto'
+import { v4 as uuidv4 } from 'uuid'
 import { logAction } from '@/lib/actions/audit'
 
 export async function forceMarkPaid(registrationId: string) {
@@ -20,7 +20,8 @@ export async function forceMarkPaid(registrationId: string) {
     if (!reg) return { success: false, error: 'Registration not found' }
 
     const amount = (reg as any).events?.fees || 0
-    const transactionRef = 'FORCE-OVERRIDE-' + crypto.randomBytes(4).toString('hex').toUpperCase()
+    const randomHex = Array.from({ length: 4 }, () => Math.floor(Math.random() * 256).toString(16).padStart(2, '0')).join('').toUpperCase()
+    const transactionRef = 'FORCE-OVERRIDE-' + randomHex
 
     // Create verified payment
     const { error: paymentError } = await supabase.from('payments').insert({

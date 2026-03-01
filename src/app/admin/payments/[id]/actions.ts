@@ -5,7 +5,7 @@ import { revalidatePath } from 'next/cache'
 import { PDFDocument, rgb, StandardFonts } from 'pdf-lib'
 import { logAction } from '@/lib/actions/audit'
 import QRCode from 'qrcode'
-import crypto from 'crypto'
+import { v4 as uuidv4 } from 'uuid'
 
 export async function verifyPayment(paymentId: string, registrationId: string) {
     const supabase = await createClient()
@@ -81,7 +81,7 @@ export async function verifyPayment(paymentId: string, registrationId: string) {
         page.drawText('Status: VERIFIED', { x: 50, y: height - 280, size: 16, font: fontBold, color: rgb(0, 0.6, 0) })
 
         // Generate QR Code
-        const ticketQrUuid = p.registration?.ticket_qr_uuid || crypto.randomUUID()
+        const ticketQrUuid = p.registration?.ticket_qr_uuid || uuidv4()
         if (ticketQrUuid) {
             const qrDataUrl = await QRCode.toDataURL(ticketQrUuid, { margin: 1, width: 150 })
             const pngImageBytes = Buffer.from(qrDataUrl.split(',')[1], 'base64')
