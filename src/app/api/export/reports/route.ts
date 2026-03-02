@@ -152,7 +152,12 @@ export async function GET(request: NextRequest) {
         )
     } else if (type === 'certificates') {
         const { data: certs } = await supabase.from('certificates')
-            .select('unique_code, participant_name, created_at, registration:registrations!inner(event_id)')
+            .select(`
+                unique_code, 
+                participant_name, 
+                created_at, 
+                registration:registrations!registration_id!inner(event_id)
+            `)
             .eq('registration.event_id', eventId)
 
         head = [['Participant Name', 'Certificate Code', 'Generated On']]
