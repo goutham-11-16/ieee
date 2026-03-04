@@ -4,12 +4,12 @@ import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
 export default function AboutPage() {
     return (
         <div className="container mx-auto py-12 px-4 max-w-4xl">
-            <div className="text-center mb-16">
-                <h1 className="text-4xl font-bold mb-4">About Us</h1>
-                <p className="text-xl text-muted-foreground">
+            <div className="text-center mb-16 px-2">
+                <h1 className="text-3xl md:text-4xl font-bold mb-4">About Us</h1>
+                <p className="text-lg md:text-xl text-muted-foreground">
                     IEEE Systems, Man, and Cybernetics Society Student Branch Chapter
                 </p>
-                <p className="text-lg font-semibold text-blue-600 dark:text-blue-400 mt-2">
+                <p className="text-base md:text-lg font-semibold text-blue-600 dark:text-blue-400 mt-2">
                     Kalasalingam Academy of Research and Education (KARE)
                 </p>
             </div>
@@ -19,7 +19,7 @@ export default function AboutPage() {
                     <CardHeader>
                         <CardTitle>Our Mission</CardTitle>
                     </CardHeader>
-                    <CardContent className="prose dark:prose-invert max-w-none">
+                    <CardContent className="prose prose-sm md:prose-base dark:prose-invert max-w-none text-justify">
                         <p>
                             To promote the theory, practice, and interdisciplinary aspects of systems science and engineering,
                             human-machine systems, and cybernetics. As a student branch, we aim to bridge the gap between
@@ -34,7 +34,7 @@ export default function AboutPage() {
                             <CardTitle className="text-blue-500">Systems</CardTitle>
                         </CardHeader>
                         <CardContent>
-                            <p className="text-sm text-muted-foreground">
+                            <p className="text-xs sm:text-sm text-muted-foreground text-justify">
                                 Focusing on systems engineering, large-scale systems, and the integration of complex technologies.
                             </p>
                         </CardContent>
@@ -44,7 +44,7 @@ export default function AboutPage() {
                             <CardTitle className="text-purple-500">Human-Machine</CardTitle>
                         </CardHeader>
                         <CardContent>
-                            <p className="text-sm text-muted-foreground">
+                            <p className="text-xs sm:text-sm text-muted-foreground text-justify">
                                 Emphasizing human factors, ergonomics, and cognitive engineering to improve interaction between humans and technology.
                             </p>
                         </CardContent>
@@ -54,7 +54,7 @@ export default function AboutPage() {
                             <CardTitle className="text-emerald-500">Cybernetics</CardTitle>
                         </CardHeader>
                         <CardContent>
-                            <p className="text-sm text-muted-foreground">
+                            <p className="text-xs sm:text-sm text-muted-foreground text-justify">
                                 Exploring communication and control in machines and living organisms, covering AI, machine learning, and robotics.
                             </p>
                         </CardContent>
@@ -65,7 +65,7 @@ export default function AboutPage() {
                     <CardHeader>
                         <CardTitle>About KARE</CardTitle>
                     </CardHeader>
-                    <CardContent className="prose dark:prose-invert max-w-none">
+                    <CardContent className="prose prose-sm md:prose-base dark:prose-invert max-w-none text-justify">
                         <p>
                             Kalasalingam Academy of Research and Education (KARE), formerly Arulmigu Kalasalingam College of Engineering,
                             is situated at Krishnankoil, Tamil Nadu, India. It offers a wide range of undergraduate, postgraduate,

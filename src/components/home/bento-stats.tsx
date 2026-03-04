@@ -49,14 +49,14 @@ const stats = [
 
 export function BentoStats() {
     return (
-        <section className="py-24 bg-[#fdfdfd] dark:bg-slate-950 relative overflow-hidden">
+        <section className="py-12 md:py-24 bg-slate-50 dark:bg-slate-950 relative overflow-hidden">
             <div className="container px-4 mx-auto">
                 <ScrollReveal>
                     <div className="text-center max-w-2xl mx-auto mb-16">
-                        <h2 className="text-3xl md:text-5xl font-bold tracking-tight text-slate-900 dark:text-white mb-4">
+                        <h2 className="text-2xl sm:text-3xl md:text-5xl font-bold tracking-tight text-slate-900 dark:text-white mb-4">
                             Our Impact at a Glance
                         </h2>
-                        <p className="text-lg text-slate-500 dark:text-slate-400">
+                        <p className="text-base sm:text-lg text-slate-500 dark:text-slate-400">
                             Quantifying a year of innovation, learning, and community growth.
                         </p>
                     </div>
@@ -75,11 +75,11 @@ export function BentoStats() {
                                     <div className={`inline-flex p-3 rounded-2xl ${stat.color} text-white mb-6 shadow-lg shadow-current/10`}>
                                         <stat.icon className="h-6 w-6" />
                                     </div>
-                                    <h3 className="text-4xl font-black text-slate-900 dark:text-white mb-1">{stat.value}</h3>
-                                    <p className="text-sm font-bold text-slate-400 uppercase tracking-widest mb-4">{stat.label}</p>
+                                    <h3 className="text-3xl sm:text-4xl font-black text-slate-900 dark:text-white mb-1">{stat.value}</h3>
+                                    <p className="text-xs sm:text-sm font-bold text-slate-400 uppercase tracking-widest mb-4">{stat.label}</p>
                                 </div>
 
-                                <p className="text-sm text-slate-500 dark:text-slate-400 leading-relaxed relative z-10 opacity-0 group-hover:opacity-100 transition-opacity duration-300 transform translate-y-2 group-hover:translate-y-0">
+                                <p className="text-xs sm:text-sm text-slate-500 dark:text-slate-400 leading-relaxed relative z-10 opacity-0 group-hover:opacity-100 transition-opacity duration-300 transform translate-y-2 group-hover:translate-y-0">
                                     {stat.description}
                                 </p>
                             </motion.div>

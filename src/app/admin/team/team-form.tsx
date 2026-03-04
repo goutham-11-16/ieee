@@ -143,7 +143,7 @@ export default function TeamForm({ member, onClose }: { member?: any, onClose: (
                     <option value="" disabled>Select a position</option>
                     <option value="Faculty Head">Faculty Head</option>
                     <option value="Chairman">Chairman</option>
-                    <option value="Vice President">Vice President</option>
+                    <option value="Vice Chairman">Vice Chairman</option>
                     <option value="Secretary">Secretary</option>
                     <option value="Treasurer">Treasurer</option>
                     <option value="PR & Outreach Lead">PR & Outreach Lead</option>

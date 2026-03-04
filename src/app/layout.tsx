@@ -20,7 +20,7 @@ export default async function RootLayout({
   const profile = await getCurrentProfile();
 
   return (
-    <html lang="en" suppressHydrationWarning>
+    <html lang="en" suppressHydrationWarning data-scroll-behavior="smooth">
       <body className={cn("font-sans min-h-screen bg-background antialiased")} suppressHydrationWarning>
         <NextTopLoader
           color="#2563eb"
@@ -36,7 +36,9 @@ export default async function RootLayout({
           showAtBottom={false}
         />
         <ScrollProgress />
-        <SiteHeaderClient profile={profile} />
+        <div className="print:hidden">
+          <SiteHeaderClient profile={profile} />
+        </div>
         <main>{children}</main>
         <Toaster />
       </body>

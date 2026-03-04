@@ -25,10 +25,10 @@ export function SiteFooter() {
                             <Link href="#" className="p-2 rounded-full bg-white dark:bg-slate-800 shadow-sm hover:shadow-md hover:text-blue-400 transition-all">
                                 <Twitter className="w-4 h-4" />
                             </Link>
-                            <Link href="#" className="p-2 rounded-full bg-white dark:bg-slate-800 shadow-sm hover:shadow-md hover:text-pink-600 transition-all">
+                            <Link href="https://www.instagram.com/ieeesmc_kare?igsh=cTlnaGgyY2k0NXNu" target="_blank" className="p-2 rounded-full bg-white dark:bg-slate-800 shadow-sm hover:shadow-md hover:text-pink-600 transition-all">
                                 <Instagram className="w-4 h-4" />
                             </Link>
-                            <Link href="#" className="p-2 rounded-full bg-white dark:bg-slate-800 shadow-sm hover:shadow-md hover:text-blue-700 transition-all">
+                            <Link href="https://www.linkedin.com/company/kare-ieee-smc-society/" target="_blank" className="p-2 rounded-full bg-white dark:bg-slate-800 shadow-sm hover:shadow-md hover:text-blue-700 transition-all">
                                 <Linkedin className="w-4 h-4" />
                             </Link>
                         </div>
@@ -39,7 +39,7 @@ export function SiteFooter() {
                         <ul className="space-y-4">
                             <li><Link href="/events" className="text-slate-500 dark:text-slate-400 hover:text-blue-600 dark:hover:text-blue-400 transition-colors text-sm">Upcoming Events</Link></li>
                             <li><Link href="/about" className="text-slate-500 dark:text-slate-400 hover:text-blue-600 dark:hover:text-blue-400 transition-colors text-sm">About Chapter</Link></li>
-                            <li><Link href="/team" className="text-slate-500 dark:text-slate-400 hover:text-blue-600 dark:hover:text-blue-400 transition-colors text-sm">Our Teams</Link></li>
+                            <li><Link href="/team" className="text-slate-500 dark:text-slate-400 hover:text-blue-600 dark:hover:text-blue-400 transition-colors text-sm">Teams</Link></li>
                             <li><Link href="/contact" className="text-slate-500 dark:text-slate-400 hover:text-blue-600 dark:hover:text-blue-400 transition-colors text-sm">Get in Touch</Link></li>
                         </ul>
                     </div>
@@ -58,16 +58,18 @@ export function SiteFooter() {
                         <h3 className="font-bold text-slate-900 dark:text-white mb-6">Contact Info</h3>
                         <ul className="space-y-4">
                             <li className="flex gap-3 text-sm text-slate-500 dark:text-slate-400">
-                                <MapPin className="w-5 h-5 text-blue-600 flex-shrink-0" />
-                                <span>Kalasalingam Academy of Research and Education, Krishnankoil, Tamil Nadu</span>
+                                <MapPin className="w-5 h-5 text-blue-600 flex-shrink-0 mt-0.5" />
+                                <span>IEEE SMC Student Branch<br />Kalasalingam Academy of Research and Education, Krishnankoil, Tamil Nadu 626126</span>
                             </li>
-                            <li className="flex gap-3 text-sm text-slate-500 dark:text-slate-400">
+                            <li className="flex items-center gap-3 text-sm text-slate-500 dark:text-slate-400">
                                 <Phone className="w-5 h-5 text-blue-600 flex-shrink-0" />
-                                <span>+91 12345 67890</span>
+                                <span>+91 9281401356</span>
                             </li>
-                            <li className="flex gap-3 text-sm text-slate-500 dark:text-slate-400">
+                            <li className="flex items-center gap-3 text-sm text-slate-500 dark:text-slate-400">
                                 <Mail className="w-5 h-5 text-blue-600 flex-shrink-0" />
-                                <span>ieeesmc@klu.ac.in</span>
+                                <Link href="mailto:kareieeesmc@gmail.com" className="hover:text-blue-600 dark:hover:text-blue-400 transition-colors">
+                                    kareieeesmc@gmail.com
+                                </Link>
                             </li>
                         </ul>
                     </div>

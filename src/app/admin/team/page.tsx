@@ -56,8 +56,8 @@ export default async function AdminTeamPage() {
                     ) : (
                         <div className="space-y-4">
                             {members.map((member: any) => (
-                                <div key={member.id} className="flex items-center justify-between p-4 border rounded-lg hover:bg-slate-50 dark:hover:bg-slate-900 transition-colors">
-                                    <div className="flex items-center gap-4">
+                                <div key={member.id} className="flex flex-col sm:flex-row items-start sm:items-center justify-between p-4 border rounded-lg hover:bg-slate-50 dark:hover:bg-slate-900 transition-colors gap-4">
+                                    <div className="flex items-center gap-4 w-full">
                                         <Avatar className="h-16 w-16 shadow-md border">
                                             <AvatarImage src={member.image_url || undefined} className="object-cover" />
                                             <AvatarFallback>{member.name.substring(0, 2).toUpperCase()}</AvatarFallback>

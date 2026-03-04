@@ -18,14 +18,14 @@ export function AnimatedHero() {
                     duration: 0.8,
                     ease: "easeOut",
                 }}
-                className="relative flex flex-col gap-4 items-center justify-center px-4 min-h-[90vh]"
+                className="relative flex flex-col gap-4 items-center justify-center px-4 min-h-[90vh] pt-24 md:pt-32"
             >
                 <div className="container relative z-10 px-4 text-center">
                     <motion.div
                         initial={{ opacity: 0, scale: 0.9 }}
                         animate={{ opacity: 1, scale: 1 }}
                         transition={{ duration: 1, ease: "easeOut" }}
-                        className="mb-12 relative inline-block"
+                        className="mt-20 md:mt-32 mb-12 relative inline-block"
                     >
                         <div className="absolute inset-0 bg-blue-500/20 blur-[100px] rounded-full" />
                         <motion.div
@@ -51,11 +51,12 @@ export function AnimatedHero() {
                             <Sparkles className="w-4 h-4" /> Empowering Next-Gen Innovators
                         </div>
 
-                        <h1 className="text-5xl md:text-8xl font-black tracking-tighter mb-8 bg-gradient-to-b from-slate-900 via-slate-800 to-slate-400 dark:from-white dark:via-white dark:to-slate-500 bg-clip-text text-transparent leading-[0.9]">
-                            IEEE SMC <br /> <span className="text-blue-600">Student Branch.</span>
+                        <h1 className="text-3xl sm:text-5xl md:text-7xl lg:text-8xl font-black tracking-tighter mb-6 md:mb-8 bg-gradient-to-b from-slate-900 via-slate-800 to-slate-400 dark:from-white dark:via-white dark:to-slate-500 bg-clip-text text-transparent break-words py-4" style={{ lineHeight: '1.2' }}>
+                            IEEE SMC <br />
+                            <span className="text-blue-600 block mt-2">Student Branch.</span>
                         </h1>
 
-                        <p className="text-xl md:text-2xl text-slate-600 dark:text-slate-400 max-w-2xl mx-auto mb-12 leading-relaxed font-medium">
+                        <p className="text-base sm:text-xl md:text-2xl text-slate-600 dark:text-slate-400 max-w-2xl mx-auto mb-10 md:mb-12 leading-relaxed font-medium">
                             Kalasalingam Academy of Research and Education. <br className="hidden md:block" />
                             Bridging the gap between <span className="text-slate-900 dark:text-white font-bold">humans</span>, <span className="text-slate-900 dark:text-white font-bold">machines</span>, and <span className="text-slate-900 dark:text-white font-bold">systems</span>.
                         </p>
@@ -65,14 +66,14 @@ export function AnimatedHero() {
                         initial={{ opacity: 0, y: 20 }}
                         animate={{ opacity: 1, y: 0 }}
                         transition={{ duration: 0.8, delay: 0.4 }}
-                        className="flex flex-col sm:flex-row justify-center gap-4"
+                        className="flex flex-col sm:flex-row justify-center gap-4 px-4"
                     >
-                        <Button size="lg" asChild className="h-14 px-10 rounded-2xl bg-blue-600 hover:bg-blue-700 text-white font-bold text-lg shadow-xl shadow-blue-600/20 transition-all active:scale-95 group">
+                        <Button size="lg" asChild className="h-12 w-full sm:w-auto sm:h-14 px-8 sm:px-10 rounded-2xl bg-blue-600 hover:bg-blue-700 text-white font-bold text-base sm:text-lg shadow-xl shadow-blue-600/20 transition-all active:scale-95 group">
                             <Link href="/events">
-                                Explore Events <ArrowRight className="ml-2 h-5 w-5 group-hover:translate-x-1 transition-transform" />
+                                Explore Events <ArrowRight className="ml-2 h-4 w-4 sm:h-5 sm:w-5 group-hover:translate-x-1 transition-transform" />
                             </Link>
                         </Button>
-                        <Button size="lg" variant="outline" asChild className="h-14 px-10 rounded-2xl border-slate-200 dark:border-slate-800 bg-white/50 backdrop-blur-md font-bold text-lg hover:bg-slate-50 dark:hover:bg-slate-900 transition-all active:scale-95">
+                        <Button size="lg" variant="outline" asChild className="h-12 w-full sm:w-auto sm:h-14 px-8 sm:px-10 rounded-2xl border-slate-200 dark:border-slate-800 bg-white/50 backdrop-blur-md font-bold text-base sm:text-lg hover:bg-slate-50 dark:hover:bg-slate-900 transition-all active:scale-95">
                             <Link href="/status">
                                 Check Status
                             </Link>

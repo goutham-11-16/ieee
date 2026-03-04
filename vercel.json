@@ -1,0 +1,7 @@
+{
+    "functions": {
+        "src/app/admin/events/[id]/certificates/actions.ts": {
+            "maxDuration": 60
+        }
+    }
+}

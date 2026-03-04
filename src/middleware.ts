@@ -2,6 +2,13 @@ import { createServerClient } from '@supabase/ssr'
 import { NextResponse, type NextRequest } from 'next/server'
 
 export async function middleware(request: NextRequest) {
+    const isProtectedRoute = request.nextUrl.pathname.startsWith('/admin') || request.nextUrl.pathname.startsWith('/profile');
+
+    // Fast path: Immediately return for public routes so we don't block the request with a Supabase network call
+    if (!isProtectedRoute) {
+        return NextResponse.next()
+    }
+
     let response = NextResponse.next({
         request: {
             headers: request.headers,
@@ -37,18 +44,7 @@ export async function middleware(request: NextRequest) {
         data: { user },
     } = await supabase.auth.getUser()
 
-    // RBAC Logic
-    if (request.nextUrl.pathname.startsWith('/admin')) {
-        if (!user) {
-            return NextResponse.redirect(new URL('/login', request.url))
-        }
-
-        // Ideally, we fetch the role here. For now, assuming if authenticated, check DB in layout or page.
-        // Optimizing middleware to avoid DB calls is common. 
-        // We will enforce strict role checks in the Admin Layout.
-    }
-
-    if (request.nextUrl.pathname.startsWith('/profile') && !user) {
+    if (!user) {
         return NextResponse.redirect(new URL('/login', request.url))
     }
 

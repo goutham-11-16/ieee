@@ -131,45 +131,45 @@ export default async function TicketPage(props: { params: Promise<{ id: string }
     })
 
     return (
-        <div className="container mx-auto py-10 px-4 flex justify-center">
-            <Card className="w-full max-w-sm shadow-2xl overflow-hidden border-0 relative bg-white dark:bg-slate-900">
+        <div className="min-h-[100dvh] flex items-center justify-center p-4 bg-slate-50 dark:bg-slate-950 print:bg-white print:p-0">
+            <Card className="w-full max-w-sm shadow-2xl overflow-hidden border-0 relative bg-white dark:bg-slate-900 print:shadow-none print:max-w-none print:w-[350px] mx-auto">
                 {/* Visual Header */}
-                <div className="h-2 bg-gradient-to-r from-blue-500 to-purple-500" />
+                <div className="h-2 bg-gradient-to-r from-blue-500 to-purple-500 print:hidden" />
 
                 <div className="p-8 text-center space-y-6">
                     <div>
-                        <h2 className="text-xl font-bold text-slate-900 dark:text-white uppercase tracking-wider mb-2">Admit One</h2>
-                        <h1 className="text-2xl font-bold text-blue-600 dark:text-blue-400 leading-tight">
+                        <h2 className="text-xl font-bold text-slate-900 dark:text-white uppercase tracking-wider mb-2 print:text-black">Admit One</h2>
+                        <h1 className="text-2xl font-bold text-blue-600 dark:text-blue-400 leading-tight print:text-black">
                             {event.title}
                         </h1>
                     </div>
 
-                    <div className="bg-white p-4 rounded-xl border-2 border-slate-100 dark:border-slate-800 inline-block">
+                    <div className="bg-white p-4 rounded-xl border-2 border-slate-100 dark:border-slate-800 shadow-inner inline-block print:border-none print:shadow-none">
                         <QRCodeSVG value={qrData} size={200} level="H" includeMargin />
                     </div>
 
                     <div className="space-y-4 text-sm">
-                        <div className="flex items-center justify-center gap-2 text-muted-foreground">
+                        <div className="flex items-center justify-center gap-2 text-muted-foreground print:text-black">
                             <CalendarIcon className="w-4 h-4" />
                             {new Date(event.date).toLocaleString('en-IN', { timeZone: 'Asia/Kolkata' })}
                         </div>
-                        <div className="flex items-center justify-center gap-2 text-muted-foreground">
+                        <div className="flex items-center justify-center gap-2 text-muted-foreground print:text-black">
                             <MapPinIcon className="w-4 h-4" />
                             {event.location || 'Location TBA'}
                         </div>
-                        <div className="border-t pt-4">
-                            <p className="font-semibold">{reg.guest_name || profile?.full_name}</p>
-                            <p className="text-xs text-muted-foreground text-ellipsis overflow-hidden">{reg.id}</p>
+                        <div className="border-t pt-4 border-slate-100 dark:border-slate-800 print:border-slate-300 print:text-black">
+                            <p className="font-semibold text-lg">{reg.guest_name || profile?.full_name}</p>
+                            <p className="text-xs text-muted-foreground opacity-70 mt-1 uppercase tracking-widest">{reg.id.split('-')[0]}</p>
                         </div>
                     </div>
                 </div>
 
                 {/* Ticket Cutout Effect */}
-                <div className="absolute left-0 top-1/2 -translate-x-1/2 w-8 h-8 bg-gray-50 dark:bg-black rounded-full" />
-                <div className="absolute right-0 top-1/2 translate-x-1/2 w-8 h-8 bg-gray-50 dark:bg-black rounded-full" />
-                <div className="absolute left-4 right-4 top-1/2 border-t-2 border-dashed border-gray-200 dark:border-gray-800 -z-10" />
+                <div className="absolute left-0 top-1/2 -translate-x-1/2 w-8 h-8 bg-slate-50 dark:bg-slate-950 rounded-full print:hidden" />
+                <div className="absolute right-0 top-1/2 translate-x-1/2 w-8 h-8 bg-slate-50 dark:bg-slate-950 rounded-full print:hidden" />
+                <div className="absolute left-4 right-4 top-1/2 border-t-2 border-dashed border-gray-200 dark:border-gray-800 -z-10 print:hidden" />
 
-                <CardFooter className="bg-slate-50 dark:bg-slate-950 p-4 flex justify-center">
+                <CardFooter className="bg-slate-50 dark:bg-slate-950 p-4 flex justify-center print:hidden border-t border-slate-100 dark:border-slate-800">
                     <PrintButton />
                 </CardFooter>
             </Card>

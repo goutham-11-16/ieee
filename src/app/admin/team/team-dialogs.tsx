@@ -52,7 +52,7 @@ export default function TeamDialogs({ member }: { member?: any }) {
 
     // Render Action Buttons (Edit & Delete)
     return (
-        <div className="flex items-center gap-2">
+        <div className="flex items-center gap-2 w-full sm:w-auto justify-end mt-2 sm:mt-0">
             <Dialog open={openAppModal} onOpenChange={setOpenAppModal}>
                 <DialogTrigger asChild>
                     <Button variant="outline" size="sm">

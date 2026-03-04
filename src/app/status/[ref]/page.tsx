@@ -375,8 +375,24 @@ export default async function StatusDashboardPage(props: {
                                         )}
                                     </div>
                                 ) : (
-                                    <div className="text-emerald-600 font-medium bg-emerald-50 dark:bg-emerald-950 p-4 rounded-lg text-center border border-emerald-100">
+                                    <div className="text-emerald-600 font-medium bg-emerald-50 dark:bg-emerald-950 p-4 rounded-lg text-center border border-emerald-100 mb-4">
                                         This event is completely free!
+                                    </div>
+                                )}
+
+                                {/* Download Certificate Section - Moved from Sticky Footer */}
+                                {certificates && certificates.length > 0 && (
+                                    <div className="mt-8 pt-6 border-t border-slate-200 dark:border-slate-800">
+                                        <h4 className="text-md font-semibold mb-4 text-slate-800 dark:text-slate-200">Your Certificates</h4>
+                                        <div className="flex flex-col gap-3">
+                                            {certificates.map((cert) => (
+                                                <Button key={cert.unique_code} variant="default" size="default" className="w-full bg-purple-600 hover:bg-purple-700 shadow-sm flex items-center justify-center gap-2" asChild>
+                                                    <a href={supabase.storage.from('certificates').getPublicUrl(cert.file_url).data.publicUrl} target="_blank">
+                                                        <DownloadIcon className="h-4 w-4" /> Download Certificate ({cert.participant_name || 'Participant'})
+                                                    </a>
+                                                </Button>
+                                            ))}
+                                        </div>
                                     </div>
                                 )}
                             </section>
@@ -394,13 +410,6 @@ export default async function StatusDashboardPage(props: {
                     </div>
 
                     <div className="w-full md:w-auto flex items-center justify-end gap-3 flex-wrap sm:flex-nowrap shrink-0">
-                        {certificates && certificates.map((cert) => (
-                            <Button key={cert.unique_code} variant="destructive" size="default" className="w-full sm:w-auto bg-purple-600 hover:bg-purple-700 shadow-sm" asChild>
-                                <a href={supabase.storage.from('certificates').getPublicUrl(cert.file_url).data.publicUrl} target="_blank">
-                                    <DownloadIcon className="mr-2 h-4 w-4" /> Download Certificate ({cert.participant_name || 'Participant'})
-                                </a>
-                            </Button>
-                        ))}
 
                         {event.whatsapp_link && (
                             <Button size="default" className="w-full sm:w-auto bg-green-500 hover:bg-green-600 text-white shadow-md transform transition-transform hover:-translate-y-0.5" asChild>

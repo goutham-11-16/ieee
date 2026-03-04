@@ -17,7 +17,7 @@ export default async function Home() {
           <BentoStats />
         </section>
 
-        <div className="py-24 space-y-32">
+        <div className="py-12 space-y-16 md:py-24 md:space-y-32">
           <Suspense fallback={<FeaturedEventsSkeleton />}>
             <FeaturedEvents />
           </Suspense>
