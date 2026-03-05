@@ -45,12 +45,12 @@ const features = [
 
 export function FeaturesSection() {
     return (
-        <section className="py-24 bg-white dark:bg-slate-950">
+        <section className="py-20 bg-white dark:bg-slate-950">
             <div className="container px-4 mx-auto">
                 <ScrollReveal>
-                    <div className="mb-20">
-                        <h2 className="text-sm font-bold text-blue-600 dark:text-blue-400 uppercase tracking-widest mb-4">What We Do</h2>
-                        <h3 className="text-4xl md:text-5xl font-bold text-slate-900 dark:text-white">
+                    <div className="mb-16">
+                        <h2 className="text-sm font-bold text-blue-600 dark:text-blue-400 uppercase tracking-widest mb-3">What We Do</h2>
+                        <h3 className="text-3xl md:text-5xl font-bold text-slate-900 dark:text-white">
                             Driving Excellence in <br className="hidden md:block" /> Every Technical Frontier.
                         </h3>
                     </div>
@@ -61,13 +61,13 @@ export function FeaturesSection() {
                         <ScrollReveal key={index} delay={index * 0.1}>
                             <motion.div
                                 whileHover={{ scale: 1.02 }}
-                                className={`p-6 md:p-8 rounded-[2rem] border ${feature.color} backdrop-blur-sm transition-all duration-300 h-full flex flex-col group`}
+                                className={`p-5 md:p-7 rounded-[2rem] border ${feature.color} backdrop-blur-sm transition-all duration-300 h-full flex flex-col group`}
                             >
-                                <div className="p-3 md:p-4 bg-white dark:bg-slate-900 rounded-2xl shadow-sm mb-4 md:mb-6 w-fit group-hover:shadow-md transition-shadow">
-                                    <feature.icon className="h-5 w-5 md:h-6 md:w-6 text-slate-900 dark:text-white" />
+                                <div className="p-3 md:p-3.5 bg-white dark:bg-slate-900 rounded-2xl shadow-sm mb-3 md:mb-5 w-fit group-hover:shadow-md transition-shadow">
+                                    <feature.icon className="h-5 w-5 md:h-5.5 md:w-5.5 text-slate-900 dark:text-white" />
                                 </div>
-                                <h4 className="text-lg md:text-xl font-bold text-slate-900 dark:text-white mb-2 md:mb-3">{feature.title}</h4>
-                                <p className="text-sm md:text-base text-slate-500 dark:text-slate-400 leading-relaxed">
+                                <h4 className="text-lg md:text-xl font-bold text-slate-900 dark:text-white mb-2 md:mb-2">{feature.title}</h4>
+                                <p className="text-sm md:text-sm text-slate-500 dark:text-slate-400 leading-relaxed">
                                     {feature.description}
                                 </p>
                             </motion.div>

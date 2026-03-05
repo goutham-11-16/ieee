@@ -10,7 +10,8 @@ export default function AboutPage() {
     return (
         <div className="min-h-screen bg-slate-50 dark:bg-slate-950 pb-20 overflow-hidden font-sans">
             {/* Hero Section */}
-            <section className="relative pt-24 md:pt-36 pb-16 md:pb-24 px-4 overflow-hidden">
+            {/* Hero Section */}
+            <section className="relative pt-24 md:pt-28 pb-16 md:pb-24 px-4 overflow-hidden">
                 <div className="absolute inset-0 bg-blue-600/5 dark:bg-blue-500/5 pointer-events-none" />
                 <div className="absolute -top-40 -right-40 w-96 h-96 bg-blue-500/10 dark:bg-blue-600/20 rounded-full blur-3xl pointer-events-none" />
                 <div className="absolute top-40 -left-20 w-72 h-72 bg-purple-500/10 dark:bg-purple-600/20 rounded-full blur-3xl pointer-events-none" />
@@ -22,7 +23,7 @@ export default function AboutPage() {
                         </Badge>
                     </ScrollReveal>
                     <ScrollReveal delay={0.1}>
-                        <h1 className="text-4xl sm:text-5xl md:text-6xl lg:text-7xl font-extrabold tracking-tight mb-6 text-slate-900 dark:text-white leading-tight">
+                        <h1 className="text-3xl sm:text-5xl md:text-6xl lg:text-7xl font-extrabold tracking-tight mb-6 text-slate-900 dark:text-white leading-tight">
                             Pioneering the Future of <br className="hidden md:block" />
                             <span className="text-transparent bg-clip-text bg-gradient-to-r from-blue-600 to-purple-600 dark:from-blue-400 dark:to-purple-400 drop-shadow-sm">
                                 Systems & Cybernetics
@@ -38,9 +39,9 @@ export default function AboutPage() {
             </section>
 
             {/* Mission Section */}
-            <section className="py-16 md:py-24 px-4 bg-white dark:bg-slate-900 border-y border-slate-200 dark:border-slate-800 relative z-20 shadow-sm">
+            <section className="py-12 md:py-24 px-4 bg-white dark:bg-slate-900 border-y border-slate-200 dark:border-slate-800 relative z-20 shadow-sm">
                 <div className="container mx-auto max-w-5xl">
-                    <div className="grid md:grid-cols-2 gap-12 items-center">
+                    <div className="grid md:grid-cols-2 gap-8 md:gap-12 items-center">
                         <ScrollReveal>
                             <div className="space-y-6">
                                 <h2 className="text-3xl sm:text-4xl md:text-5xl font-bold tracking-tight text-slate-900 dark:text-white relative">
@@ -55,14 +56,14 @@ export default function AboutPage() {
                             </div>
                         </ScrollReveal>
                         <ScrollReveal delay={0.2}>
-                            <div className="grid grid-cols-2 gap-6 h-full items-center pl-0 md:pl-8">
-                                <div className="bg-blue-50 dark:bg-blue-900/10 p-6 md:p-8 rounded-[2rem] border border-blue-100 dark:border-blue-800/30 text-center shadow-inner hover:-translate-y-2 transition-transform h-full flex flex-col justify-center min-h-[180px]">
-                                    <h3 className="text-5xl font-black text-blue-600 dark:text-blue-400 mb-3">60+</h3>
-                                    <p className="text-sm font-bold text-blue-800 dark:text-blue-300 uppercase tracking-widest">Active Minds</p>
+                            <div className="grid grid-cols-2 gap-4 md:gap-6 h-full items-center pl-0 md:pl-8">
+                                <div className="bg-blue-50 dark:bg-blue-900/10 p-4 md:p-8 rounded-[2rem] border border-blue-100 dark:border-blue-800/30 text-center shadow-inner hover:-translate-y-2 transition-transform h-full flex flex-col justify-center min-h-[140px] md:min-h-[180px]">
+                                    <h3 className="text-3xl md:text-5xl font-black text-blue-600 dark:text-blue-400 mb-1 md:mb-3">60+</h3>
+                                    <p className="text-[10px] md:text-sm font-bold text-blue-800 dark:text-blue-300 uppercase tracking-widest">Active Minds</p>
                                 </div>
-                                <div className="bg-purple-50 dark:bg-purple-900/10 p-6 md:p-8 rounded-[2rem] border border-purple-100 dark:border-purple-800/30 text-center shadow-inner hover:-translate-y-2 transition-transform h-full flex flex-col justify-center min-h-[180px]">
-                                    <h3 className="text-5xl font-black text-purple-600 dark:text-purple-400 mb-3">1</h3>
-                                    <p className="text-sm font-bold text-purple-800 dark:text-purple-300 uppercase tracking-widest">Event Hosted</p>
+                                <div className="bg-purple-50 dark:bg-purple-900/10 p-4 md:p-8 rounded-[2rem] border border-purple-100 dark:border-purple-800/30 text-center shadow-inner hover:-translate-y-2 transition-transform h-full flex flex-col justify-center min-h-[140px] md:min-h-[180px]">
+                                    <h3 className="text-3xl md:text-5xl font-black text-purple-600 dark:text-purple-400 mb-1 md:mb-3">1</h3>
+                                    <p className="text-[10px] md:text-sm font-bold text-purple-800 dark:text-purple-300 uppercase tracking-widest">Event Hosted</p>
                                 </div>
                             </div>
                         </ScrollReveal>
@@ -71,11 +72,11 @@ export default function AboutPage() {
             </section>
 
             {/* Domains Section */}
-            <section className="py-20 md:py-28 px-4 container mx-auto max-w-6xl">
+            <section className="py-12 md:py-28 px-4 container mx-auto max-w-6xl">
                 <ScrollReveal>
-                    <div className="text-center mb-16 max-w-2xl mx-auto">
-                        <h2 className="text-3xl sm:text-4xl md:text-5xl font-bold tracking-tight text-slate-900 dark:text-white mb-6">Core Domains</h2>
-                        <p className="text-lg text-slate-600 dark:text-slate-400 font-medium">
+                    <div className="text-center mb-12 md:mb-16 max-w-2xl mx-auto">
+                        <h2 className="text-3xl sm:text-4xl md:text-5xl font-bold tracking-tight text-slate-900 dark:text-white mb-4 md:mb-6">Core Domains</h2>
+                        <p className="text-base md:text-lg text-slate-600 dark:text-slate-400 font-medium">
                             Our chapter focuses relentlessly on three primary pillars of technological advancement and socio-technical research.
                         </p>
                     </div>
@@ -133,16 +134,16 @@ export default function AboutPage() {
             </section>
 
             {/* About KARE Section */}
-            <section className="py-16 md:py-24 px-4 bg-slate-100 dark:bg-slate-900/50">
+            <section className="py-12 md:py-24 px-4 bg-slate-100 dark:bg-slate-900/50">
                 <div className="container mx-auto max-w-5xl">
                     <ScrollReveal>
-                        <div className="bg-white dark:bg-slate-900 rounded-[2rem] p-8 md:p-14 shadow-2xl shadow-slate-200/40 dark:shadow-none border border-slate-200/50 dark:border-slate-800">
-                            <div className="flex flex-col md:flex-row gap-12 md:gap-16 items-center">
+                        <div className="bg-white dark:bg-slate-900 rounded-[2rem] p-6 md:p-14 shadow-2xl shadow-slate-200/40 dark:shadow-none border border-slate-200/50 dark:border-slate-800">
+                            <div className="flex flex-col md:flex-row gap-8 md:gap-16 items-center">
                                 <div className="w-full md:w-1/3 flex justify-center">
-                                    <div className="w-48 h-48 md:w-64 md:h-64 bg-slate-50 dark:bg-slate-800 rounded-full flex flex-col items-center justify-center border-[12px] border-white dark:border-slate-950 shadow-2xl relative">
-                                        <GraduationCap className="w-20 h-20 md:w-24 md:h-24 text-blue-600 dark:text-blue-400 mb-2" />
-                                        <div className="absolute -bottom-5 bg-gradient-to-r from-blue-600 to-indigo-600 text-white px-5 py-2.5 rounded-full text-sm font-bold flex items-center shadow-lg uppercase tracking-wider">
-                                            <MapPin className="w-4 h-4 mr-2" /> Krishnankoil
+                                    <div className="w-32 h-32 md:w-64 md:h-64 bg-slate-50 dark:bg-slate-800 rounded-full flex flex-col items-center justify-center border-[8px] md:border-[12px] border-white dark:border-slate-950 shadow-2xl relative">
+                                        <GraduationCap className="w-12 h-12 md:w-24 md:h-24 text-blue-600 dark:text-blue-400 mb-1" />
+                                        <div className="absolute -bottom-4 bg-gradient-to-r from-blue-600 to-indigo-600 text-white px-4 py-2 md:px-5 md:py-2.5 rounded-full text-[10px] md:text-sm font-bold flex items-center shadow-lg uppercase tracking-wider">
+                                            <MapPin className="w-3 h-3 md:w-4 md:h-4 mr-2" /> Krishnankoil
                                         </div>
                                     </div>
                                 </div>

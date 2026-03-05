@@ -7,14 +7,14 @@ import { motion } from "framer-motion"
 
 export function CTASection() {
     return (
-        <section className="py-24 px-4 overflow-hidden relative">
+        <section className="py-20 px-4 overflow-hidden relative">
             <div className="container mx-auto max-w-5xl">
                 <motion.div
                     initial={{ opacity: 0, scale: 0.95 }}
                     whileInView={{ opacity: 1, scale: 1 }}
                     transition={{ duration: 0.8 }}
                     viewport={{ once: true }}
-                    className="bg-blue-600 rounded-[3rem] p-12 md:p-24 relative overflow-hidden shadow-2xl shadow-blue-500/20 text-center"
+                    className="bg-blue-600 rounded-[3rem] p-10 md:p-20 relative overflow-hidden shadow-2xl shadow-blue-500/20 text-center"
                 >
                     {/* Abstract background blobs */}
                     <div className="absolute top-0 right-0 w-64 h-64 bg-white/10 rounded-full blur-3xl -mr-32 -mt-32" />
@@ -25,11 +25,11 @@ export function CTASection() {
                             <Sparkles className="w-4 h-4" /> Ready to participate?
                         </div>
 
-                        <h2 className="text-4xl md:text-6xl font-black text-white mb-8 tracking-tight">
+                        <h2 className="text-3xl md:text-5xl font-black text-white mb-6 tracking-tight">
                             Elevate Your Engineering <br className="hidden md:block" /> Journey Today.
                         </h2>
 
-                        <p className="text-blue-100 text-lg md:text-xl mb-12 max-w-2xl mx-auto leading-relaxed">
+                        <p className="text-blue-100 text-base md:text-lg mb-10 max-w-2xl mx-auto leading-relaxed">
                             Join our community of over 500+ active members and start attending world-class workshops and technical events.
                         </p>
 

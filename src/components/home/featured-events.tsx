@@ -24,9 +24,9 @@ export async function FeaturedEvents() {
     }
 
     return (
-        <section className="py-20">
+        <section className="py-16">
             <div className="container px-4">
-                <div className="flex justify-between items-end mb-8 md:mb-12">
+                <div className="flex justify-between items-end mb-6 md:mb-10">
                     <div>
                         <h2 className="text-2xl md:text-3xl font-bold">Featured Events</h2>
                         <p className="text-sm md:text-base text-muted-foreground mt-2">Don't miss out on our upcoming activities.</p>
@@ -75,11 +75,11 @@ export async function FeaturedEvents() {
                                             </Link>
                                         </CardItem>
 
-                                        <div className="p-6">
+                                        <div className="p-5">
                                             <CardItem translateZ="30" className="text-xl font-bold text-slate-800 dark:text-white line-clamp-1 mb-2 group-hover/card:text-blue-600 transition-colors">
                                                 {event.title}
                                             </CardItem>
-                                            <CardItem as="p" translateZ="20" className="text-slate-500 text-sm max-w-sm mt-2 dark:text-slate-300 line-clamp-1 flex items-center gap-1 mb-6">
+                                            <CardItem as="p" translateZ="20" className="text-slate-500 text-sm max-w-sm mt-2 dark:text-slate-300 line-clamp-1 flex items-center gap-1 mb-4">
                                                 {event.location || 'Location TBA'}
                                             </CardItem>
 

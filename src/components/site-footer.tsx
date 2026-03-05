@@ -13,7 +13,6 @@ export function SiteFooter() {
                                 alt="IEEE SMC KARE Logo"
                                 className="h-16 w-auto object-contain bg-white rounded-lg p-1 shadow-sm"
                             />
-                            <span className="text-xl font-bold bg-clip-text text-transparent bg-gradient-to-r from-blue-600 to-blue-400">IEEE SMC - KARE</span>
                         </div>
                         <p className="text-slate-500 dark:text-slate-400 text-sm leading-relaxed max-w-xs">
                             Promoting systems science, engineering, and cybernetics. Empowering students through technical excellence and community leadership.
@@ -48,9 +47,9 @@ export function SiteFooter() {
                         <h3 className="font-bold text-slate-900 dark:text-white mb-6">Resources</h3>
                         <ul className="space-y-4">
                             <li><Link href="/status" className="text-slate-500 dark:text-slate-400 hover:text-blue-600 dark:hover:text-blue-400 transition-colors text-sm">Status Checker</Link></li>
-                            <li><Link href="#" className="text-slate-500 dark:text-slate-400 hover:text-blue-600 dark:hover:text-blue-400 transition-colors text-sm">Download Guidelines</Link></li>
-                            <li><Link href="#" className="text-slate-500 dark:text-slate-400 hover:text-blue-600 dark:hover:text-blue-400 transition-colors text-sm">Privacy Policy</Link></li>
-                            <li><Link href="#" className="text-slate-500 dark:text-slate-400 hover:text-blue-600 dark:hover:text-blue-400 transition-colors text-sm">Terms & Conditions</Link></li>
+                            <li><Link href="/guidelines" className="text-slate-500 dark:text-slate-400 hover:text-blue-600 dark:hover:text-blue-400 transition-colors text-sm">Download Guidelines</Link></li>
+                            <li><Link href="/privacy-policy" className="text-slate-500 dark:text-slate-400 hover:text-blue-600 dark:hover:text-blue-400 transition-colors text-sm">Privacy Policy</Link></li>
+                            <li><Link href="/terms" className="text-slate-500 dark:text-slate-400 hover:text-blue-600 dark:hover:text-blue-400 transition-colors text-sm">Terms & Conditions</Link></li>
                         </ul>
                     </div>
 

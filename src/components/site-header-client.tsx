@@ -43,17 +43,17 @@ export default function SiteHeader({ profile }: { profile: any }) {
     return (
         <header className={cn(
             "sticky top-0 z-50 w-full transition-all duration-300",
-            isScrolled ? "border-b bg-background/90 backdrop-blur-md shadow-sm h-16" : "bg-transparent border-transparent h-24"
+            isScrolled ? "border-b bg-background/90 backdrop-blur-md shadow-sm h-16" : "bg-transparent border-transparent h-28"
         )}>
-            <div className="container flex h-full items-center justify-between px-4 transition-all duration-300 mx-auto">
-                <Link href="/" className="flex items-center gap-6">
-                    <div className="flex items-center gap-4">
+            <div className="max-w-full flex h-full items-center justify-between px-2 md:px-6 transition-all duration-300">
+                <Link href="/" className="flex items-center">
+                    <div className="flex items-center">
                         <img
                             src="https://i.ibb.co/Y4rGrwDc/Whats-App-Image-2026-02-27-at-23-11-04.jpg"
                             alt="IEEE SMC KARE Logo"
                             className={cn(
                                 "object-contain transition-all duration-300 rounded-md",
-                                isScrolled ? "h-10 md:h-12" : "h-16 md:h-16 lg:h-20"
+                                isScrolled ? "h-12 md:h-13" : "h-20 md:h-24 lg:h-26"
                             )}
                         />
                     </div>
@@ -158,7 +158,7 @@ export default function SiteHeader({ profile }: { profile: any }) {
                                 <img
                                     src="https://i.ibb.co/yFsM0hzC/Gemini-Generated-Image-lb3h34lb3h34lb3h.png"
                                     alt="Logo"
-                                    className="h-12 w-auto object-contain rounded-md"
+                                    className="h-16 w-auto object-contain rounded-md"
                                 />
                             </div>
 

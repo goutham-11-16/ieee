@@ -9,7 +9,7 @@ import { FeaturedEventsSkeleton } from '@/components/home/featured-events-skelet
 
 export default async function Home() {
   return (
-    <div className="min-h-screen bg-white dark:bg-slate-950 selection:bg-blue-100 dark:selection:bg-blue-900/30 overflow-x-hidden">
+    <div className="min-h-screen bg-white dark:bg-slate-950 selection:bg-blue-100 dark:selection:bg-blue-900/30 overflow-x-hidden" style={{ zoom: '0.9' }}>
       <div className="relative">
         <AnimatedHero />
 
@@ -17,7 +17,7 @@ export default async function Home() {
           <BentoStats />
         </section>
 
-        <div className="py-12 space-y-16 md:py-24 md:space-y-32">
+        <div className="py-10 space-y-12 md:py-20 md:space-y-28">
           <Suspense fallback={<FeaturedEventsSkeleton />}>
             <FeaturedEvents />
           </Suspense>
