@@ -10,6 +10,9 @@ import { getCurrentProfile } from "@/lib/auth";
 export const metadata: Metadata = {
   title: "IEEE SMC Student Branch - KARE",
   description: "Official Event Management Portal for IEEE SMC Student Branch at Kalasalingam Academy of Research and Education.",
+  icons: {
+    icon: "/homepage_hero_illustration.jpeg",
+  },
 };
 
 export default async function RootLayout({
