@@ -7,43 +7,17 @@ import { motion } from "framer-motion"
 const stats = [
     {
         label: "Active Members",
-        value: "500+",
+        value: "60+",
         icon: Users,
         color: "bg-blue-500",
-        description: "Passionate students driving technical innovation.",
-        gridClass: "md:col-span-2 md:row-span-2"
+        description: "Passionate students driving technical innovation."
     },
     {
         label: "Events Hosted",
-        value: "50+",
+        value: "1",
         icon: Calendar,
         color: "bg-emerald-500",
-        description: "Engaging workshops and seminars.",
-        gridClass: "md:col-span-1 md:row-span-1"
-    },
-    {
-        label: "Certificates",
-        value: "1200+",
-        icon: Award,
-        color: "bg-purple-500",
-        description: "Verified achievements.",
-        gridClass: "md:col-span-1 md:row-span-2"
-    },
-    {
-        label: "Achievements",
-        value: "15+",
-        icon: Star,
-        color: "bg-orange-500",
-        description: "National & local recognition.",
-        gridClass: "md:col-span-1 md:row-span-1"
-    },
-    {
-        label: "Global Reach",
-        value: "10+",
-        icon: Globe,
-        color: "bg-indigo-500",
-        description: "Collaborations worldwide.",
-        gridClass: "md:col-span-1 md:row-span-1"
+        description: "Our inaugural workshop marking our journey."
     }
 ]
 
@@ -62,7 +36,7 @@ export function BentoStats() {
                     </div>
                 </ScrollReveal>
 
-                <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-5 gap-4 lg:gap-6">
+                <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 lg:gap-6 max-w-3xl mx-auto">
                     {stats.map((stat, index) => (
                         <ScrollReveal key={index} delay={index * 0.1}>
                             <motion.div

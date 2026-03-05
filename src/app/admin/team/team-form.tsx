@@ -150,11 +150,13 @@ export default function TeamForm({ member, onClose }: { member?: any, onClose: (
                     <option value="Web Development Lead">Web Development Lead</option>
                     <option value="Technical Activities Lead">Technical Activities Lead</option>
                     <option value="Design & Media Lead">Design & Media Lead</option>
+                    <option value="Lens and Edits Lead">Lens and Edits Lead</option>
                     <option value="Event Co-ordinator Team">Event Co-ordinator Team</option>
                     <option value="PR & Outreach Team">PR & Outreach Team</option>
                     <option value="Technical Activities Team">Technical Activities Team</option>
                     <option value="Web Development Team">Web Development Team</option>
                     <option value="Design & Media Team">Design & Media Team</option>
+                    <option value="Lens and Edits Team">Lens and Edits Team</option>
                     <option value="Volunteer">Volunteer</option>
                 </select>
             </div>

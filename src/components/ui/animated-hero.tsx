@@ -18,14 +18,14 @@ export function AnimatedHero() {
                     duration: 0.8,
                     ease: "easeOut",
                 }}
-                className="relative flex flex-col gap-4 items-center justify-center px-4 min-h-[90vh] pt-24 md:pt-32"
+                className="relative flex flex-col gap-4 items-center justify-start sm:justify-center px-4 min-h-[90vh] pt-16 sm:pt-32 pb-16 sm:pb-0"
             >
                 <div className="container relative z-10 px-4 text-center">
                     <motion.div
                         initial={{ opacity: 0, scale: 0.9 }}
                         animate={{ opacity: 1, scale: 1 }}
                         transition={{ duration: 1, ease: "easeOut" }}
-                        className="mt-20 md:mt-32 mb-12 relative inline-block"
+                        className="mt-0 sm:mt-12 md:mt-0 mb-8 md:mb-12 relative inline-block"
                     >
                         <div className="absolute inset-0 bg-blue-500/20 blur-[100px] rounded-full" />
                         <motion.div
@@ -91,6 +91,6 @@ export function AnimatedHero() {
                     <div className="flex items-center gap-2"><ShieldCheck className="w-4 h-4" /> IEEE Trusted</div>
                 </motion.div>
             </motion.div>
-        </AuroraBackground>
+        </AuroraBackground >
     )
 }

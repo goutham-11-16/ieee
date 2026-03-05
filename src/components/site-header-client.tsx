@@ -49,7 +49,7 @@ export default function SiteHeader({ profile }: { profile: any }) {
                 <Link href="/" className="flex items-center gap-6">
                     <div className="flex items-center gap-4">
                         <img
-                            src="https://i.ibb.co/yFsM0hzC/Gemini-Generated-Image-lb3h34lb3h34lb3h.png"
+                            src="https://i.ibb.co/Y4rGrwDc/Whats-App-Image-2026-02-27-at-23-11-04.jpg"
                             alt="IEEE SMC KARE Logo"
                             className={cn(
                                 "object-contain transition-all duration-300 rounded-md",
