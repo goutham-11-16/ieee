@@ -26,10 +26,10 @@ export async function FeaturedEvents() {
     return (
         <section className="py-20">
             <div className="container px-4">
-                <div className="flex justify-between items-end mb-12">
+                <div className="flex justify-between items-end mb-8 md:mb-12">
                     <div>
-                        <h2 className="text-3xl font-bold">Featured Events</h2>
-                        <p className="text-muted-foreground mt-2">Don't miss out on our upcoming activities.</p>
+                        <h2 className="text-2xl md:text-3xl font-bold">Featured Events</h2>
+                        <p className="text-sm md:text-base text-muted-foreground mt-2">Don't miss out on our upcoming activities.</p>
                     </div>
                     <Button variant="link" asChild className="hidden md:inline-flex">
                         <Link href="/events">View All <ArrowRight className="ml-1 h-4 w-4" /></Link>

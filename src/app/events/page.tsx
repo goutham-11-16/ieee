@@ -21,8 +21,8 @@ export default async function EventsPage() {
     const pastEvents = events?.filter(event => new Date(event.date) < now).reverse() || [] // Most recent past first
 
     return (
-        <div className="container mx-auto py-12 px-4">
-            <h1 className="text-4xl font-extrabold tracking-tight mb-8 text-center">Event Center</h1>
+        <div className="container mx-auto py-8 md:py-12 px-4">
+            <h1 className="text-3xl md:text-4xl font-extrabold tracking-tight mb-6 md:mb-8 text-center pt-8 md:pt-0">Event Center</h1>
 
             <Tabs defaultValue="upcoming" className="w-full">
                 <div className="flex justify-center mb-8">

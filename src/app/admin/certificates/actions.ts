@@ -4,6 +4,7 @@ import { createClient } from '@/lib/supabase/server'
 import { revalidatePath } from 'next/cache'
 import { getCurrentProfile } from '@/lib/auth'
 import { PDFDocument, rgb, StandardFonts } from 'pdf-lib'
+import fontkit from '@pdf-lib/fontkit'
 import { logAction } from '@/lib/actions/audit'
 import { generateUUID } from '@/lib/utils'
 import { uploadToGoogleDrive } from '@/lib/drive'
@@ -107,6 +108,24 @@ export async function requestTemplateLock(eventId: string) {
 
     revalidatePath(`/admin/certificates/${eventId}`)
     return { success: true }
+}
+
+async function fetchGoogleFontTtf(family: string): Promise<ArrayBuffer | null> {
+    try {
+        const url = `https://fonts.googleapis.com/css2?family=${family.replace(/ /g, '+')}&display=swap`;
+        const res = await fetch(url, { headers: { 'User-Agent': 'curl/7.81.0' } });
+        if (!res.ok) return null;
+        const css = await res.text();
+        const match = css.match(/src:\s*url\((https:\/\/[^)]+\.ttf)\)/);
+        if (match && match[1]) {
+            const fontRes = await fetch(match[1]);
+            if (fontRes.ok) return await fontRes.arrayBuffer();
+        }
+        return null;
+    } catch (e) {
+        console.error("Failed to fetch Google Font:", family, e);
+        return null;
+    }
 }
 
 export async function generateCertificates(eventId: string) {
@@ -257,6 +276,7 @@ export async function generateCertificates(eventId: string) {
 
         try {
             const pdfDoc = await PDFDocument.load(finalTemplateBuffer)
+            pdfDoc.registerFontkit(fontkit)
             const pages = pdfDoc.getPages()
             const firstPage = pages[0]
 
@@ -273,6 +293,20 @@ export async function generateCertificates(eventId: string) {
                 'CourierBold': await pdfDoc.embedFont(StandardFonts.CourierBold),
                 'CourierOblique': await pdfDoc.embedFont(StandardFonts.CourierOblique),
                 'CourierBoldOblique': await pdfDoc.embedFont(StandardFonts.CourierBoldOblique),
+            }
+
+            // Dynamically load custom fonts found in elements
+            for (const el of elementsArray) {
+                if (el.font && !loadedFonts[el.font]) {
+                    const ttfBuffer = await fetchGoogleFontTtf(el.font);
+                    if (ttfBuffer) {
+                        try {
+                            loadedFonts[el.font] = await pdfDoc.embedFont(ttfBuffer);
+                        } catch (e) {
+                            console.error("Failed embedding custom font", el.font, e);
+                        }
+                    }
+                }
             }
 
             const mapField = (tag: string, pName: string) => {

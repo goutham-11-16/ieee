@@ -3,9 +3,9 @@ import { Facebook, Twitter, Instagram, Linkedin, Mail, MapPin, Phone } from 'luc
 
 export function SiteFooter() {
     return (
-        <footer className="bg-slate-50 dark:bg-slate-900 border-t pt-16 pb-8">
+        <footer className="bg-slate-50 dark:bg-slate-900 border-t pt-12 md:pt-16 pb-8">
             <div className="container px-4 mx-auto">
-                <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-12 mb-16">
+                <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-8 md:gap-12 mb-12 md:mb-16">
                     <div className="space-y-6">
                         <div className="flex items-center gap-4">
                             <img

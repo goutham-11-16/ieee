@@ -31,7 +31,7 @@ export function AnimatedHero() {
                         <motion.div
                             animate={{ y: [0, -20, 0] }}
                             transition={{ duration: 6, repeat: Infinity, ease: "easeInOut" }}
-                            className="relative w-64 h-64 md:w-96 md:h-96 mx-auto rounded-[3rem] overflow-hidden shadow-2xl border border-white/20"
+                            className="relative w-48 h-48 sm:w-64 sm:h-64 md:w-96 md:h-96 mx-auto rounded-[2rem] sm:rounded-[3rem] overflow-hidden shadow-2xl border border-white/20"
                         >
                             <img
                                 src="/homepage_hero_illustration.jpeg"
@@ -45,18 +45,18 @@ export function AnimatedHero() {
                         initial={{ opacity: 0, y: 20 }}
                         animate={{ opacity: 1, y: 0 }}
                         transition={{ duration: 0.8, delay: 0.2 }}
-                        className="space-y-6"
+                        className="space-y-4 sm:space-y-6"
                     >
-                        <div className="inline-flex items-center gap-2 px-4 py-2 rounded-full bg-blue-500/10 border border-blue-500/20 text-blue-600 dark:text-blue-400 text-xs font-bold uppercase tracking-widest mb-4">
-                            <Sparkles className="w-4 h-4" /> Empowering Next-Gen Innovators
+                        <div className="inline-flex items-center gap-2 px-3 sm:px-4 py-1.5 sm:py-2 rounded-full bg-blue-500/10 border border-blue-500/20 text-blue-600 dark:text-blue-400 text-[10px] sm:text-xs font-bold uppercase tracking-widest mb-2 sm:mb-4">
+                            <Sparkles className="w-3 h-3 sm:w-4 sm:h-4" /> Empowering Next-Gen Innovators
                         </div>
 
-                        <h1 className="text-3xl sm:text-5xl md:text-7xl lg:text-8xl font-black tracking-tighter mb-6 md:mb-8 bg-gradient-to-b from-slate-900 via-slate-800 to-slate-400 dark:from-white dark:via-white dark:to-slate-500 bg-clip-text text-transparent break-words py-4" style={{ lineHeight: '1.2' }}>
+                        <h1 className="text-4xl sm:text-5xl md:text-7xl lg:text-8xl font-black tracking-tighter mb-4 sm:mb-6 md:mb-8 bg-gradient-to-b from-slate-900 via-slate-800 to-slate-400 dark:from-white dark:via-white dark:to-slate-500 bg-clip-text text-transparent break-words py-2 sm:py-4" style={{ lineHeight: '1.2' }}>
                             IEEE SMC <br />
-                            <span className="text-blue-600 block mt-2">Student Branch.</span>
+                            <span className="text-blue-600 block mt-1 sm:mt-2">Student Branch.</span>
                         </h1>
 
-                        <p className="text-base sm:text-xl md:text-2xl text-slate-600 dark:text-slate-400 max-w-2xl mx-auto mb-10 md:mb-12 leading-relaxed font-medium">
+                        <p className="text-sm sm:text-lg md:text-2xl text-slate-600 dark:text-slate-400 max-w-2xl mx-auto mb-8 sm:mb-10 md:mb-12 leading-relaxed font-medium">
                             Kalasalingam Academy of Research and Education. <br className="hidden md:block" />
                             Bridging the gap between <span className="text-slate-900 dark:text-white font-bold">humans</span>, <span className="text-slate-900 dark:text-white font-bold">machines</span>, and <span className="text-slate-900 dark:text-white font-bold">systems</span>.
                         </p>

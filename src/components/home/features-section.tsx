@@ -56,18 +56,18 @@ export function FeaturesSection() {
                     </div>
                 </ScrollReveal>
 
-                <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
+                <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-5 sm:gap-6 lg:gap-8">
                     {features.map((feature, index) => (
                         <ScrollReveal key={index} delay={index * 0.1}>
                             <motion.div
                                 whileHover={{ scale: 1.02 }}
-                                className={`p-8 rounded-3xl border ${feature.color} backdrop-blur-sm transition-all duration-300 h-full flex flex-col group`}
+                                className={`p-6 md:p-8 rounded-[2rem] border ${feature.color} backdrop-blur-sm transition-all duration-300 h-full flex flex-col group`}
                             >
-                                <div className="p-4 bg-white dark:bg-slate-900 rounded-2xl shadow-sm mb-6 w-fit group-hover:shadow-md transition-shadow">
-                                    <feature.icon className="h-6 w-6 text-slate-900 dark:text-white" />
+                                <div className="p-3 md:p-4 bg-white dark:bg-slate-900 rounded-2xl shadow-sm mb-4 md:mb-6 w-fit group-hover:shadow-md transition-shadow">
+                                    <feature.icon className="h-5 w-5 md:h-6 md:w-6 text-slate-900 dark:text-white" />
                                 </div>
-                                <h4 className="text-xl font-bold text-slate-900 dark:text-white mb-3">{feature.title}</h4>
-                                <p className="text-slate-500 dark:text-slate-400 leading-relaxed">
+                                <h4 className="text-lg md:text-xl font-bold text-slate-900 dark:text-white mb-2 md:mb-3">{feature.title}</h4>
+                                <p className="text-sm md:text-base text-slate-500 dark:text-slate-400 leading-relaxed">
                                     {feature.description}
                                 </p>
                             </motion.div>

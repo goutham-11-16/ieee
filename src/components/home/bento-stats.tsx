@@ -62,9 +62,9 @@ export function BentoStats() {
                     </div>
                 </ScrollReveal>
 
-                <div className="grid grid-cols-1 md:grid-cols-4 gap-4 auto-rows-[180px]">
+                <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-5 gap-4 lg:gap-6">
                     {stats.map((stat, index) => (
-                        <ScrollReveal key={index} delay={index * 0.1} className={stat.gridClass}>
+                        <ScrollReveal key={index} delay={index * 0.1}>
                             <motion.div
                                 whileHover={{ y: -5, transition: { duration: 0.2 } }}
                                 className={`h-full w-full p-8 rounded-3xl border border-slate-100 dark:border-slate-800 bg-white dark:bg-slate-900 shadow-sm hover:shadow-xl transition-all group flex flex-col justify-between overflow-hidden relative`}

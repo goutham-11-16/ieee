@@ -52,10 +52,10 @@ export default function StatusCheckerClient({ events }: { events: any[] }) {
     }
 
     return (
-        <div className="container mx-auto py-24 flex items-center justify-center min-h-[70vh] px-4">
+        <div className="container mx-auto py-12 md:py-24 flex items-center justify-center min-h-[70vh] px-4">
             <Card className="w-full max-w-md shadow-lg border-2">
-                <CardHeader className="text-center space-y-2">
-                    <CardTitle className="text-3xl font-bold">Status Checker</CardTitle>
+                <CardHeader className="text-center space-y-1 md:space-y-2">
+                    <CardTitle className="text-2xl md:text-3xl font-bold">Status Checker</CardTitle>
                     <CardDescription className="text-base text-muted-foreground">
                         Check your registration status, upload payment proof, and download certificates.
                     </CardDescription>

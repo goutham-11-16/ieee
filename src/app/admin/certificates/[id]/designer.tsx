@@ -24,7 +24,9 @@ type ConfigElement = {
 const getCssFontFamily = (pdfFont: string) => {
     if (pdfFont?.includes('Courier')) return 'Courier, monospace'
     if (pdfFont?.includes('Times')) return '"Times New Roman", Times, serif'
-    return 'Helvetica, Arial, sans-serif'
+    if (pdfFont?.includes('Helvetica')) return 'Helvetica, Arial, sans-serif'
+    // Fallback for all the custom Google Fonts added
+    return `"${pdfFont}", sans-serif`
 }
 
 const getCssFontStyle = (pdfFont: string) => {
@@ -281,6 +283,55 @@ export default function CertificateDesigner({ eventId, existingTemplate }: { eve
                                                             <SelectItem value="HelveticaBold">Helvetica Bold</SelectItem>
                                                             <SelectItem value="TimesRoman">Times Roman</SelectItem>
                                                             <SelectItem value="TimesBold">Times Bold</SelectItem>
+
+                                                            <SelectItem disabled value="_basic" className="bg-slate-100 font-bold">--- Sans Serif ---</SelectItem>
+                                                            <SelectItem value="Montserrat">Montserrat</SelectItem>
+                                                            <SelectItem value="Poppins">Poppins</SelectItem>
+                                                            <SelectItem value="Open Sans">Open Sans</SelectItem>
+                                                            <SelectItem value="Lato">Lato</SelectItem>
+                                                            <SelectItem value="Roboto">Roboto</SelectItem>
+                                                            <SelectItem value="Roboto Condensed">Roboto Condensed</SelectItem>
+                                                            <SelectItem value="League Spartan">League Spartan</SelectItem>
+                                                            <SelectItem value="Raleway">Raleway</SelectItem>
+                                                            <SelectItem value="Nunito">Nunito</SelectItem>
+                                                            <SelectItem value="Nunito Sans">Nunito Sans</SelectItem>
+                                                            <SelectItem value="Inter">Inter</SelectItem>
+                                                            <SelectItem value="Glacial Indifference">Glacial Indifference</SelectItem>
+
+                                                            <SelectItem disabled value="_serif" className="bg-slate-100 font-bold">--- Serif ---</SelectItem>
+                                                            <SelectItem value="Playfair Display">Playfair Display</SelectItem>
+                                                            <SelectItem value="Libre Baskerville">Libre Baskerville</SelectItem>
+                                                            <SelectItem value="Merriweather">Merriweather</SelectItem>
+                                                            <SelectItem value="Lora">Lora</SelectItem>
+                                                            <SelectItem value="Cormorant">Cormorant</SelectItem>
+                                                            <SelectItem value="Cinzel">Cinzel</SelectItem>
+                                                            <SelectItem value="Prata">Prata</SelectItem>
+                                                            <SelectItem value="Bodoni Moda">Bodoni FLF (Moda)</SelectItem>
+                                                            <SelectItem value="Abril Fatface">Abril Fatface</SelectItem>
+
+                                                            <SelectItem disabled value="_display" className="bg-slate-100 font-bold">--- Specific/Display ---</SelectItem>
+                                                            <SelectItem value="Bebas Neue">Bebas Neue</SelectItem>
+                                                            <SelectItem value="Lilita One">Lilita One</SelectItem>
+                                                            <SelectItem value="Six Caps">Six Caps</SelectItem>
+                                                            <SelectItem value="Pacifico">Pacifico</SelectItem>
+                                                            <SelectItem value="Yellowtail">Yellowtail</SelectItem>
+                                                            <SelectItem value="Sacramento">Sacramento</SelectItem>
+                                                            <SelectItem value="Dancing Script">Dancing Script</SelectItem>
+                                                            <SelectItem value="Alex Brush">Alex Brush</SelectItem>
+                                                            <SelectItem value="Allura">Allura</SelectItem>
+
+                                                            <SelectItem disabled value="_aesthetic" className="bg-slate-100 font-bold">--- Specialty Fonts ---</SelectItem>
+                                                            <SelectItem value="Brittany">Brittany</SelectItem>
+                                                            <SelectItem value="Moontime">Moontime</SelectItem>
+                                                            <SelectItem value="Gistesy">Gistesy</SelectItem>
+                                                            <SelectItem value="Tan Mignon">Tan Aegean / Mignon</SelectItem>
+                                                            <SelectItem value="Dream Avenue">Dream Avenue</SelectItem>
+                                                            <SelectItem value="Hatton">Hatton</SelectItem>
+                                                            <SelectItem value="Black Mango">Black Mango</SelectItem>
+                                                            <SelectItem value="Genty">Genty</SelectItem>
+                                                            <SelectItem value="Bright Retro">Bright Retro</SelectItem>
+                                                            <SelectItem value="Marykate">Marykate</SelectItem>
+                                                            <SelectItem value="Mokoto">Mokoto</SelectItem>
                                                         </SelectContent>
                                                     </Select>
                                                 </div>
